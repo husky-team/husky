@@ -1,0 +1,56 @@
+// Copyright 2016 Husky Team
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+#pragma once
+
+#include <set>
+
+#include "base/serialization.hpp"
+
+namespace husky {
+
+using base::BinStream;
+
+class HashRing {
+   public:
+    /// Insert a worker into the hash ring
+    void insert(int worker_id, int num_ranges = 1);
+
+    /// Remove a worker from the hash ring
+    void remove(int worker_id);
+
+    /// Given a position on the hash ring, return the worker id
+    int lookup(uint64_t pos) const;
+
+    inline int get_num_workers() const { return worker_set_.size(); }
+
+    template <typename KeyT>
+    int hash_lookup(const KeyT& key) {
+        // Maybe we just use std::hash<KeyT>() ??
+        // uint64_t pos = ObjT::partition(key);
+        uint64_t pos = std::hash<KeyT>()(key);
+        return lookup(pos);
+    }
+
+    friend BinStream& operator<<(BinStream& stream, HashRing& hash_ring);
+    friend BinStream& operator>>(BinStream& stream, HashRing& hash_ring);
+
+   protected:
+    std::set<int> worker_set_;
+};
+
+BinStream& operator<<(BinStream& stream, HashRing& hash_ring);
+BinStream& operator>>(BinStream& stream, HashRing& hash_ring);
+
+}  // namespace husky

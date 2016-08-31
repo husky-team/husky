@@ -1,0 +1,15 @@
+# Temp files
+*.swp
+*.swo
+*.bak
+
+# Python
+*.pyc
+
+# Configure Directory
+conf/*
+
+# Build Directory
+build/*
+debug/*
+release/*
