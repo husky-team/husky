@@ -1,6 +1,8 @@
 Husky
 =======
 
+[![Build Status](https://travis-ci.org/husky-team/husky.svg?branch=master)](https://travis-ci.org/husky-team/husky)
+
 [Husky](http://www.husky-project.com/) is a distributed computing system designed to handle mixed jobs of coarse-grained transformations, graph computing and machine learning. The core of Husky is written in C++ so as to leverage the performance of native runtime. For machine learning, Husky supports relaxed consistency level and asynchronous computing in order to exploit higher network/CPU throughput.
 
 
@@ -9,22 +11,27 @@ Dependencies
 
 Husky has the following minimal dependencies:
 
-* CMake
-* ZeroMQ (libzmq and cppzmq)
-* Boost
-* A working C++ compiler (clang/gcc/icc/MSVC)
-* TCMalloc
+* CMake (Version >= 3.0.2)
+* ZeroMQ (including both [libzmq](https://github.com/zeromq/libzmq) and [cppzmq](https://github.com/zeromq/cppzmq))
+* Boost (Version >= 1.58)
+* A working C++ compiler (clang/gcc Version >= 4.9/icc/MSVC)
+* TCMalloc (In [gperftools](https://github.com/gperftools/gperftools))
 
 Some optional dependencies:
 
-* libhdfs3
-* MongoDB C++ Driver
+* libhdfs3 [C/C++ HDFS Client](https://github.com/Pivotal-Data-Attic/pivotalrd-libhdfs3)
+* MongoDB C++ Driver (Version [legacy 1.1.2](https://github.com/mongodb/mongo-cxx-driver/tree/legacy))
 
 Build
 -----
 
-Get the latest Husky tarball and unpack it. We assume the root directory of Husky is $HUSKY\_ROOT. Change directory to $HUSKY\_ROOT and do a out-of-source build using CMake:
+Download the Husky source code:
 
+    git clone https://github.com/husky-team/husky.git
+
+We assume the root directory of Husky is `$HUSKY_ROOT`. Go to `$HUSKY_ROOT` and do a out-of-source build using CMake:
+
+    cd $HUSKY_ROOT
     mkdir release
     cd release
     cmake -DCMAKE_BUILD_TYPE=Release ..
@@ -56,7 +63,7 @@ Husky is supposed to run on any platform. Configurations can be stored in a conf
 
 For single-machine environment, use the hostname of the machine as both the master and the (only) worker.
 
-For distributed environment, first copy and modify `$HUSKY_ROOT/exec.sh` according to actual configuration.
+For distributed environment, first copy and modify `$HUSKY_ROOT/exec.sh` according to actual configuration. `exec.sh` depends on `pssh`.
 
 Run a Husky Program
 --------------------
@@ -74,6 +81,14 @@ In the distributed environment, use the following to execute workers on all mach
 In the single-machine environment, use the following,
 
     ./<executable> --conf /path/to/your/conf
+
+Run Husky Unit Test
+--------------------
+
+Husky contains the unit tests(basic on [gtest 1.7.0](https://github.com/google/googletest) in the core components. Run it with:
+
+    make HuskyUnitTest
+    ./HuskyUnitTest
 
 Documentation
 ---------------
