@@ -14,6 +14,4 @@
 
 #include "io/output/outputformat_base.hpp"
 
-namespace io {
-
-}  // namespace io
+namespace io {}  // namespace io

@@ -1,4 +1,10 @@
 #!/bin/bash
 
-find $HUSKY_ROOT -name "*.cpp" | xargs clang-format -style=file -output-replacements-xml | grep -c "<replacement "
-find $HUSKY_ROOT -name "*.hpp" | xargs clang-format -style=file -output-replacements-xml | grep -c "<replacement "
+if [ "$CLANG_FORMAT" != "" ];
+then
+    CLANG_FORMAT=$CLANG_FORMAT
+else
+    CLANG_FORMAT=clang-format
+fi
+
+find $HUSKY_ROOT -name "*.cpp" -or -name "*.hpp" -exec sh -c "$CLANG_FORMAT -style=file {} | diff -u {} -" \;

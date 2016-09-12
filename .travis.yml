@@ -6,19 +6,21 @@ language: cpp
 
 addons:
   apt:
+    sources:
+      - ubuntu-toolchain-r-test
+      - llvm-toolchain-precise
     packages:
       - build-essential
       - cmake
       - gcc-4.9
       - g++-4.9
-    sources:
-      - ubuntu-toolchain-r-test
+      - clang-format-3.8
 
 before_install:
   - sudo add-apt-repository -y ppa:kojoley/boost
   - sudo apt-get -q update
   - sudo apt-get install -qq software-properties-common
-  - sudo apt-get install -qq build-essential libgoogle-perftools-dev libzmq3-dev cmake mercurial git
+  - sudo apt-get install -qq build-essential libgoogle-perftools-dev libzmq3-dev mercurial git
   - sudo apt-get -y install libboost-{chrono,program-options,date-time,thread,system,filesystem,regex,serialization}1.58{-dev,.0}
 
 install:
@@ -28,11 +30,13 @@ install:
   - cd cppzmq
   - sudo cp zmq.hpp /usr/local/include
   - cd ../..
+  - rm -rf tmp
 
 before_script:
   - ./scripts/lint.py base
   - ./scripts/lint.py core
   - export HUSKY_ROOT=.
+  - export CLANG_FORMAT=clang-format-3.8
   - ./scripts/check-clang-format.sh
 
 script:
