@@ -1,0 +1,5 @@
+Fan Yang <fyang@cse.cuhk.edu.hk, iddmbr@gmail.com>
+Jinfeng Li <jfli@cse.cuhk.edu.hk, lijinf8@gmail.com>
+Yuzhen Huang <yzhuang@cse.cuhk.edu.hk, huangyuzhen93@gmail.com>
+Yunjian Zhao <yjzhao@cse.cuhk.edu.hk, zzxx.is.me@gmail.com>
+Guanxian Jiang <gxjiang@cse.cuhk.edu.hk, kygx.legend@gmail.com>
