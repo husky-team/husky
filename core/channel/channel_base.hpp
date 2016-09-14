@@ -72,7 +72,7 @@ class ChannelBase {
     size_t local_id_;
     size_t progress_;
 
-    std::vector<bool> flushed_;
+    std::vector<bool> flushed_{0};
 
     WorkerInfo* worker_info_ = nullptr;
     LocalMailbox* mailbox_ = nullptr;

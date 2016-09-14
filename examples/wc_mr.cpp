@@ -28,12 +28,12 @@ class Word {
    public:
     using KeyT = std::string;
 
-    Word() : count(0) {}
+    Word() = default;
     Word(const KeyT& w) : word(w) {}
-    virtual const KeyT& id() const { return word; }
+    const KeyT& id() const { return word; }
 
     KeyT word;
-    int count;
+    int count = 0;
 };
 
 void wc() {
@@ -52,13 +52,19 @@ void wc() {
         }
     };
 
-    load(infmt, parse_wc);
-    list_execute(word_list, [&ch](Word& word) { base::log_msg(word.word + ": " + std::to_string(ch.get(word))); });
-
-    // Decide channels manually
-    load(infmt, {&ch}, parse_wc);
-    list_execute(word_list, {&ch}, {},
-                 [&ch](Word& word) { base::log_msg(word.word + ": " + std::to_string(ch.get(word))); });
+    // Just a showcase of two types of list_execute
+    enum class ListExecuteStyle { simple, precise };
+    ListExecuteStyle style = ListExecuteStyle::simple;
+    if (style == ListExecuteStyle::simple) {
+        // This_list execute style is simple and direct
+        load(infmt, parse_wc);
+        list_execute(word_list, [&ch](Word& word) { base::log_msg(word.word + ": " + std::to_string(ch.get(word))); });
+    } else if (style == ListExecuteStyle::precise) {
+        // This_list execute is precise. Need to decide which channels to be used as in/out channels
+        load(infmt, {&ch}, parse_wc);
+        list_execute(word_list, {&ch}, {},
+                     [&ch](Word& word) { base::log_msg(word.word + ": " + std::to_string(ch.get(word))); });
+    }
 }
 
 int main(int argc, char** argv) {

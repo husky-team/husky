@@ -47,10 +47,15 @@ class ChannelManager {
                 channel_progress_pairs.push_back({channel->get_channel_id(), channel->get_channel_progress()});
             }
         }
+        // return if no channel is flushed
+        if (channel_progress_pairs.empty())
+            return;
+
         // receive from mailbox_ and distbribute
         int idx = -1;
         std::pair<int, int> pair;
         while (mailbox_->poll(channel_progress_pairs, &pair)) {
+            // TODO(yuzhen, fan): Let the mailbox poll function return the index
             for (int i = 0; i < channel_progress_pairs.size(); ++i) {
                 if (pair == channel_progress_pairs[i]) {
                     idx = i;
