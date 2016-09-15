@@ -6,4 +6,4 @@
 # worker3
 #
 MACHINE_CFG=
-time pssh -t 0 -P -h ${MACHINE_CFG} -x "-t -t" "ulimit -c unlimited && cd /tmp && ./$1 $2"
+time pssh -t 0 -P -h ${MACHINE_CFG} -x "-t -t" "ulimit -c unlimited && cd /tmp && ./$@"
