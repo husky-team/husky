@@ -5,6 +5,8 @@ Husky
 
 [Husky](http://www.husky-project.com/) is a distributed computing system designed to handle mixed jobs of coarse-grained transformations, graph computing and machine learning. The core of Husky is written in C++ so as to leverage the performance of native runtime. For machine learning, Husky supports relaxed consistency level and asynchronous computing in order to exploit higher network/CPU throughput.
 
+For more details about Husky, please check our [Wiki](https://github.com/husky-team/husky/wiki).
+
 
 Dependencies
 -------------
