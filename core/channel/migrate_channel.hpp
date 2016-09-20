@@ -48,6 +48,7 @@ class MigrateChannel final : public ObjList2ObjListChannel<ObjT, ObjT> {
         migrate_buffer_[dst_thread_id] << obj;
     }
 
+    /// This method is only useful without list_execute
     void flush() {
         this->inc_progress();
         int start = this->global_id_;
@@ -59,6 +60,7 @@ class MigrateChannel final : public ObjList2ObjListChannel<ObjT, ObjT> {
         this->mailbox_->send_complete(this->channel_id_, this->progress_);
     }
 
+    /// This method is only useful without list_execute
     void prepare_immigrants() {
         if (!this->is_flushed())
             return;
@@ -70,6 +72,7 @@ class MigrateChannel final : public ObjList2ObjListChannel<ObjT, ObjT> {
         // TODO(yuzhen): Should I put sort here or other place
         // object insertion finalize
         // dst_ptr->sort();
+        this->reset_flushed();
     }
 
     virtual void prepare() {}

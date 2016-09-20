@@ -67,6 +67,11 @@ class ChannelManager {
             auto bin = mailbox_->recv(channel_progress_pairs[idx].first, channel_progress_pairs[idx].second);
             selected_channels[idx]->in(bin);
         }
+
+        // reset the flushed_ buffer
+        for (auto* ch : selected_channels) {
+            ch->reset_flushed();
+        }
     }
 
     void flush() {

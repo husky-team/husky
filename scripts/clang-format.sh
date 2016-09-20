@@ -12,7 +12,7 @@ function check_all {
     if [ -z "$HUSKY_ROOT" ]
     then
         echo "[ERROR] HUSKY_ROOT variable unset"
-        echo "[ERROR] clang-format exists"
+        echo "[ERROR] clang-format exits"
         exit
     fi
     find $HUSKY_ROOT -name "*.cpp" -or -name "*.hpp" | xargs $CLANG_FORMAT -style=file -i

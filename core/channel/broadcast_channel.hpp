@@ -84,8 +84,9 @@ class BroadcastChannel : public ChannelBase {
         return iter != dict.end();
     }
 
+    /// This method is only useful without list_execute
     void flush() {
-        inc_progress();
+        this->inc_progress();
         int start = global_id_;
         for (int i = 0; i < broadcast_buffer_.size(); ++i) {
             int dst = (start + i) % broadcast_buffer_.size();
@@ -95,6 +96,7 @@ class BroadcastChannel : public ChannelBase {
         mailbox_->send_complete(channel_id_, progress_);
     }
 
+    /// This method is only useful without list_execute
     void prepare_broadcast() {
         // Check whether need to leave accessor_ (last round's accessor_)
         if (need_leave_accessor_)

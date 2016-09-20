@@ -55,6 +55,7 @@ class PushChannel : public Source2ObjListChannel<DstObjT> {
         return recv_buffer_[idx];
     }
 
+    /// This method is only useful without list_execute
     void flush() {
         this->inc_progress();
         int start = this->global_id_;
@@ -66,6 +67,7 @@ class PushChannel : public Source2ObjListChannel<DstObjT> {
         this->mailbox_->send_complete(this->channel_id_, this->progress_);
     }
 
+    /// This method is only useful without list_execute
     void prepare_messages() {
         if (!this->is_flushed())
             return;
@@ -74,6 +76,7 @@ class PushChannel : public Source2ObjListChannel<DstObjT> {
             auto bin_push = this->mailbox_->recv(this->channel_id_, this->progress_);
             process_bin(bin_push);
         }
+        this->reset_flushed();
     }
 
     virtual void prepare() { clear_recv_buffer_(); }

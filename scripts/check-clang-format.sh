@@ -12,7 +12,7 @@ function check_all {
     if [ -z "$HUSKY_ROOT" ]
     then
         echo "[ERROR] HUSKY_ROOT variable unset"
-        echo "[ERROR] clang-format-check exists"
+        echo "[ERROR] clang-format-check exits"
         exit
     fi
 

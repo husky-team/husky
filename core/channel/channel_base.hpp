@@ -63,6 +63,16 @@ class ChannelBase {
     /// If no, list_execute will just omit this channel
     inline bool is_flushed() { return flushed_[progress_]; }
 
+    /// Invoked by prepare_messages or ChannelManager after receiving from mailbox
+    /// reset the flushed_ so that prepare/prepare_messages won't be invoked next time
+    inline void reset_flushed() { flushed_[progress_] = false; }
+
+    // Getter, for debug
+    inline size_t get_channel_id() { return channel_id_; }
+    inline size_t get_global_id() { return global_id_; }
+    inline size_t get_local_id() { return local_id_; }
+    inline size_t get_progress() { return progress_; }
+
    protected:
     ChannelBase();
     void inc_progress();
