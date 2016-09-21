@@ -26,29 +26,36 @@
 #include "base/hash.hpp"
 #include "core/hash_ring.hpp"
 #include "core/zmq_helpers.hpp"
-#include "master/assigners.hpp"
 
 namespace husky {
 
 class Master {
    public:
-    Master();
-    virtual ~Master();
+    static Master& get_instance() {
+        static Master master;
+        return master;
+    }
 
+    void setup();
+    virtual ~Master();
     void init_socket();
     void serve();
-
     void handle_message(uint32_t message, const std::string& id);
-
     inline int get_num_machines() const { return num_machines; }
     inline zmq::socket_t* get_socket() const { return resp_socket; }
     inline const std::string& get_cur_client() const { return cur_client; }
 
-    inline void register_handler(uint32_t msg_type, std::function<void()> handler) {
-        external_handlers[msg_type] = handler;
+    inline void register_main_handler(uint32_t msg_type, std::function<void()> handler) {
+        external_main_handlers[msg_type] = handler;
+    }
+
+    inline void register_setup_handler(std::function<void()> handler) {
+        external_setup_handlers.push_back(handler);
     }
 
    protected:
+    Master();
+
     bool is_serve = true;
     std::set<int> finished_workers;
     HashRing hash_ring;
@@ -85,16 +92,8 @@ class Master {
     std::vector<std::string> pending_sync_ids;
 
     // External handlers
-    std::unordered_map<uint32_t, std::function<void()>> external_handlers;
-
-// Split Assigners
-#ifdef WITH_HDFS
-    HDFSAssigner hdfs_assigner;
-    HDFSBlockAssigner hdfs_block_assigner;
-#endif
-#ifdef WITH_MONGODB
-    MongoSplitAssigner mongo_split_assigner;
-#endif
+    std::unordered_map<uint32_t, std::function<void()>> external_main_handlers;
+    std::vector<std::function<void()>> external_setup_handlers;
 };
 
 }  // namespace husky

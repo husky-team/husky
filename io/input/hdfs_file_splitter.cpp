@@ -25,7 +25,7 @@ namespace io {
 
 using base::BinStream;
 
-int HDFSFileSplitter::hdfs_block_size = 0;
+size_t HDFSFileSplitter::hdfs_block_size = 0;
 
 HDFSFileSplitter::HDFSFileSplitter() : data_(nullptr) {}
 
@@ -93,19 +93,19 @@ boost::string_ref HDFSFileSplitter::fetch_block(bool is_next) {
         }
 
         // read block
-        nbytes = readBlock(fn);
+        nbytes = read_block(fn);
     }
     return boost::string_ref(data_, nbytes);
 }
 
 size_t HDFSFileSplitter::get_offset() { return offset_; }
 
-int HDFSFileSplitter::readBlock(const std::string& fn) {
+int HDFSFileSplitter::read_block(const std::string& fn) {
     file_ = hdfsOpenFile(fs_, fn.c_str(), O_RDONLY, 0, 0, 0);
     assert(file_ != NULL);
     hdfsSeek(fs_, file_, offset_);
-    int start = 0;
-    int nbytes = 0;
+    size_t start = 0;
+    size_t nbytes = 0;
     while (start < hdfs_block_size) {
         // only 128KB per hdfsRead
         nbytes = hdfsRead(fs_, file_, data_ + start, hdfs_block_size);

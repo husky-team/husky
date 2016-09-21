@@ -35,22 +35,20 @@
 #include "core/hash_ring.hpp"
 #include "core/worker_info.hpp"
 #include "core/zmq_helpers.hpp"
-#include "master/assigners.hpp"
 
 namespace husky {
 
 using base::BinStream;
 
 Master::Master() {
+}
+
+void Master::setup() {
     init_socket();
 
     finished_workers.clear();
     is_serve = Context::get_param("serve").empty() ? true : std::stoi(Context::get_param("serve"));
     expected_num_workers = Context::get_worker_info()->get_num_workers();
-#ifdef WITH_HDFS
-    hdfs_block_assigner.init_hdfs(Context::get_param("hdfs_namenode"), Context::get_param("hdfs_namenode_port"));
-    hdfs_block_assigner.num_workers_alive = expected_num_workers;
-#endif
 
     num_machines = Context::get_config()->get_num_machines();
 
@@ -63,6 +61,10 @@ Master::Master() {
     lb_step = -2;
     partition_to_donate.resize(partition_table.size(), false);
     debug_num_broadcast = 0;
+
+    for (auto setup_handler : external_setup_handlers) {
+        setup_handler();
+    }
 }
 
 Master::~Master() { delete resp_socket; }
@@ -171,64 +173,9 @@ void Master::handle_message(uint32_t message, const std::string& id) {
         }
         break;
     }
-#ifdef WITH_HDFS
-    case TYPE_HDFS_BLK_REQ: {
-        std::string url, host;
-        BinStream stream = zmq_recv_binstream(resp_socket);
-        stream >> url >> host;
-
-        std::pair<std::string, size_t> ret = hdfs_block_assigner.answer(host, url);
-        stream.clear();
-        stream << ret.first << ret.second;
-
-        zmq_sendmore_string(resp_socket, cur_client);
-        zmq_sendmore_dummy(resp_socket);
-        zmq_send_binstream(resp_socket, stream);
-
-        base::log_msg(host + " => " + ret.first + "@" + std::to_string(ret.second));
-        break;
-    }
-#endif
-#ifdef WITH_MONGODB
-    case TYPE_MONGODB_REQ: {
-        std::string server, ns, host, username, password;
-        BinStream stream = zmq_recv_binstream(resp_socket);
-        bool need_auth = false;
-        stream >> need_auth;
-        if (need_auth) {
-            stream >> server >> ns >> username >> password >> host;
-            mongo_split_assigner.set_auth(username, password);
-        } else {
-            stream >> server >> ns >> host;
-            mongo_split_assigner.reset_auth();
-        }
-        MongoDBSplit ret = mongo_split_assigner.answer(server, ns);
-        stream.clear();
-        stream << ret;
-
-        zmq_sendmore_string(resp_socket, cur_client);
-        zmq_sendmore_dummy(resp_socket);
-        zmq_send_binstream(resp_socket, stream);
-        base::log_msg(host + " => " + ret.get_ns() + " " + ret.get_min() + ":" + ret.get_max());
-        break;
-    }
-    case TYPE_MONGODB_END_REQ: {
-        BinStream stream = zmq_recv_binstream(resp_socket);
-        MongoDBSplit split;
-        stream >> split;
-        mongo_split_assigner.recieve_end(split);
-
-        stream.clear();
-        zmq_sendmore_string(resp_socket, cur_client);
-        zmq_sendmore_dummy(resp_socket);
-        zmq_send_binstream(resp_socket, stream);
-        base::log_msg("master => end@" + split.get_ns() + " " + split.get_min() + ":" + split.get_max());
-        break;
-    }
-#endif
     default: {
-        if (external_handlers.find(message) != external_handlers.end()) {
-            external_handlers[message]();
+        if (external_main_handlers.find(message) != external_main_handlers.end()) {
+            external_main_handlers[message]();
         } else {
             throw std::runtime_error("Weird message received");
         }
@@ -249,7 +196,8 @@ int main(int argc, char** argv) {
 #endif
     husky::Context::init_global();
     if (husky::Context::get_config()->init_with_args(argc, argv, args)) {
-        husky::Master master;
+        auto& master = husky::Master::get_instance();
+        master.setup();
         base::log_msg("\033[1;32mMASTER READY\033[0m");
         master.serve();
         return 0;

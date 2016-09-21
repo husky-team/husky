@@ -34,7 +34,7 @@ class HDFSFileSplitter {
     size_t get_offset();
 
    protected:
-    int readBlock(const std::string& fn);
+    int read_block(const std::string& fn);
 
     // using heap
     char* data_;
@@ -44,7 +44,7 @@ class HDFSFileSplitter {
     size_t offset_ = 0;
     std::string url_;
 
-    static int hdfs_block_size;
+    static size_t hdfs_block_size;
 };
 
 }  // namespace io

@@ -28,7 +28,7 @@ endif(MONGOCLIENT_FOUND)
 set(husky husky-lib husky-io husky-core husky-base)
 
 # Master
-add_executable(Master master.cpp assigners.cpp)
+add_executable(Master master.cpp hdfs_assigner.cpp mongodb_assigner.cpp)
 target_link_libraries(Master ${husky})
 target_link_libraries(Master ${EXTERNAL_LIB})
 set_property(TARGET Master PROPERTY CXX_STANDARD 14)
