@@ -2,7 +2,9 @@
 
 #include "gtest/gtest.h"
 
-namespace husky {
+namespace {
+
+using namespace husky;
 
 class ConfigTest : public Config {};
 
@@ -22,4 +24,4 @@ TEST_F(TestConfig, InitAndDelete) {
     delete config;
 }
 
-}  // namespace husky
+}  // namespace

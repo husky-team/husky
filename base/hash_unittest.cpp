@@ -14,7 +14,7 @@ typedef std::hash<std::string> HashString;
 typedef std::hash<PairInt> HashPairInt;
 typedef std::hash<PairString> HashPairString;
 
-namespace base {
+namespace {
 
 class TestHash : public testing::Test {
    public:
@@ -50,4 +50,4 @@ TEST_F(TestHash, CheckHashValue) {
     EXPECT_EQ(hash_pair_string(pair_string), hash_string(sa) ^ hash_string(sb));
 }
 
-}  // namespace base
+}  // namespace

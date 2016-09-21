@@ -14,10 +14,11 @@
 
 #ifdef WITH_HDFS
 
+#include "master/hdfs_assigner.hpp"
+
 #include "core/constants.hpp"
 #include "core/context.hpp"
 #include "io/hdfs_manager.hpp"
-#include "master/hdfs_assigner.hpp"
 #include "master/master.hpp"
 
 namespace husky {
@@ -29,7 +30,8 @@ bool operator==(const BlkDesc& lhs, const BlkDesc& rhs) {
 }
 
 HDFSBlockAssigner::HDFSBlockAssigner() {
-    Master::get_instance().register_main_handler(TYPE_HDFS_BLK_REQ, std::bind(&HDFSBlockAssigner::master_main_handler, this));
+    Master::get_instance().register_main_handler(TYPE_HDFS_BLK_REQ,
+                                                 std::bind(&HDFSBlockAssigner::master_main_handler, this));
     Master::get_instance().register_setup_handler(std::bind(&HDFSBlockAssigner::master_setup_handler, this));
 }
 
@@ -48,7 +50,7 @@ void HDFSBlockAssigner::master_main_handler() {
     zmq_sendmore_dummy(resp_socket);
     zmq_send_binstream(resp_socket, stream);
 
-    base::log_msg(host+" => "+ret.first+"@"+std::to_string(ret.second));
+    base::log_msg(host + " => " + ret.first + "@" + std::to_string(ret.second));
 }
 
 void HDFSBlockAssigner::master_setup_handler() {

@@ -7,7 +7,9 @@
 
 #include "base/serialization.hpp"
 
-namespace base {
+namespace {
+
+using namespace base;
 
 class TestConcurrentQueue : public testing::Test {
    public:
@@ -111,4 +113,4 @@ TEST_F(TestConcurrentQueue, ConcurrentPushAndPop) {
     EXPECT_EQ(queue.size(), num_thread * 5);
 }
 
-}  // namespace base
+}  // namespace

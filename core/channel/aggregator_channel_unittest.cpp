@@ -11,7 +11,9 @@
 #include "core/mailbox.hpp"
 #include "core/worker_info.hpp"
 
-namespace husky {
+namespace {
+
+using namespace husky;
 
 class TestAggregatorChannel : public testing::Test {
    public:
@@ -166,4 +168,4 @@ TEST_F(TestAggregatorChannel, MultiThread) {
     }
 }
 
-}  // namespace husky
+}  // namespace

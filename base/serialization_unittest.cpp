@@ -7,7 +7,9 @@
 
 #include "gtest/gtest.h"
 
-namespace base {
+namespace {
+
+using namespace base;
 
 class TestSerialization : public testing::Test {
    public:
@@ -206,4 +208,4 @@ TEST_F(TestSerialization, Mixture) {
     EXPECT_EQ(d, dd);
 }
 
-}  // namespace base
+}  // namespace

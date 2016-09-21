@@ -5,7 +5,9 @@
 
 #include "gtest/gtest.h"
 
-namespace husky {
+namespace {
+
+using namespace husky;
 
 class TestWorkerInfo : public testing::Test {
    public:
@@ -64,4 +66,4 @@ TEST_F(TestWorkerInfo, Functional) {
     EXPECT_EQ(worker_info.local_to_global_id(2, 1), 21);
 }
 
-}  // namespace husky
+}  // namespace

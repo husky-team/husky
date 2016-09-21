@@ -49,9 +49,7 @@ class Master {
         external_main_handlers[msg_type] = handler;
     }
 
-    inline void register_setup_handler(std::function<void()> handler) {
-        external_setup_handlers.push_back(handler);
-    }
+    inline void register_setup_handler(std::function<void()> handler) { external_setup_handlers.push_back(handler); }
 
    protected:
     Master();

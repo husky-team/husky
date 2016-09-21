@@ -14,8 +14,10 @@
 
 #ifdef WITH_MONGODB
 
-#include <utility>
+#include "master/mongodb_assigner.hpp"
+
 #include <string>
+#include <utility>
 
 #include "mongo/bson/bson.h"
 #include "mongo/client/dbclient.h"
@@ -23,7 +25,6 @@
 #include "core/constants.hpp"
 #include "core/zmq_helpers.hpp"
 #include "master/master.hpp"
-#include "master/mongodb_assigner.hpp"
 
 namespace husky {
 
@@ -34,8 +35,10 @@ static MongoSplitAssigner mongo_split_assigner;
 
 MongoSplitAssigner::MongoSplitAssigner() : end_count_(0), split_num_(0) {
     mongo::client::initialize();
-    Master::get_instance().register_main_handler(TYPE_MONGODB_REQ, std::bind(&MongoSplitAssigner::master_mongodb_req_handler, this));
-    Master::get_instance().register_main_handler(TYPE_MONGODB_END_REQ, std::bind(&MongoSplitAssigner::master_mongodb_req_end_handler, this));
+    Master::get_instance().register_main_handler(TYPE_MONGODB_REQ,
+                                                 std::bind(&MongoSplitAssigner::master_mongodb_req_handler, this));
+    Master::get_instance().register_main_handler(TYPE_MONGODB_END_REQ,
+                                                 std::bind(&MongoSplitAssigner::master_mongodb_req_end_handler, this));
     Master::get_instance().register_setup_handler(std::bind(&MongoSplitAssigner::master_setup_handler, this));
 }
 
@@ -78,8 +81,7 @@ void MongoSplitAssigner::master_mongodb_req_end_handler() {
     base::log_msg("master => end@" + split.get_ns() + " " + split.get_min() + ":" + split.get_max());
 }
 
-void MongoSplitAssigner::master_setup_handler() {
-}
+void MongoSplitAssigner::master_setup_handler() {}
 
 MongoSplitAssigner::~MongoSplitAssigner() {
     shards_map_.clear();

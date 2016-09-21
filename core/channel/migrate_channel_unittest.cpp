@@ -12,7 +12,9 @@
 #include "core/objlist.hpp"
 #include "core/worker_info.hpp"
 
-namespace husky {
+namespace {
+
+using namespace husky;
 
 class TestMigrateChannel : public testing::Test {
    public:
@@ -219,4 +221,4 @@ TEST_F(TestMigrateChannel, MigrateOtherIncProgress) {
     EXPECT_EQ(src_list.get_size(), 1);
 }
 
-}  // namespace husky
+}  // namespace

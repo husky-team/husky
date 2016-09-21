@@ -10,7 +10,9 @@
 
 #include "core/context.hpp"
 
-namespace husky {
+namespace {
+
+using namespace husky;
 
 class TestShuffler : public testing::Test {
    public:
@@ -108,4 +110,4 @@ TEST_F(TestShuffler, ShuffleCombiner) {
     }
 }
 
-}  // namespace husky
+}  // namespace

@@ -7,9 +7,10 @@
 
 #include "base/serialization.hpp"
 
-namespace husky {
+namespace {
 
 using base::BinStream;
+using namespace husky;
 
 class TestHashRing : public testing::Test {
    public:
@@ -70,4 +71,4 @@ TEST_F(TestHashRing, Serialization) {
     EXPECT_EQ(input.get_num_workers(), output.get_num_workers());
 }
 
-}  // namespace husky
+}  // namespace

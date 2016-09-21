@@ -9,9 +9,10 @@
 
 #include "base/serialization.hpp"
 
-namespace husky {
+namespace {
 
 using base::BinStream;
+using namespace husky;
 
 class ZMQ {
    public:
@@ -91,4 +92,4 @@ TEST_F(TestZMQHelpers, SendAndReceive) {
     delete send;
 }
 
-}  // namespace husky
+}  // namespace

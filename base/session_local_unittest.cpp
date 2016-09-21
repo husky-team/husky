@@ -6,7 +6,9 @@
 
 #include "gtest/gtest.h"
 
-namespace base {
+namespace {
+
+using namespace base;
 
 class TestSessionLocal : public testing::Test {
    public:
@@ -144,4 +146,4 @@ TEST_F(TestSessionLocal, ThreadFinalizer) {
     SessionLocal::get_thread_finalizers().clear();
 }
 
-}  // namespace base
+}  // namespace

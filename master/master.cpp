@@ -40,8 +40,7 @@ namespace husky {
 
 using base::BinStream;
 
-Master::Master() {
-}
+Master::Master() {}
 
 void Master::setup() {
     init_socket();

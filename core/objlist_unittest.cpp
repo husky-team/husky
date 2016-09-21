@@ -5,7 +5,9 @@
 
 #include "gtest/gtest.h"
 
-namespace husky {
+namespace {
+
+using namespace husky;
 
 class TestObjList : public testing::Test {
    public:
@@ -125,4 +127,4 @@ TEST_F(TestObjList, IndexOf) {
     }
 }
 
-}  // namespace husky
+}  // namespace
