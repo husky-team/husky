@@ -18,6 +18,8 @@
 #include <thread>
 #include <vector>
 
+#include "boost/thread.hpp"
+
 #include "base/log.hpp"
 #include "base/serialization.hpp"
 #include "core/config.hpp"
@@ -61,13 +63,13 @@ void run_job(const std::function<void()>& job) {
     Context::get_coordinator().serve();
 
     // Initialize worker threads
-    std::vector<std::thread*> threads;
+    std::vector<boost::thread*> threads;
     int local_id = 0;
     for (int i = 0; i < worker_info.get_num_workers(); i++) {
         if (worker_info.get_proc_id(i) != worker_info.get_proc_id())
             continue;
 
-        threads.push_back(new std::thread([=, &zmq_context, &el, &mailboxes]() {
+        threads.push_back(new boost::thread([=, &zmq_context, &el, &mailboxes]() {
             Context::init_local();
             Context::set_local_tid(local_id);
             Context::set_global_tid(i);

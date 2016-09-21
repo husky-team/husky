@@ -19,6 +19,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "base/exception.hpp"
 #include "core/channel/channel_destination.hpp"
 #include "core/channel/channel_source.hpp"
 #include "core/utils.hpp"
@@ -85,9 +86,11 @@ class ObjList : public BaseObjList {
         //     del_bitmap.resize(data.size());
         // }
         // lazy operation
-        del_bitmap[obj_ptr - &data[0]] = true;
+        auto idx = obj_ptr - &data[0];
+        if (idx < 0 || idx >= data.size())
+            throw HuskyException("ObjList<T>::delete_object error: index out of range");
+        del_bitmap[idx] = true;
         num_del += 1;
-        // TODO(all): Do we need boundary checking like index_of?
     }
 
     // Find obj according to key
@@ -133,7 +136,7 @@ class ObjList : public BaseObjList {
     size_t index_of(const ObjT* const obj_ptr) const {
         size_t idx = obj_ptr - &data[0];
         if (idx < 0 || idx >= data.size())
-            return -1;
+            throw HuskyException("ObjList<T>::index_of error: index out of range");
         return idx;
     }
 
