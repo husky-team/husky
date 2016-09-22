@@ -22,21 +22,35 @@ namespace husky {
 
 template <typename DstObjT>
 class Source2ObjListChannel : public ChannelBase {
-   public:
+   protected:
     Source2ObjListChannel(ChannelSource* src_ptr, ObjList<DstObjT>* dst_ptr) : src_ptr_(src_ptr), dst_ptr_(dst_ptr) {}
 
-   protected:
+    virtual ~Source2ObjListChannel() override = default;
+
+    Source2ObjListChannel(const Source2ObjListChannel&) = delete;
+    Source2ObjListChannel& operator=(const Source2ObjListChannel&) = delete;
+
+    Source2ObjListChannel(Source2ObjListChannel&&) = default;
+    Source2ObjListChannel& operator=(Source2ObjListChannel&&) = default;
+
     ChannelSource* src_ptr_ = nullptr;
     ObjList<DstObjT>* dst_ptr_ = nullptr;
 };
 
 template <typename SrcObjT, typename DstObjT>
 class ObjList2ObjListChannel : public ChannelBase {
-   public:
+   protected:
     ObjList2ObjListChannel(ObjList<SrcObjT>* src_ptr, ObjList<DstObjT>* dst_ptr)
         : src_ptr_(src_ptr), dst_ptr_(dst_ptr) {}
 
-   protected:
+    virtual ~ObjList2ObjListChannel() override = default;
+
+    ObjList2ObjListChannel(const ObjList2ObjListChannel&) = delete;
+    ObjList2ObjListChannel& operator=(const ObjList2ObjListChannel&) = delete;
+
+    ObjList2ObjListChannel(ObjList2ObjListChannel&&) = default;
+    ObjList2ObjListChannel& operator=(ObjList2ObjListChannel&&) = default;
+
     ObjList<SrcObjT>* src_ptr_ = nullptr;
     ObjList<DstObjT>* dst_ptr_ = nullptr;
 };

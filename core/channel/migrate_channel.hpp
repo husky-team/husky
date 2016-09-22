@@ -36,18 +36,30 @@ class MigrateChannel final : public ObjList2ObjListChannel<ObjT, ObjT> {
         this->dst_ptr_->register_inchannel(this->channel_id_, this);
     }
 
-    virtual ~MigrateChannel() {
+    virtual ~MigrateChannel() override {
         this->src_ptr_->deregister_outchannel(this->channel_id_);
         this->dst_ptr_->deregister_inchannel(this->channel_id_);
     }
 
-    void customized_setup() { migrate_buffer_.resize(this->worker_info_->get_num_workers()); }
+    MigrateChannel(const MigrateChannel&) = delete;
+    MigrateChannel& operator=(const MigrateChannel&) = delete;
+
+    MigrateChannel(MigrateChannel&&) = default;
+    MigrateChannel& operator=(MigrateChannel&&) = default;
+
+    virtual void customized_setup() override { migrate_buffer_.resize(this->worker_info_->get_num_workers()); }
 
     void migrate(ObjT& obj, int dst_thread_id) {
         auto idx = this->src_ptr_->delete_object(&obj);
         migrate_buffer_[dst_thread_id] << obj;
         this->src_ptr_->migrate_attribute(migrate_buffer_[dst_thread_id], idx);
     }
+
+    virtual void prepare() override {}
+
+    virtual void in(BinStream& bin) override { process_bin(bin); }
+
+    virtual void out() override { flush(); }
 
     /// This method is only useful without list_execute
     void flush() {
@@ -75,12 +87,6 @@ class MigrateChannel final : public ObjList2ObjListChannel<ObjT, ObjT> {
         // dst_ptr->sort();
         this->reset_flushed();
     }
-
-    virtual void prepare() {}
-
-    virtual void in(BinStream& bin) { process_bin(bin); }
-
-    virtual void out() { flush(); }
 
    protected:
     void process_bin(BinStream& bin_push) {

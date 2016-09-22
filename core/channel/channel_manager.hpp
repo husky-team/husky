@@ -44,7 +44,7 @@ class ChannelManager {
             if (channel->is_flushed()) {
                 channel->prepare();
                 selected_channels.push_back(channel);
-                channel_progress_pairs.push_back({channel->get_channel_id(), channel->get_channel_progress()});
+                channel_progress_pairs.push_back({channel->get_channel_id(), channel->get_progress()});
             }
         }
         // return if no channel is flushed

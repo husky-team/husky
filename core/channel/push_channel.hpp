@@ -36,14 +36,19 @@ class PushChannel : public Source2ObjListChannel<DstObjT> {
         this->dst_ptr_->register_inchannel(this->channel_id_, this);
     }
 
-    virtual ~PushChannel() {
+    virtual ~PushChannel() override {
         if (this->src_ptr_ != nullptr)
             this->src_ptr_->deregister_outchannel(this->channel_id_);
         if (this->dst_ptr_ != nullptr)
             this->dst_ptr_->deregister_inchannel(this->channel_id_);
     }
+    PushChannel(const PushChannel&) = delete;
+    PushChannel& operator=(const PushChannel&) = delete;
 
-    void customized_setup() { send_buffer_.resize(this->worker_info_->get_num_workers()); }
+    PushChannel(PushChannel&&) = default;
+    PushChannel& operator=(PushChannel&&) = default;
+
+    virtual void customized_setup() override { send_buffer_.resize(this->worker_info_->get_num_workers()); }
 
     void push(const MsgT& msg, const typename DstObjT::KeyT& key) {
         int dst_worker_id = this->hash_ring_->hash_lookup(key);
@@ -54,6 +59,12 @@ class PushChannel : public Source2ObjListChannel<DstObjT> {
         auto idx = this->dst_ptr_->index_of(&obj);
         return recv_buffer_[idx];
     }
+
+    virtual void prepare() override { clear_recv_buffer_(); }
+
+    virtual void in(BinStream& bin) override { process_bin(bin); }
+
+    virtual void out() override { flush(); }
 
     /// This method is only useful without list_execute
     void flush() {
@@ -78,12 +89,6 @@ class PushChannel : public Source2ObjListChannel<DstObjT> {
         }
         this->reset_flushed();
     }
-
-    virtual void prepare() { clear_recv_buffer_(); }
-
-    virtual void in(BinStream& bin) { process_bin(bin); }
-
-    virtual void out() { flush(); }
 
    protected:
     void clear_recv_buffer_() {

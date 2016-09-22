@@ -24,8 +24,6 @@ thread_local size_t ChannelBase::counter = 0;
 
 ChannelBase::ChannelBase() : channel_id_(counter), progress_(0) { counter += 1; }
 
-ChannelBase::~ChannelBase() {}
-
 void ChannelBase::set_local_id(size_t local_id) { local_id_ = local_id; }
 
 void ChannelBase::set_global_id(size_t global_id) { global_id_ = global_id; }

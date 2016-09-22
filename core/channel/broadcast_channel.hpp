@@ -39,7 +39,7 @@ class BroadcastChannel : public ChannelBase {
         src_ptr_->register_outchannel(channel_id_, this);
     }
 
-    virtual ~BroadcastChannel() {
+    virtual ~BroadcastChannel() override {
         // Make sure to invoke inc_progress_ before destructor
         if (need_leave_accessor_)
             leave_accessor();
@@ -47,7 +47,13 @@ class BroadcastChannel : public ChannelBase {
         src_ptr_->deregister_outchannel(channel_id_);
     }
 
-    void customized_setup() {
+    BroadcastChannel(const BroadcastChannel&) = delete;
+    BroadcastChannel& operator=(const BroadcastChannel&) = delete;
+
+    BroadcastChannel(BroadcastChannel&&) = default;
+    BroadcastChannel& operator=(BroadcastChannel&&) = default;
+
+    virtual void customized_setup() override {
         broadcast_buffer_.resize(worker_info_->get_num_workers());
         accessor_ = AccessorFactory::create_accessor<std::unordered_map<KeyT, ValueT>>(
             channel_id_, local_id_, worker_info_->get_num_local_workers());
@@ -84,6 +90,18 @@ class BroadcastChannel : public ChannelBase {
         return iter != dict.end();
     }
 
+    void set_clear_dict(bool clear) { clear_dict_each_progress_ = clear; }
+
+    virtual void prepare() override {}
+
+    virtual void in(BinStream& bin) override {}
+
+    virtual void out() override {
+        flush();
+        prepare_broadcast();
+    }
+
+
     /// This method is only useful without list_execute
     void flush() {
         this->inc_progress();
@@ -109,17 +127,6 @@ class BroadcastChannel : public ChannelBase {
             process_bin(bin, local_dict);
         }
         (*accessor_)[local_id_].commit();
-    }
-
-    void set_clear_dict(bool clear) { clear_dict_each_progress_ = clear; }
-
-    virtual void prepare() {}
-
-    virtual void in(BinStream& bin) {}
-
-    virtual void out() {
-        flush();
-        prepare_broadcast();
     }
 
    protected:

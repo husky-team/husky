@@ -28,14 +28,17 @@ using base::BinStream;
 
 class ChannelBase {
    public:
-    virtual ~ChannelBase();
+    virtual ~ChannelBase() = default;
 
+    /// Getter
     inline static size_t get_num_channel() { return counter; }
-
+    inline LocalMailbox* get_mailbox() const { return mailbox_; }
     inline size_t get_channel_id() const { return channel_id_; }
-    inline size_t get_channel_progress() const { return progress_; }
-    inline LocalMailbox* get_mailbox() { return mailbox_; }
+    inline size_t get_global_id() const { return global_id_; }
+    inline size_t get_local_id() const { return local_id_; }
+    inline size_t get_progress() const { return progress_; }
 
+    /// Setter
     void set_local_id(size_t local_id);
     void set_global_id(size_t global_id);
     void set_worker_info(WorkerInfo* worker_info);
@@ -67,14 +70,16 @@ class ChannelBase {
     /// reset the flushed_ so that prepare/prepare_messages won't be invoked next time
     inline void reset_flushed() { flushed_[progress_] = false; }
 
-    // Getter, for debug
-    inline size_t get_channel_id() { return channel_id_; }
-    inline size_t get_global_id() { return global_id_; }
-    inline size_t get_local_id() { return local_id_; }
-    inline size_t get_progress() { return progress_; }
 
    protected:
     ChannelBase();
+
+    ChannelBase(const ChannelBase&) = delete;
+    ChannelBase& operator=(const ChannelBase&) = delete;
+
+    ChannelBase(ChannelBase&&) = default;
+    ChannelBase& operator=(ChannelBase&&) = default;
+
     void inc_progress();
 
     size_t channel_id_;
