@@ -119,8 +119,8 @@ class PushCombinedChannel : public Source2ObjListChannel<DstObjT> {
             DstObjT* recver_obj = this->dst_ptr_->find(key);
             size_t idx;
             if (recver_obj == nullptr) {
-                DstObjT obj(key);                                            // Construct obj using key only
-                idx = this->dst_ptr_->add_object_get_index(std::move(obj));  // Use this awkward function to get_index
+                DstObjT obj(key);  // Construct obj using key only
+                idx = this->dst_ptr_->add_object(std::move(obj));
             } else {
                 idx = this->dst_ptr_->index_of(recver_obj);
             }

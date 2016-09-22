@@ -16,35 +16,57 @@
 
 #include <algorithm>
 #include <functional>
+#include <string>
 #include <unordered_map>
 #include <vector>
 
 #include "base/exception.hpp"
+#include "core/attrlist.hpp"
 #include "core/channel/channel_destination.hpp"
 #include "core/channel/channel_source.hpp"
-#include "core/utils.hpp"
 
 namespace husky {
 
-class BaseObjList : public ChannelSource, public ChannelDestination {
+using base::BinStream;
+
+class ObjListBase : public ChannelSource, public ChannelDestination {
    public:
-    virtual ~BaseObjList() {}
+    ObjListBase() = default;
+    virtual ~ObjListBase() = default;
+    virtual size_t get_size() const = 0;
 };
 
 template <typename ObjT>
-class ObjList : public BaseObjList {
+class ObjList : public ObjListBase {
    public:
     // TODO(all): should be protected. The list should be constructed by possibly Context
-    ObjList() {}
+    ObjList() = default;
 
-    virtual ~ObjList() {}
+    virtual ~ObjList() {
+        for (auto& it : this->attrlist_map) {
+            delete it.second;
+        }
+        this->attrlist_map.clear();
+    }
 
-    std::vector<ObjT>& get_data() { return data; }
+    std::vector<ObjT>& get_data() { return objlist_data_.data_; }
 
     // Sort the objlist
     void sort() {
+        auto& data = objlist_data_.data_;
         if (data.size() == 0)
             return;
+        std::vector<int> order(this->get_size());
+        for (int i = 0; i < order.size(); ++i) {
+            order[i] = i;
+        }
+        // sort the permutation
+        std::sort(order.begin(), order.end(),
+                  [&](const size_t a, const size_t b) { return data[a].id() < data[b].id(); });
+        // apply the permutation on all the attribute lists
+        for (auto& it : this->attrlist_map) {
+            it.second->reorder(order);
+        }
         std::sort(data.begin(), data.end(), [](const ObjT& a, const ObjT& b) { return a.id() < b.id(); });
         hashed_objs.clear();
         sorted_size = data.size();
@@ -52,6 +74,7 @@ class ObjList : public BaseObjList {
 
     // TODO(Fan): This will invalidate the object dict
     void deletion_finalize() {
+        auto& data = objlist_data_.data_;
         if (data.size() == 0)
             return;
         size_t i = 0, j;
@@ -65,6 +88,10 @@ class ObjList : public BaseObjList {
         for (j = data.size() - 1; j > 0; j--) {
             if (!del_bitmap[j]) {
                 data[i] = std::move(data[j]);
+                // move j_th attribute to i_th for all attr lists
+                for (auto& it : this->attrlist_map) {
+                    it.second->move(i, j);
+                }
                 i += 1;
                 // move i to the next empty place
                 while (i < data.size() && !del_bitmap[i])
@@ -75,28 +102,32 @@ class ObjList : public BaseObjList {
         }
         data.resize(j);
         del_bitmap.resize(j);
-        num_del = 0;
+        for (auto& it : this->attrlist_map) {
+            it.second->resize(j);
+        }
+        objlist_data_.num_del_ = 0;
         std::fill(del_bitmap.begin(), del_bitmap.end(), 0);
     }
 
     // Delete an object
-    void delete_object(const ObjT* const obj_ptr) {
+    size_t delete_object(const ObjT* const obj_ptr) {
         // TODO(all): Decide whether we can remove this
         // if (unlikely(del_bitmap.size() < data.size())) {
         //     del_bitmap.resize(data.size());
         // }
         // lazy operation
-        auto idx = obj_ptr - &data[0];
-        if (idx < 0 || idx >= data.size())
+        size_t idx = obj_ptr - &objlist_data_.data_[0];
+        if (idx < 0 || idx >= objlist_data_.data_.size())
             throw HuskyException("ObjList<T>::delete_object error: index out of range");
         del_bitmap[idx] = true;
-        num_del += 1;
+        objlist_data_.num_del_ += 1;
+        return idx;
     }
 
     // Find obj according to key
     // @Return a pointer to obj
     ObjT* find(const typename ObjT::KeyT& key) {
-        auto& working_list = this->data;
+        auto& working_list = objlist_data_.data_;
         ObjT* start_addr = &working_list[0];
         int r = this->sorted_size - 1;
         int l = 0;
@@ -124,40 +155,25 @@ class ObjList : public BaseObjList {
         }
 
         // The object to find is not in the sorted part
-        if ((sorted_size < data.size()) && (hashed_objs.find(key) != hashed_objs.end())) {
-            return &(this->data[hashed_objs[key]]);
+        if ((sorted_size < objlist_data_.data_.size()) && (hashed_objs.find(key) != hashed_objs.end())) {
+            return &(objlist_data_.data_[hashed_objs[key]]);
         }
         return nullptr;
     }
 
     // Find the index of an obj
-    // @Return idx if found
-    // @Return -1 otherwise
-    size_t index_of(const ObjT* const obj_ptr) const {
-        size_t idx = obj_ptr - &data[0];
-        if (idx < 0 || idx >= data.size())
-            throw HuskyException("ObjList<T>::index_of error: index out of range");
-        return idx;
-    }
+    size_t index_of(const ObjT* const obj_ptr) const { return objlist_data_.index_of(obj_ptr); }
 
     // Add an object
-    void add_object(ObjT&& obj) {
-        hashed_objs[obj.id()] = data.size();
-        data.push_back(std::move(obj));
-        del_bitmap.push_back(0);
-    }
-    void add_object(const ObjT& obj) {
-        hashed_objs[obj.id()] = data.size();
-        data.push_back(obj);
-        del_bitmap.push_back(0);
-    }
-    size_t add_object_get_index(ObjT&& obj) {
+    size_t add_object(ObjT&& obj) {
+        auto& data = objlist_data_.data_;
         size_t ret = hashed_objs[obj.id()] = data.size();
         data.push_back(std::move(obj));
         del_bitmap.push_back(0);
         return ret;
     }
-    size_t add_object_get_index(const ObjT& obj) {
+    size_t add_object(const ObjT& obj) {
+        auto& data = objlist_data_.data_;
         size_t ret = hashed_objs[obj.id()] = data.size();
         data.push_back(obj);
         del_bitmap.push_back(0);
@@ -168,20 +184,63 @@ class ObjList : public BaseObjList {
     // @Return True if it's deleted
     bool get_del(size_t idx) const { return del_bitmap[idx]; }
 
+    // Create AttrList
+    template <typename AttrT>
+    AttrList<ObjT, AttrT>& create_attrlist(const std::string& attr_name) {
+        if (attrlist_map.find(attr_name) != attrlist_map.end()) {
+            throw HuskyException("ObjList<T>::create_attrlist error: name already exists");
+        }
+        auto* attrlist = new AttrList<ObjT, AttrT>(&objlist_data_);
+        attrlist_map.insert({attr_name, attrlist});
+        return (*attrlist);
+    }
+
+    // Get AttrList
+    template <typename AttrT>
+    AttrList<ObjT, AttrT>& get_attrlist(const std::string& attr_name) {
+        if (attrlist_map.find(attr_name) == attrlist_map.end()) {
+            throw HuskyException("ObjList<T>::get_attrlist error: AttrList does not exist");
+        }
+        return (*static_cast<AttrList<ObjT, AttrT>*>(attrlist_map[attr_name]));
+    }
+
+    // Delete AttrList
+    size_t del_attrlist(const std::string& attr_name) {
+        if (attrlist_map.find(attr_name) != attrlist_map.end()) {
+            delete attrlist_map[attr_name];
+        }
+        return attrlist_map.erase(attr_name);
+    }
+
+    void migrate_attribute(BinStream& bin, const size_t idx) {
+        if (!this->attrlist_map.empty()) {
+            for (auto& item : this->attrlist_map) {
+                item.second->migrate(bin, idx);
+            }
+        }
+    }
+
+    void process_attribute(BinStream& bin, const size_t idx) {
+        if (!this->attrlist_map.empty()) {
+            for (auto& item : this->attrlist_map) {
+                item.second->process_bin(bin, idx);
+            }
+        }
+    }
+
     // getter
     inline size_t get_sorted_size() const { return sorted_size; }
-    inline size_t get_num_del() const { return num_del; }
+    inline size_t get_num_del() const { return objlist_data_.num_del_; }
     inline size_t get_hashed_size() const { return hashed_objs.size(); }
-    inline size_t get_size() const { return data.size() - num_del; }
-    inline size_t get_vector_size() const { return data.size(); }
-    inline ObjT& get(size_t i) { return data[i]; }
+    inline size_t get_size() const { return objlist_data_.get_size(); }
+    inline size_t get_vector_size() const { return objlist_data_.data_.size(); }
+    inline ObjT& get(size_t i) { return objlist_data_.data_[i]; }
 
    protected:
-    std::vector<ObjT> data;
+    ObjListData<ObjT> objlist_data_;
     std::vector<bool> del_bitmap;
     size_t sorted_size = 0;
-    size_t num_del = 0;
     std::unordered_map<typename ObjT::KeyT, size_t> hashed_objs;
+    std::unordered_map<std::string, AttrListBase*> attrlist_map;
 };
-
 }  // namespace husky

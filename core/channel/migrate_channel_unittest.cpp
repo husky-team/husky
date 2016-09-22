@@ -1,6 +1,5 @@
 #include "core/channel/migrate_channel.hpp"
 
-#include <iostream>
 #include <string>
 #include <vector>
 
@@ -33,6 +32,14 @@ class Obj {
     const KeyT& id() const { return key; }
     Obj() {}
     explicit Obj(const KeyT& k) : key(k) {}
+};
+
+class Attr {
+   public:
+    Attr() = default;
+    ~Attr() = default;
+    explicit Attr(std::string&& s) : str(std::move(s)) {}
+    std::string str;
 };
 
 // Create MigrateChannel without setting, for setup
@@ -143,13 +150,24 @@ TEST_F(TestMigrateChannel, MigrateItself) {
 
     // ObjList Setup
     ObjList<Obj> src_list;
+    ObjList<Obj> dst_list;
+    auto& scr_int = src_list.create_attrlist<int>("int");
+    auto& src_attr = src_list.create_attrlist<Attr>("attr");
+    dst_list.create_attrlist<int>("int");
+    dst_list.create_attrlist<Attr>("attr");
 
-    src_list.add_object(Obj(100));
-    src_list.add_object(Obj(18));
-    src_list.add_object(Obj(57));
+    auto idx = src_list.add_object(Obj(100));
+    scr_int.set(idx, 100);
+    src_attr.set(idx, Attr("100"));
+    idx = src_list.add_object(Obj(18));
+    scr_int.set(idx, 18);
+    src_attr.set(idx, Attr("18"));
+    idx = src_list.add_object(Obj(57));
+    scr_int.set(idx, 57);
+    src_attr.set(idx, Attr("57"));
 
     // MigrateChannel
-    auto migrate_channel = create_migrate_channel(src_list, src_list);
+    auto migrate_channel = create_migrate_channel(src_list, dst_list);
     migrate_channel.setup(0, 0, &workerinfo, &mailbox, &hashring);
     // migrate
     Obj* p = src_list.find(18);
@@ -157,10 +175,15 @@ TEST_F(TestMigrateChannel, MigrateItself) {
     migrate_channel.flush();
     // migration done
     migrate_channel.prepare_immigrants();
+    Obj& obj = dst_list.get_data()[0];
+    auto& dst_int = dst_list.get_attrlist<int>("int");
+    auto& dst_attr = dst_list.get_attrlist<Attr>("attr");
 
-    EXPECT_EQ(src_list.get_size(), 3);
-    EXPECT_EQ(src_list.get_num_del(), 1);
-    EXPECT_EQ(src_list.get_vector_size(), 4);
+    EXPECT_EQ(src_list.get_size(), 2);
+    EXPECT_EQ(dst_list.get_size(), 1);
+    EXPECT_EQ(obj.id(), 18);
+    EXPECT_EQ(dst_int.get(obj), 18);
+    EXPECT_STREQ(dst_attr.get(obj).str.c_str(), "18");
 }
 
 TEST_F(TestMigrateChannel, MigrateOtherIncProgress) {
@@ -188,10 +211,20 @@ TEST_F(TestMigrateChannel, MigrateOtherIncProgress) {
     // ObjList Setup
     ObjList<Obj> src_list;
     ObjList<Obj> dst_list;
+    auto& scr_int = src_list.create_attrlist<int>("int");
+    auto& src_attr = src_list.create_attrlist<Attr>("attr");
+    dst_list.create_attrlist<int>("int");
+    dst_list.create_attrlist<Attr>("attr");
 
-    src_list.add_object(Obj(100));
-    src_list.add_object(Obj(18));
-    src_list.add_object(Obj(57));
+    auto idx = src_list.add_object(Obj(100));
+    scr_int.set(idx, 100);
+    src_attr.set(idx, Attr("100"));
+    idx = src_list.add_object(Obj(18));
+    scr_int.set(idx, 18);
+    src_attr.set(idx, Attr("18"));
+    idx = src_list.add_object(Obj(57));
+    scr_int.set(idx, 57);
+    src_attr.set(idx, Attr("57"));
 
     // MigrateChannel
     // Round 1
@@ -204,10 +237,14 @@ TEST_F(TestMigrateChannel, MigrateOtherIncProgress) {
     // migration done
     migrate_channel.prepare_immigrants();
     Obj& obj = dst_list.get_data()[0];
+    auto& dst_int = dst_list.get_attrlist<int>("int");
+    auto& dst_attr = dst_list.get_attrlist<Attr>("attr");
 
     EXPECT_EQ(obj.id(), 18);
     EXPECT_EQ(dst_list.get_size(), 1);
     EXPECT_EQ(src_list.get_size(), 2);
+    EXPECT_EQ(dst_int.get(obj), 18);
+    EXPECT_STREQ(dst_attr.get(obj).str.c_str(), "18");
 
     // Round 2
     // migrate

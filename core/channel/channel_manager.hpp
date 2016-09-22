@@ -54,6 +54,9 @@ class ChannelManager {
         // receive from mailbox_ and distbribute
         int idx = -1;
         std::pair<int, int> pair;
+        if (channel_progress_pairs.empty()) {
+            return;
+        }
         while (mailbox_->poll(channel_progress_pairs, &pair)) {
             // TODO(yuzhen, fan): Let the mailbox poll function return the index
             for (int i = 0; i < channel_progress_pairs.size(); ++i) {

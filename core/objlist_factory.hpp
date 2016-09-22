@@ -55,7 +55,7 @@ class ObjListFactory {
     static size_t size() { return objlist_map.size(); }
 
    protected:
-    static thread_local std::unordered_map<std::string, BaseObjList*> objlist_map;
+    static thread_local std::unordered_map<std::string, ObjListBase*> objlist_map;
     static thread_local int default_objlist_id;
     static const char* objlist_name_prefix;
 };

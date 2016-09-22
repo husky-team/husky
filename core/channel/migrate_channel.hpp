@@ -44,8 +44,9 @@ class MigrateChannel final : public ObjList2ObjListChannel<ObjT, ObjT> {
     void customized_setup() { migrate_buffer_.resize(this->worker_info_->get_num_workers()); }
 
     void migrate(ObjT& obj, int dst_thread_id) {
-        this->src_ptr_->delete_object(&obj);
+        auto idx = this->src_ptr_->delete_object(&obj);
         migrate_buffer_[dst_thread_id] << obj;
+        this->src_ptr_->migrate_attribute(migrate_buffer_[dst_thread_id], idx);
     }
 
     /// This method is only useful without list_execute
@@ -86,7 +87,8 @@ class MigrateChannel final : public ObjList2ObjListChannel<ObjT, ObjT> {
         while (bin_push.size() != 0) {
             ObjT obj;
             bin_push >> obj;
-            this->dst_ptr_->add_object(std::move(obj));
+            auto idx = this->dst_ptr_->add_object(std::move(obj));
+            this->dst_ptr_->process_attribute(bin_push, idx);
         }
     }
 
