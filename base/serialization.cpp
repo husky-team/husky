@@ -67,7 +67,7 @@ void BinStream::resize(size_t size) {
 void BinStream::seek(size_t pos) { front_ = pos; }
 
 void BinStream::push_back_bytes(const char* src, size_t sz) {
-    buffer_.insert(buffer_.end(), (const char*)src, (const char*)src + sz);
+    buffer_.insert(buffer_.end(), (const char*) src, (const char*) src + sz);
 }
 
 void* BinStream::pop_front_bytes(size_t sz) {

@@ -9,3 +9,4 @@ AllowShortBlocksOnASingleLine: false
 AllowShortLoopsOnASingleLine: false
 AllowShortIfStatementsOnASingleLine: false
 Standard: 'Cpp11'
+SpaceAfterCStyleCast: true

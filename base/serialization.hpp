@@ -61,13 +61,13 @@ class BinStream {
 
 template <typename InputT>
 BinStream& operator<<(BinStream& stream, const InputT& x) {
-    stream.push_back_bytes((char*)&x, sizeof(InputT));
+    stream.push_back_bytes((char*) &x, sizeof(InputT));
     return stream;
 }
 
 template <typename OutputT>
 BinStream& operator>>(BinStream& stream, OutputT& x) {
-    x = *(OutputT*)(stream.pop_front_bytes(sizeof(OutputT)));
+    x = *(OutputT*) (stream.pop_front_bytes(sizeof(OutputT)));
     return stream;
 }
 

@@ -76,7 +76,7 @@ std::set<std::string> get_self_ips() {
     struct sockaddr_in* sa;
     for (ifa = ifap; ifa; ifa = ifa->ifa_next) {
         if (ifa->ifa_addr->sa_family == AF_INET) {
-            sa = (struct sockaddr_in*)ifa->ifa_addr;
+            sa = (struct sockaddr_in*) ifa->ifa_addr;
             addr = inet_ntoa(sa->sin_addr);
             ips.insert(addr);
         }
