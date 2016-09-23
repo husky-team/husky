@@ -63,4 +63,16 @@ base::BinStream Coordinator::ask_master(base::BinStream& question, size_t type) 
     return answer;
 }
 
+void Coordinator::notify_master(base::BinStream& message, size_t type) {
+    coord_lock_.lock();
+
+    // type
+    zmq_sendmore_dummy(zmq_coord_);
+    zmq_sendmore_int32(zmq_coord_, type);
+
+    // Message body
+    zmq_send_binstream(zmq_coord_, message);
+    coord_lock_.unlock();
+}
+
 }  // namespace husky

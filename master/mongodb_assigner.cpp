@@ -44,9 +44,9 @@ MongoSplitAssigner::MongoSplitAssigner() : end_count_(0), split_num_(0) {
 
 void MongoSplitAssigner::master_mongodb_req_handler() {
     auto& master = Master::get_instance();
-    auto* resp_socket = master.get_socket();
+    auto master_socket = master.get_socket();
     std::string server, ns, host, username, password;
-    BinStream stream = zmq_recv_binstream(resp_socket);
+    BinStream stream = zmq_recv_binstream(master_socket.get());
     bool need_auth = false;
     stream >> need_auth;
     if (need_auth) {
@@ -60,24 +60,24 @@ void MongoSplitAssigner::master_mongodb_req_handler() {
     stream.clear();
     stream << ret;
 
-    zmq_sendmore_string(resp_socket, master.get_cur_client());
-    zmq_sendmore_dummy(resp_socket);
-    zmq_send_binstream(resp_socket, stream);
+    zmq_sendmore_string(master_socket.get(), master.get_cur_client());
+    zmq_sendmore_dummy(master_socket.get());
+    zmq_send_binstream(master_socket.get(), stream);
     base::log_msg(host + " => " + ret.get_ns() + " " + ret.get_min() + ":" + ret.get_max());
 }
 
 void MongoSplitAssigner::master_mongodb_req_end_handler() {
     auto& master = Master::get_instance();
-    auto* resp_socket = master.get_socket();
-    BinStream stream = zmq_recv_binstream(resp_socket);
+    auto master_socket = master.get_socket();
+    BinStream stream = zmq_recv_binstream(master_socket.get());
     MongoDBSplit split;
     stream >> split;
     recieve_end(split);
 
     stream.clear();
-    zmq_sendmore_string(resp_socket, master.get_cur_client());
-    zmq_sendmore_dummy(resp_socket);
-    zmq_send_binstream(resp_socket, stream);
+    zmq_sendmore_string(master_socket.get(), master.get_cur_client());
+    zmq_sendmore_dummy(master_socket.get());
+    zmq_send_binstream(master_socket.get(), stream);
     base::log_msg("master => end@" + split.get_ns() + " " + split.get_min() + ":" + split.get_max());
 }
 

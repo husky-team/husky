@@ -14,27 +14,16 @@
 
 #pragma once
 
-#include <mutex>
-
-#include "zmq.hpp"
-
-#include "base/serialization.hpp"
+#include "master/master.hpp"
 
 namespace husky {
 
-class Coordinator {
+class ProgressTracker {
    public:
-    Coordinator();
-    ~Coordinator();
-
-    void serve();
-    base::BinStream ask_master(base::BinStream& question, size_t type);
-    void notify_master(base::BinStream& message, size_t type);
-
-   private:
-    std::mutex coord_lock_;
-    int proc_id_;
-    zmq::socket_t* zmq_coord_;
+    ProgressTracker();
+    void finish_handler();
+   protected:
+    std::set<int> finished_workers;
 };
 
 }  // namespace husky

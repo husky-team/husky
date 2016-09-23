@@ -79,10 +79,9 @@ void run_job(const std::function<void()>& job) {
 
             Context::finalize_local();
 
-            // Send finished signal to Master
             base::BinStream finish_signal;
             finish_signal << Context::get_param("hostname") << i;
-            Context::get_coordinator().ask_master(finish_signal, TYPE_EXIT);
+            Context::get_coordinator().notify_master(finish_signal, TYPE_EXIT);
         }));
         local_id += 1;
     }

@@ -37,18 +37,18 @@ HDFSBlockAssigner::HDFSBlockAssigner() {
 
 void HDFSBlockAssigner::master_main_handler() {
     auto& master = Master::get_instance();
-    auto* resp_socket = master.get_socket();
+    auto master_socket = master.get_socket();
     std::string url, host;
-    BinStream stream = zmq_recv_binstream(resp_socket);
+    BinStream stream = zmq_recv_binstream(master_socket.get());
     stream >> url >> host;
 
     std::pair<std::string, size_t> ret = answer(host, url);
     stream.clear();
     stream << ret.first << ret.second;
 
-    zmq_sendmore_string(resp_socket, master.get_cur_client());
-    zmq_sendmore_dummy(resp_socket);
-    zmq_send_binstream(resp_socket, stream);
+    zmq_sendmore_string(master_socket.get(), master.get_cur_client());
+    zmq_sendmore_dummy(master_socket.get());
+    zmq_send_binstream(master_socket.get(), stream);
 
     base::log_msg(host + " => " + ret.first + "@" + std::to_string(ret.second));
 }
