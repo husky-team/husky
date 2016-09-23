@@ -163,6 +163,6 @@ void MongoSplitAssigner::recieve_end(MongoDBSplit& split) {
     splits_end_.push_back(split);
 }
 
-}  // namespace Husky
+}  // namespace husky
 
 #endif

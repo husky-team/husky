@@ -6,9 +6,8 @@
 #include "core/objlist.hpp"
 #include "core/objlist_factory.hpp"
 
+namespace husky {
 namespace {
-
-using namespace husky;
 
 class TestChannelFactoryBaseH3 : public testing::Test {
    public:
@@ -134,3 +133,4 @@ TEST_F(TestChannelFactoryBaseH3, CreateBroacastChannel) {
 }
 
 }  // namespace
+}  // namespace husky

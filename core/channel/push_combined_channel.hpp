@@ -42,7 +42,7 @@ class PushCombinedChannel : public Source2ObjListChannel<DstObjT> {
         this->dst_ptr_->register_inchannel(this->channel_id_, this);
     }
 
-    virtual ~PushCombinedChannel() override {
+    ~PushCombinedChannel() override {
         ShuffleCombinerFactory::remove_shuffle_combiner(this->channel_id_);
 
         this->src_ptr_->deregister_outchannel(this->channel_id_);
@@ -55,7 +55,7 @@ class PushCombinedChannel : public Source2ObjListChannel<DstObjT> {
     PushCombinedChannel(PushCombinedChannel&&) = default;
     PushCombinedChannel& operator=(PushCombinedChannel&&) = default;
 
-    virtual void customized_setup() override {
+    void customized_setup() override {
         // Initialize send_buffer_
         send_buffer_.resize(this->worker_info_->get_num_workers());
         // Create shuffle_combiner_
@@ -77,11 +77,11 @@ class PushCombinedChannel : public Source2ObjListChannel<DstObjT> {
         return recv_buffer_[idx];
     }
 
-    virtual void prepare() override { clear_recv_buffer_(); }
+    void prepare() override { clear_recv_buffer_(); }
 
-    virtual void in(BinStream& bin) override { process_bin(bin); }
+    void in(BinStream& bin) override { process_bin(bin); }
 
-    virtual void out() override { flush(); }
+    void out() override { flush(); }
 
     /// This method is only useful without list_execute
     void flush() {

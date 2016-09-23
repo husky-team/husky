@@ -14,6 +14,8 @@
 
 #include "lib/aggregator_obj.hpp"
 
+#include <string>
+
 namespace lib {
 
 const char kKeepAggregate = 0;

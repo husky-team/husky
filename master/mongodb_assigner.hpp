@@ -24,7 +24,7 @@
 
 namespace husky {
 
-using namespace io;
+using io::MongoDBSplit;
 
 class MongoSplitAssigner {
    public:

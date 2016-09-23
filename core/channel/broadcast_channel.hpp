@@ -39,7 +39,7 @@ class BroadcastChannel : public ChannelBase {
         src_ptr_->register_outchannel(channel_id_, this);
     }
 
-    virtual ~BroadcastChannel() override {
+    ~BroadcastChannel() override {
         // Make sure to invoke inc_progress_ before destructor
         if (need_leave_accessor_)
             leave_accessor();
@@ -53,7 +53,7 @@ class BroadcastChannel : public ChannelBase {
     BroadcastChannel(BroadcastChannel&&) = default;
     BroadcastChannel& operator=(BroadcastChannel&&) = default;
 
-    virtual void customized_setup() override {
+    void customized_setup() override {
         broadcast_buffer_.resize(worker_info_->get_num_workers());
         accessor_ = AccessorFactory::create_accessor<std::unordered_map<KeyT, ValueT>>(
             channel_id_, local_id_, worker_info_->get_num_local_workers());
@@ -92,15 +92,14 @@ class BroadcastChannel : public ChannelBase {
 
     void set_clear_dict(bool clear) { clear_dict_each_progress_ = clear; }
 
-    virtual void prepare() override {}
+    void prepare() override {}
 
-    virtual void in(BinStream& bin) override {}
+    void in(BinStream& bin) override {}
 
-    virtual void out() override {
+    void out() override {
         flush();
         prepare_broadcast();
     }
-
 
     /// This method is only useful without list_execute
     void flush() {

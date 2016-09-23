@@ -16,6 +16,9 @@
 
 #include "master/hdfs_assigner.hpp"
 
+#include <string>
+#include <utility>
+
 #include "core/constants.hpp"
 #include "core/context.hpp"
 #include "io/hdfs_manager.hpp"

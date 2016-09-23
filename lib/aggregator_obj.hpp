@@ -14,6 +14,8 @@
 
 #pragma once
 
+#include <string>
+
 #include "base/serialization.hpp"
 
 namespace lib {

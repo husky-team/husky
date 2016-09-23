@@ -10,9 +10,8 @@
 
 #include "core/context.hpp"
 
+namespace husky {
 namespace {
-
-using namespace husky;
 
 class TestAccessor : public testing::Test {
    public:
@@ -65,3 +64,4 @@ TEST_F(TestAccessor, Accessor) {
 }
 
 }  // namespace
+}  // namespace husky

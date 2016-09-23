@@ -25,8 +25,7 @@
 #include "core/context.hpp"
 #include "core/shuffler.hpp"
 
-namespace Husky {
-namespace Lib {
+namespace lib {
 
 using Base::BinStream;
 
@@ -144,7 +143,7 @@ class AggregatorWorker {
         wait_for_others();
         if (tuple.master_id == this->get_global_wid()) {
             global_task.push_back(agg_key);
-            Husky::log_msg("New aggregator " + std::to_string(agg_key.val) + " is assigned to worker " +
+            husky::log_msg("New aggregator " + std::to_string(agg_key.val) + " is assigned to worker " +
                            std::to_string(this->get_global_wid()));
         }
         if (local_assign() == this->get_global_wid()) {
@@ -393,5 +392,4 @@ class Aggregator {
     static h3::AggregatorChannel& get_channel() { return AggregatorWorker::get().get_channel(); }
 };
 
-}  // namespace Lib
-}  // namespace Husky
+}  // namespace lib

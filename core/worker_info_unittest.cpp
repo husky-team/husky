@@ -5,9 +5,8 @@
 
 #include "gtest/gtest.h"
 
+namespace husky {
 namespace {
-
-using namespace husky;
 
 class TestWorkerInfo : public testing::Test {
    public:
@@ -67,3 +66,4 @@ TEST_F(TestWorkerInfo, Functional) {
 }
 
 }  // namespace
+}  // namespace husky

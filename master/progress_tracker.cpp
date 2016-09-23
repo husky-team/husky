@@ -14,6 +14,9 @@
 
 #include "master/progress_tracker.hpp"
 
+#include <string>
+
+#include "base/log.hpp"
 #include "core/constants.hpp"
 #include "core/context.hpp"
 

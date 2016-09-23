@@ -9,7 +9,8 @@
 
 namespace {
 
-using namespace base;
+using base::BinStream;
+using base::ConcurrentQueue;
 
 class TestConcurrentQueue : public testing::Test {
    public:

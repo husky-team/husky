@@ -7,10 +7,10 @@
 
 #include "base/serialization.hpp"
 
+namespace husky {
 namespace {
 
 using base::BinStream;
-using namespace husky;
 
 class TestMailbox : public testing::Test {
    public:
@@ -283,3 +283,4 @@ TEST_F(TestMailbox, OutOfOrder) {
 }
 
 }  // namespace
+}  // namespace husky

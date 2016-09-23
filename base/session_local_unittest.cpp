@@ -8,7 +8,7 @@
 
 namespace {
 
-using namespace base;
+using base::SessionLocal;
 
 class TestSessionLocal : public testing::Test {
    public:

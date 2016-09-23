@@ -14,9 +14,8 @@
 #include "core/objlist.hpp"
 #include "core/worker_info.hpp"
 
+namespace husky {
 namespace {
-
-using namespace husky;
 
 class TestPushCombinedChannel : public testing::Test {
    public:
@@ -336,3 +335,4 @@ TEST_F(TestPushCombinedChannel, MultiThread) {
 }
 
 }  // namespace
+}  // namespace husky

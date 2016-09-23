@@ -9,7 +9,7 @@
 
 namespace {
 
-using namespace base;
+using base::BinStream;
 
 class TestSerialization : public testing::Test {
    public:

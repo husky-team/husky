@@ -19,9 +19,8 @@
 
 #include "core/objlist.hpp"
 
+namespace husky {
 namespace {
-
-using namespace husky;
 
 class TestAttrList : public testing::Test {
    public:
@@ -161,4 +160,6 @@ TEST_F(TestAttrList, DeleteAndSort) {
     EXPECT_DOUBLE_EQ(attr_list[3].val, 4.0);
     EXPECT_DOUBLE_EQ(attr_list[7].val, 9.0);
 }
+
 }  // namespace
+}  // namespace husky

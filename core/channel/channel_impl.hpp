@@ -25,7 +25,7 @@ class Source2ObjListChannel : public ChannelBase {
    protected:
     Source2ObjListChannel(ChannelSource* src_ptr, ObjList<DstObjT>* dst_ptr) : src_ptr_(src_ptr), dst_ptr_(dst_ptr) {}
 
-    virtual ~Source2ObjListChannel() override = default;
+    ~Source2ObjListChannel() override = default;
 
     Source2ObjListChannel(const Source2ObjListChannel&) = delete;
     Source2ObjListChannel& operator=(const Source2ObjListChannel&) = delete;
@@ -43,7 +43,7 @@ class ObjList2ObjListChannel : public ChannelBase {
     ObjList2ObjListChannel(ObjList<SrcObjT>* src_ptr, ObjList<DstObjT>* dst_ptr)
         : src_ptr_(src_ptr), dst_ptr_(dst_ptr) {}
 
-    virtual ~ObjList2ObjListChannel() override = default;
+    ~ObjList2ObjListChannel() override = default;
 
     ObjList2ObjListChannel(const ObjList2ObjListChannel&) = delete;
     ObjList2ObjListChannel& operator=(const ObjList2ObjListChannel&) = delete;

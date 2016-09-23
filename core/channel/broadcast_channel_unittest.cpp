@@ -12,9 +12,8 @@
 #include "core/objlist.hpp"
 #include "core/worker_info.hpp"
 
+namespace husky {
 namespace {
-
-using namespace husky;
 
 class TestBroadcastChannel : public testing::Test {
    public:
@@ -250,3 +249,4 @@ TEST_F(TestBroadcastChannel, MultiThread) {
 }
 
 }  // namespace
+}  // namespace husky

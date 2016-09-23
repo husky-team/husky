@@ -70,7 +70,6 @@ class ChannelBase {
     /// reset the flushed_ so that prepare/prepare_messages won't be invoked next time
     inline void reset_flushed() { flushed_[progress_] = false; }
 
-
    protected:
     ChannelBase();
 

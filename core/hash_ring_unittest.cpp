@@ -7,10 +7,10 @@
 
 #include "base/serialization.hpp"
 
+namespace husky {
 namespace {
 
 using base::BinStream;
-using namespace husky;
 
 class TestHashRing : public testing::Test {
    public:
@@ -72,3 +72,4 @@ TEST_F(TestHashRing, Serialization) {
 }
 
 }  // namespace
+}  // namespace husky

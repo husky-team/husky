@@ -4,9 +4,8 @@
 
 #include "core/objlist.hpp"
 
+namespace husky {
 namespace {
-
-using namespace husky;
 
 class TestObjListFactoryH3 : public testing::Test {
    public:
@@ -55,3 +54,4 @@ TEST_F(TestObjListFactoryH3, Create) {
 }
 
 }  // namespace
+}  // namespace husky
