@@ -34,3 +34,16 @@ add_executable(WordCountMR wc_mr.cpp)
 target_link_libraries(WordCountMR ${husky})
 target_link_libraries(WordCountMR ${EXTERNAL_LIB})
 set_property(TARGET WordCountMR PROPERTY CXX_STANDARD 14)
+
+# PI
+add_executable(PI pi.cpp)
+target_link_libraries(PI ${husky})
+target_link_libraries(PI ${EXTERNAL_LIB})
+set_property(TARGET PI PROPERTY CXX_STANDARD 14)
+
+# PageRank
+add_executable(PageRank pagerank.cpp)
+target_link_libraries(PageRank ${husky})
+target_link_libraries(PageRank ${EXTERNAL_LIB})
+set_property(TARGET PageRank PROPERTY CXX_STANDARD 14)
+
