@@ -47,6 +47,7 @@ void globalize(ObjList<ObjT>& obj_list) {
 
 template <typename ObjT, typename ExecT>
 void list_execute(ObjList<ObjT>& obj_list, ExecT execute, int num_iters = 1) {
+    auto lst_iter_time = std::chrono::steady_clock::now();
     for (int iter = 0; iter < num_iters; ++iter) {
         // TODO(all): the order of invoking prefuncs may matter.
         // e.g. MigrateChannel should be invoked before PushChannel
@@ -62,14 +63,20 @@ void list_execute(ObjList<ObjT>& obj_list, ExecT execute, int num_iters = 1) {
         ChannelManager out_manager(obj_list.get_outchannels());
         out_manager.flush();
 
-        if (Context::get_global_tid() == 0 && num_iters > 1)
-            base::log_msg("Iter[" + std::to_string(iter + 1) + "/" + std::to_string(num_iters) + "] finished");
+        if (Context::get_global_tid() == 0 && num_iters > 1) {
+            auto now_time = std::chrono::steady_clock::now();
+            std::chrono::duration<double, std::milli> d_iter = now_time - lst_iter_time;
+            base::log_msg("Iter[" + std::to_string(iter + 1) + "/" + std::to_string(num_iters) + "] finished in " +
+                          std::to_string(d_iter.count() / 1000) + " seconds");
+            lst_iter_time = now_time;
+        }
     }
 }
 
 template <typename ObjT, typename ExecT>
 void list_execute(ObjList<ObjT>& obj_list, const std::vector<ChannelBase*>& in_channel,
                   const std::vector<ChannelBase*>& out_channel, ExecT execute, int num_iters = 1) {
+    auto lst_iter_time = std::chrono::steady_clock::now();
     for (int iter = 0; iter < num_iters; ++iter) {
         // TODO(all): the order of invoking prefuncs may matter.
         // e.g. MigrateChannel should be invoked before PushChannel
@@ -85,8 +92,13 @@ void list_execute(ObjList<ObjT>& obj_list, const std::vector<ChannelBase*>& in_c
         ChannelManager out_manager(out_channel);
         out_manager.flush();
 
-        if (Context::get_global_tid() == 0 && num_iters > 1)
-            base::log_msg("Iter[" + std::to_string(iter + 1) + "/" + std::to_string(num_iters) + "] finished");
+        if (Context::get_global_tid() == 0 && num_iters > 1) {
+            auto now_time = std::chrono::steady_clock::now();
+            std::chrono::duration<double, std::milli> d_iter = now_time - lst_iter_time;
+            base::log_msg("Iter[" + std::to_string(iter + 1) + "/" + std::to_string(num_iters) + "] finished in " +
+                          std::to_string(d_iter.count() / 1000) + " seconds");
+            lst_iter_time = now_time;
+        }
     }
 }
 

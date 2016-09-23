@@ -46,4 +46,3 @@ add_executable(PageRank pagerank.cpp)
 target_link_libraries(PageRank ${husky})
 target_link_libraries(PageRank ${EXTERNAL_LIB})
 set_property(TARGET PageRank PROPERTY CXX_STANDARD 14)
-

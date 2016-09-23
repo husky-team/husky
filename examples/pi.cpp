@@ -18,24 +18,20 @@
 
 #include "core/engine.hpp"
 
-
-class PIObject{
-public:
+class PIObject {
+   public:
     typedef int KeyT;
     int key;
 
-    explicit PIObject(KeyT key) {
-        this->key = key;
-    }
+    explicit PIObject(KeyT key) { this->key = key; }
 
-    const int & id() const{
-        return key;
-    }
+    const int& id() const { return key; }
 };
 
 void pi() {
     husky::ObjList<PIObject> pi_list;
-    auto & ch = husky::ChannelFactory::create_push_combined_channel<double, husky::SumCombiner<double>>(pi_list, pi_list);
+    auto& ch =
+        husky::ChannelFactory::create_push_combined_channel<double, husky::SumCombiner<double>>(pi_list, pi_list);
     int total_pts = 1000;
     std::random_device rd;
     std::mt19937 generator(rd());
@@ -50,13 +46,13 @@ void pi() {
     }
     ch.push(cnt * 4.0 / total_pts, 0);
     ch.flush();
-    list_execute(pi_list, [&](PIObject & pi) {
+    list_execute(pi_list, [&](PIObject& pi) {
         float sum = ch.get(pi);
         base::log_msg(std::to_string(ch.get(pi) / husky::Context::get_worker_info()->get_num_workers()));
     });
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
     std::vector<std::string> args;
     args.push_back("hdfs_namenode");
     args.push_back("hdfs_namenode_port");
