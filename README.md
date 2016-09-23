@@ -78,7 +78,7 @@ First make sure that the master is running. Use the following to start the maste
 
 In the distributed environment, use the following to execute workers on all machines,
 
-    ./exec.sh <executable> /path/to/your/conf
+    ./exec.sh <executable> --conf /path/to/your/conf
 
 In the single-machine environment, use the following,
 
