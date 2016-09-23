@@ -25,9 +25,9 @@ Then, follow the steps below. All issues related to improving Husky are very muc
     Issues(3)  
     Detailed description(4)
 
-5. Before committing, it would be better to pass `lint.py` and `check-clang-format.sh`: `$ cd husky && ./script/lint.py DIRECTORY && HUSKY_ROOT=. ./script/check-clang-format.sh`
+5. Before committing, it would be better to pass `lint.py` and `check-clang-format.sh`: `$ cd husky && ./scripts/lint.py ${DIRECTORY} && HUSKY_ROOT=. ./scripts/check-clang-format.sh`
 6. Push local commit to your own repository: `$ git push -u/f origin dev`
-7. Create a pull request to the upstream repository. You can also add reviewers. It'd be better for each commit to have only a single PR.
+7. Create a pull request to the upstream repository. Then you can `@reviewers` to review your patch.
 
 More about the commit message:
 
@@ -40,7 +40,7 @@ More about the commit message:
 For example:
 
 ```
-[Build][InputFormat] Fixed error for xxx not found
+[Build][InputFormat] Fix error for xxx not found
 issue #xx
 Should add macros before including xxx.
 ```
