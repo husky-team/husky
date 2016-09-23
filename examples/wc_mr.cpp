@@ -40,8 +40,9 @@ void wc() {
     HDFSLineInputFormat infmt;
     infmt.set_input(Context::get_param("input"));
 
-    ObjList<Word> word_list;
+    auto& word_list = ObjListFactory::create_objlist<Word>();
     auto& ch = ChannelFactory::create_push_combined_channel<int, SumCombiner<int>>(infmt, word_list);
+
     auto parse_wc = [&](boost::string_ref& chunk) {
         if (chunk.size() == 0)
             return;

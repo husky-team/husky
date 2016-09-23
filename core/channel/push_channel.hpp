@@ -55,8 +55,11 @@ class PushChannel : public Source2ObjListChannel<DstObjT> {
         send_buffer_[dst_worker_id] << key << msg;
     }
 
-    const std::vector<MsgT>& get(const DstObjT& obj) const {
+    const std::vector<MsgT>& get(const DstObjT& obj) {
         auto idx = this->dst_ptr_->index_of(&obj);
+        if (idx >= recv_buffer_.size()) {  // resize recv_buffer_ if it is not large enough
+            recv_buffer_.resize(this->dst_ptr_->get_size());
+        }
         return recv_buffer_[idx];
     }
 

@@ -72,8 +72,11 @@ class PushCombinedChannel : public Source2ObjListChannel<DstObjT> {
         back_combine<CombineT>(buffer, key, msg);
     }
 
-    const MsgT& get(const DstObjT& obj) const {
+    const MsgT& get(const DstObjT& obj) {
         auto idx = this->dst_ptr_->index_of(&obj);
+        if (idx >= recv_buffer_.size()) {  // resize recv_buffer_ if it is not large enough
+            recv_buffer_.resize(this->dst_ptr_->get_size());
+        }
         return recv_buffer_[idx];
     }
 
