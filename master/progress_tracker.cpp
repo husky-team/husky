@@ -22,6 +22,7 @@ namespace husky {
 static ProgressTracker progress_tracker;
 
 ProgressTracker::ProgressTracker() {
+    finished_workers_.clear();
     Master::get_instance().register_main_handler(TYPE_EXIT, std::bind(&ProgressTracker::finish_handler, this));
 }
 
@@ -32,10 +33,11 @@ void ProgressTracker::finish_handler() {
     int worker_id;
     BinStream stream = zmq_recv_binstream(master_handler.get());
     stream >> worker_name >> worker_id;
-    finished_workers.insert(worker_id);;
+    finished_workers_.insert(worker_id);
+
     base::log_msg("master => worker finsished @" + worker_name + "-" + std::to_string(worker_id));
 
-    if(master.is_continuous() and (finished_workers.size() == Context::get_worker_info()->get_num_workers())) {
+    if (!master.is_continuous() && (finished_workers_.size() == Context::get_worker_info()->get_num_workers())) {
         master.halt();
     }
 }

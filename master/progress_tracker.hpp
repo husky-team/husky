@@ -14,6 +14,8 @@
 
 #pragma once
 
+#include <set>
+
 #include "master/master.hpp"
 
 namespace husky {
@@ -22,8 +24,9 @@ class ProgressTracker {
    public:
     ProgressTracker();
     void finish_handler();
+
    protected:
-    std::set<int> finished_workers;
+    std::set<int> finished_workers_;
 };
 
 }  // namespace husky

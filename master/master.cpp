@@ -42,7 +42,6 @@ void Master::setup() {
 
     init_socket();
 
-    finished_workers.clear();
     continuous = Context::get_param("serve").empty() ? true : std::stoi(Context::get_param("serve"));
 
     for (auto setup_handler : external_setup_handlers) {
@@ -57,15 +56,13 @@ void Master::init_socket() {
 }
 
 void Master::serve() {
+    base::log_msg("\033[1;32mMASTER READY\033[0m");
     while (running) {
         cur_client = zmq_recv_string(master_socket.get());
         zmq_recv_dummy(master_socket.get());
         handle_message(zmq_recv_int32(master_socket.get()), cur_client);
-        if (!is_continuous() and (finished_workers.size() == Context::get_worker_info()->get_num_workers())) {
-            base::log_msg("\033[1;32mMASTER FINISHED\033[0m");
-            break;
-        }
     }
+    base::log_msg("\033[1;32mMASTER FINISHED\033[0m");
 }
 
 void Master::handle_message(uint32_t message, const std::string& id) {
@@ -89,7 +86,6 @@ int main(int argc, char** argv) {
     if (husky::Context::get_config()->init_with_args(argc, argv, args)) {
         auto& master = husky::Master::get_instance();
         master.setup();
-        base::log_msg("\033[1;32mMASTER READY\033[0m");
         master.serve();
         return 0;
     }

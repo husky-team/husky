@@ -14,7 +14,6 @@
 
 #pragma once
 
-#include <set>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -35,28 +34,17 @@ class Master {
         return master;
     }
 
-    void setup();
     virtual ~Master() = default;
+
+    void setup();
     void init_socket();
     void serve();
     void handle_message(uint32_t message, const std::string& id);
 
-    inline bool is_continuous() {
-        return continuous;
-    }
-
-    inline void halt() {
-        running = false;
-    }
-
-    inline std::shared_ptr<zmq::socket_t> get_socket() const {
-        return master_socket;
-    }
-
-    inline const std::string& get_cur_client() const {
-        return cur_client;
-    }
-
+    inline bool is_continuous() { return continuous; }
+    inline void halt() { running = false; }
+    inline std::shared_ptr<zmq::socket_t> get_socket() const { return master_socket; }
+    inline const std::string& get_cur_client() const { return cur_client; }
     inline void register_main_handler(uint32_t msg_type, std::function<void()> handler) {
         external_main_handlers[msg_type] = handler;
     }
@@ -70,7 +58,6 @@ class Master {
 
     bool continuous = true;
     bool running;
-    std::set<int> finished_workers;
     std::string cur_client;
 
     // Networking
