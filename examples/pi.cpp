@@ -29,9 +29,7 @@ class PIObject {
 };
 
 void pi() {
-    husky::ObjList<PIObject> pi_list;
-    auto& ch =
-        husky::ChannelFactory::create_push_combined_channel<double, husky::SumCombiner<double>>(pi_list, pi_list);
+    // Each thread generates 1000 points
     int total_pts = 1000;
     std::random_device rd;
     std::mt19937 generator(rd());
@@ -44,6 +42,11 @@ void pi() {
             cnt += 1;
         }
     }
+
+    // Aggregate statistics to object 0
+    husky::ObjList<PIObject> pi_list;
+    auto& ch =
+        husky::ChannelFactory::create_push_combined_channel<double, husky::SumCombiner<double>>(pi_list, pi_list);
     ch.push(cnt * 4.0 / total_pts, 0);
     ch.flush();
     list_execute(pi_list, [&](PIObject& pi) {
