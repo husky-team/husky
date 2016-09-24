@@ -24,28 +24,23 @@ class Vertex {
    public:
     using KeyT = int;
 
-    Vertex() : pr_(0.15) {}
-    explicit Vertex(const KeyT& w) : vertexId_(w) { pr_ = 0.15; }
-    Vertex(const KeyT& vId, std::vector<int> adj, float pr = 0.15) {
-        vertexId_ = vId;
-        adj_ = std::move(adj);
-        pr_ = pr;
-    }
-    virtual const KeyT& id() const { return vertexId_; }
+    Vertex() : pr(0.15) {}
+    explicit Vertex(const KeyT& id) : vertexId(id), pr(0.15) {}
+    const KeyT& id() const { return vertexId; }
 
     // Serialization and deserialization
-    friend husky::BinStream& operator<<(husky::BinStream& stream, Vertex u) {
-        stream << u.vertexId_ << u.adj_ << u.pr_;
+    friend husky::BinStream& operator<<(husky::BinStream& stream, const Vertex& u) {
+        stream << u.vertexId << u.adj << u.pr;
         return stream;
     }
     friend husky::BinStream& operator>>(husky::BinStream& stream, Vertex& u) {
-        stream >> u.vertexId_ >> u.adj_ >> u.pr_;
+        stream >> u.vertexId >> u.adj >> u.pr;
         return stream;
     }
 
-    int vertexId_;
-    std::vector<int> adj_;
-    float pr_;
+    int vertexId;
+    std::vector<int> adj;
+    float pr;
 };
 
 void pagerank() {
@@ -53,7 +48,7 @@ void pagerank() {
     infmt.set_input(husky::Context::get_param("input"));
 
     // Create and globalize vertex objects
-    husky::ObjList<Vertex> vertex_list;
+    auto& vertex_list = husky::ObjListFactory::create_objlist<Vertex>();
     auto parse_wc = [&vertex_list](boost::string_ref& chunk) {
         if (chunk.size() == 0)
             return;
@@ -62,28 +57,28 @@ void pagerank() {
         boost::tokenizer<boost::char_separator<char>>::iterator it = tok.begin();
         int id = stoi(*it++);
         it++;
-        std::vector<int> adj;
+        Vertex v(id);
         while (it != tok.end()) {
-            adj.push_back(stoi(*it++));
+            v.adj.push_back(stoi(*it++));
         }
-        vertex_list.add_object(Vertex(id, adj, 0.15));
+        vertex_list.add_object(std::move(v));
     };
-    load(infmt, parse_wc);
-    globalize(vertex_list);
+    husky::load(infmt, parse_wc);
+    husky::globalize(vertex_list);
 
     // Iterative PageRank computation
     auto& prch =
         husky::ChannelFactory::create_push_combined_channel<float, husky::SumCombiner<float>>(vertex_list, vertex_list);
     int numIters = stoi(husky::Context::get_param("iters"));
     for (int iter = 0; iter < numIters; ++iter) {
-        list_execute(vertex_list, [&prch, &it](Vertex& u) {
-            if (it > 0)
-                u.pr_ = 0.85 * prch.get(u) + 0.15;
-            if (u.adj_.size() == 0)
+        husky::list_execute(vertex_list, [&prch, iter](Vertex& u) {
+            if (u.adj.size() == 0)
                 return;
+            if (iter > 0)
+                u.pr = 0.85 * prch.get(u) + 0.15;
 
-            float sendPR = u.pr_ / u.adj_.size();
-            for (auto& nb : u.adj_) {
+            float sendPR = u.pr / u.adj.size();
+            for (auto& nb : u.adj) {
                 prch.push(sendPR, nb);
             }
         });
