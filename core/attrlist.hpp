@@ -29,12 +29,18 @@ using base::BinStream;
 
 class AttrListBase {
    public:
-    AttrListBase() = default;
-    virtual ~AttrListBase() = default;
+    AttrListBase(const AttrListBase&) = delete;
+    AttrListBase& operator=(const AttrListBase&) = delete;
+
+    AttrListBase(AttrListBase&&) = delete;
+    AttrListBase& operator=(AttrListBase&&) = delete;
 
     virtual size_t size() = 0;
 
    protected:
+    AttrListBase() = default;
+    virtual ~AttrListBase() = default;
+
     virtual void resize(const size_t size) = 0;
     virtual void reorder(std::vector<int>& order) = 0;
     virtual void move(const size_t dest, const size_t src) = 0;
@@ -48,13 +54,11 @@ class AttrListBase {
 template <typename ObjT, typename AttrT>
 class AttrList : public AttrListBase {
    public:
-    AttrList() = default;
-    ~AttrList() = default;
+    AttrList(const AttrList&) = delete;
+    AttrList& operator=(const AttrList&) = delete;
 
-    explicit AttrList(ObjListData<ObjT>* objlist_data_ptr) {
-        master_data_ptr_ = objlist_data_ptr;
-        data_.resize(master_data_ptr_->get_size());
-    }
+    AttrList(AttrList&&) = delete;
+    AttrList& operator=(AttrList&&) = delete;
 
     inline size_t size() override { return data_.size(); }
 
@@ -113,6 +117,14 @@ class AttrList : public AttrListBase {
     }
 
    protected:
+    AttrList() = default;
+    virtual ~AttrList() = default;
+
+    explicit AttrList(ObjListData<ObjT>* objlist_data_ptr) {
+        master_data_ptr_ = objlist_data_ptr;
+        data_.resize(master_data_ptr_->get_size());
+    }
+
     inline void resize(const size_t size) override { data_.resize(size); }
 
     // Reorder the list according to a permutaion
@@ -152,7 +164,6 @@ class AttrList : public AttrListBase {
         } while (src < order.size());
     }
 
-    // TODO(Ruihao): Undefined value if idx >= data_.size()
     void migrate(BinStream& bin, const size_t idx) override {
         if (idx >= data_.size()) {
             data_.resize(master_data_ptr_->get_size());
@@ -168,5 +179,8 @@ class AttrList : public AttrListBase {
 
     std::vector<AttrT> data_;
     ObjListData<ObjT>* master_data_ptr_;
+
+    template <typename T>
+    friend class ObjList;
 };
 }  // namespace husky

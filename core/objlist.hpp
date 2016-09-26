@@ -33,6 +33,13 @@ class ObjListBase : public ChannelSource, public ChannelDestination {
    public:
     ObjListBase() = default;
     virtual ~ObjListBase() = default;
+
+    ObjListBase(const ObjListBase&) = delete;
+    ObjListBase& operator=(const ObjListBase&) = delete;
+
+    ObjListBase(ObjListBase&&) = delete;
+    ObjListBase& operator=(ObjListBase&&) = delete;
+
     virtual size_t get_size() const = 0;
 };
 
@@ -48,6 +55,12 @@ class ObjList : public ObjListBase {
         }
         this->attrlist_map.clear();
     }
+
+    ObjList(const ObjList&) = default;
+    ObjList& operator=(const ObjList&) = default;
+
+    ObjList(ObjList&&) = default;
+    ObjList& operator=(ObjList&&) = default;
 
     std::vector<ObjT>& get_data() { return objlist_data_.data_; }
 
@@ -232,7 +245,7 @@ class ObjList : public ObjListBase {
     inline size_t get_sorted_size() const { return sorted_size; }
     inline size_t get_num_del() const { return objlist_data_.num_del_; }
     inline size_t get_hashed_size() const { return hashed_objs.size(); }
-    inline size_t get_size() const { return objlist_data_.get_size(); }
+    inline size_t get_size() const override { return objlist_data_.get_size(); }
     inline size_t get_vector_size() const { return objlist_data_.data_.size(); }
     inline ObjT& get(size_t i) { return objlist_data_.data_[i]; }
 

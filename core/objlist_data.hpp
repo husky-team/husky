@@ -25,6 +25,12 @@ class ObjListData {
     ObjListData() = default;
     ~ObjListData() = default;
 
+    ObjListData(const ObjListData&) = delete;
+    ObjListData& operator=(const ObjListData&) = delete;
+
+    ObjListData(ObjListData&&) = delete;
+    ObjListData& operator=(ObjListData&&) = delete;
+
     inline size_t get_size() const { return data_.size() - num_del_; }
 
     // Find the index of an obj
