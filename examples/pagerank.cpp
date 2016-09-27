@@ -44,7 +44,7 @@ class Vertex {
 };
 
 void pagerank() {
-    io::HDFSLineInputFormat infmt;
+    husky::io::HDFSLineInputFormat infmt;
     infmt.set_input(husky::Context::get_param("input"));
 
     // Create and globalize vertex objects
@@ -72,11 +72,11 @@ void pagerank() {
     int numIters = stoi(husky::Context::get_param("iters"));
     for (int iter = 0; iter < numIters; ++iter) {
         husky::list_execute(vertex_list, [&prch, iter](Vertex& u) {
-            if (u.adj.size() == 0)
-                return;
             if (iter > 0)
                 u.pr = 0.85 * prch.get(u) + 0.15;
 
+            if (u.adj.size() == 0)
+                return;
             float sendPR = u.pr / u.adj.size();
             for (auto& nb : u.adj) {
                 prch.push(sendPR, nb);

@@ -30,12 +30,12 @@ class PIObject {
 
 void pi() {
     // Each thread generates 1000 points
-    int total_pts = 1000;
+    int num_pts_per_thread = 1000;
     std::random_device rd;
     std::mt19937 generator(rd());
-    std::uniform_real_distribution<double> distribution(0.0, 1.0);
+    std::uniform_real_distribution<double> distribution(-1.0, 1.0);
     int cnt = 0;
-    for (int i = 0; i < total_pts; i++) {
+    for (int i = 0; i < num_pts_per_thread; i++) {
         double x = distribution(generator);
         double y = distribution(generator);
         if (x * x + y * y <= 1) {
@@ -46,13 +46,15 @@ void pi() {
     // Aggregate statistics to object 0
     husky::ObjList<PIObject> pi_list;
     auto& ch =
-        husky::ChannelFactory::create_push_combined_channel<double, husky::SumCombiner<double>>(pi_list, pi_list);
-    ch.push(cnt * 4.0 / total_pts, 0);
+        husky::ChannelFactory::create_push_combined_channel<int, husky::SumCombiner<int>>(pi_list, pi_list);
+    ch.push(cnt, 0);
     ch.flush();
-    list_execute(pi_list, [&](PIObject& pi) {
-        float sum = ch.get(pi);
-        husky::base::log_msg(std::to_string(ch.get(pi) / husky::Context::get_worker_info()->get_num_workers()));
+    list_execute(pi_list, [&](PIObject& obj) {
+        int sum = ch.get(obj);
+        int total_pts  = num_pts_per_thread * husky::Context::get_worker_info()->get_num_workers();
+        base::log_msg(std::to_string(4.0 * sum / total_pts));
     });
+    // debug
 }
 
 int main(int argc, char** argv) {
