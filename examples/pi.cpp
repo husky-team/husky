@@ -52,7 +52,7 @@ void pi() {
     list_execute(pi_list, [&](PIObject& obj) {
         int sum = ch.get(obj);
         int total_pts  = num_pts_per_thread * husky::Context::get_worker_info()->get_num_workers();
-        base::log_msg(std::to_string(4.0 * sum / total_pts));
+        husky::base::log_msg(std::to_string(4.0 * sum / total_pts));
     });
     // debug
 }
