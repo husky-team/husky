@@ -17,6 +17,7 @@
 #include <string>
 #include <vector>
 
+namespace husky {
 namespace base {
 
 BinStream::BinStream() : front_(0) {}
@@ -130,3 +131,4 @@ BinStream& operator>>(BinStream& stream, std::vector<bool>& v) {
 }
 
 }  // namespace base
+}  // namespace husky

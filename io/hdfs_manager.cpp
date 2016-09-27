@@ -13,12 +13,14 @@
 // limitations under the License.
 
 #ifdef WITH_HDFS
+
 #include "io/hdfs_manager.hpp"
 
 #include <string>
 
 #include "core/utils.hpp"
 
+namespace husky {
 namespace io {
 
 namespace HDFS {
@@ -125,4 +127,5 @@ void HDFSManager::close_all_files() {
 }
 
 }  // namespace io
+}  // namespace husky
 #endif

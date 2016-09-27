@@ -16,6 +16,7 @@
 
 #include "core/channel/channel_source.hpp"
 
+namespace husky {
 namespace io {
 
 /// Interface for InputFormat.
@@ -30,3 +31,4 @@ class InputFormatBase : public husky::ChannelSource {
 };
 
 }  // namespace io
+}  // namespace husky

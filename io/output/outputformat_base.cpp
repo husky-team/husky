@@ -13,5 +13,3 @@
 // limitations under the License.
 
 #include "io/output/outputformat_base.hpp"
-
-namespace io {}  // namespace io

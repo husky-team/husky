@@ -17,6 +17,7 @@
 #include <functional>
 #include <vector>
 
+namespace husky {
 namespace base {
 
 bool SessionLocal::session_end_ = true;
@@ -76,3 +77,4 @@ RegSessionThreadFinalizer::RegSessionThreadFinalizer(std::function<void()> fina)
 }
 
 }  // namespace base
+}  // namespace husky

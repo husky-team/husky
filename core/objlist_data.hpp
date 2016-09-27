@@ -19,6 +19,7 @@
 #include "base/exception.hpp"
 
 namespace husky {
+
 template <typename ObjT>
 class ObjListData {
    public:
@@ -37,7 +38,7 @@ class ObjListData {
     size_t index_of(const ObjT* const obj_ptr) const {
         size_t idx = obj_ptr - &data_[0];
         if (idx < 0 || idx >= data_.size())
-            throw HuskyException("ObjListData<T>::index_of error: index out of range");
+            throw base::HuskyException("ObjListData<T>::index_of error: index out of range");
         return idx;
     }
 
@@ -48,4 +49,5 @@ class ObjListData {
     template <typename T>
     friend class ObjList;
 };
+
 }  // namespace husky

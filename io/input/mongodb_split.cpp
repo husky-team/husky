@@ -18,6 +18,7 @@
 
 #include "base/serialization.hpp"
 
+namespace husky {
 namespace io {
 
 MongoDBSplit::MongoDBSplit() : is_valid_(false) {}
@@ -61,3 +62,4 @@ BinStream& operator>>(BinStream& stream, MongoDBSplit& split) {
 }
 
 }  // namespace io
+}  // namespace husky

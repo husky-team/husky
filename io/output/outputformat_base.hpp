@@ -16,6 +16,7 @@
 
 #include "core/channel/channel_destination.hpp"
 
+namespace husky {
 namespace io {
 
 /// Interface for OutputFormat.
@@ -30,3 +31,4 @@ class OutputFormatBase : public husky::ChannelDestination {
 };
 
 }  // namespace io
+}  // namespace husky

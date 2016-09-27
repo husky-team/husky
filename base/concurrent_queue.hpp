@@ -18,6 +18,7 @@
 #include <queue>
 #include <utility>
 
+namespace husky {
 namespace base {
 
 template <typename ElementT>
@@ -63,3 +64,4 @@ class ConcurrentQueue {
 };
 
 }  // namespace base
+}  // namespace husky

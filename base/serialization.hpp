@@ -25,6 +25,7 @@
 #include <utility>
 #include <vector>
 
+namespace husky {
 namespace base {
 
 class BinStream {
@@ -159,3 +160,4 @@ BinStream& operator<<(BinStream& stream, const std::vector<bool>& v);
 BinStream& operator>>(BinStream& stream, std::vector<bool>& v);
 
 }  // namespace base
+}  // namespace husky

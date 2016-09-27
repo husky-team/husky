@@ -16,6 +16,7 @@
 
 #include <string>
 
+namespace husky {
 namespace base {
 
 enum class LOG_TYPE {
@@ -29,3 +30,4 @@ void log_msg(const std::string& msg, LOG_TYPE type = LOG_TYPE::LOG_INFO);
 void log_msg(const std::string& msg, LOG_TYPE type, const std::string& file_name);
 
 }  // namespace base
+}  // namespace husky

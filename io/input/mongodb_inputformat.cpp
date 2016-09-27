@@ -25,6 +25,7 @@
 #include "core/context.hpp"
 #include "core/coordinator.hpp"
 
+namespace husky {
 namespace io {
 
 enum MongoDBInputFormatSetUp {
@@ -131,3 +132,4 @@ bool MongoDBInputFormat::next(RecordT& ref) {
 }
 
 }  // namespace io
+}  // namespace husky

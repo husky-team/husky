@@ -131,7 +131,7 @@ class ObjList : public ObjListBase {
         // lazy operation
         size_t idx = obj_ptr - &objlist_data_.data_[0];
         if (idx < 0 || idx >= objlist_data_.data_.size())
-            throw HuskyException("ObjList<T>::delete_object error: index out of range");
+            throw base::HuskyException("ObjList<T>::delete_object error: index out of range");
         del_bitmap[idx] = true;
         objlist_data_.num_del_ += 1;
         return idx;
@@ -201,7 +201,7 @@ class ObjList : public ObjListBase {
     template <typename AttrT>
     AttrList<ObjT, AttrT>& create_attrlist(const std::string& attr_name) {
         if (attrlist_map.find(attr_name) != attrlist_map.end()) {
-            throw HuskyException("ObjList<T>::create_attrlist error: name already exists");
+            throw base::HuskyException("ObjList<T>::create_attrlist error: name already exists");
         }
         auto* attrlist = new AttrList<ObjT, AttrT>(&objlist_data_);
         attrlist_map.insert({attr_name, attrlist});
@@ -212,7 +212,7 @@ class ObjList : public ObjListBase {
     template <typename AttrT>
     AttrList<ObjT, AttrT>& get_attrlist(const std::string& attr_name) {
         if (attrlist_map.find(attr_name) == attrlist_map.end()) {
-            throw HuskyException("ObjList<T>::get_attrlist error: AttrList does not exist");
+            throw base::HuskyException("ObjList<T>::get_attrlist error: AttrList does not exist");
         }
         return (*static_cast<AttrList<ObjT, AttrT>*>(attrlist_map[attr_name]));
     }

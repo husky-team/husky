@@ -18,6 +18,7 @@
 
 #include "base/serialization.hpp"
 
+namespace husky {
 namespace lib {
 
 using base::BinStream;
@@ -91,3 +92,4 @@ class AggregatorObject : public AggregatorState {
 };
 
 }  // namespace lib
+}  // namespace husky

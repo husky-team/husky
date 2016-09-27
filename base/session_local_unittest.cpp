@@ -6,6 +6,7 @@
 
 #include "gtest/gtest.h"
 
+namespace husky {
 namespace {
 
 using base::SessionLocal;
@@ -147,3 +148,4 @@ TEST_F(TestSessionLocal, ThreadFinalizer) {
 }
 
 }  // namespace
+}  // namespace husky

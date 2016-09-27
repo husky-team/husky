@@ -17,6 +17,7 @@
 #include <array>
 #include <cassert>
 
+namespace husky {
 namespace base {
 
 template <typename ValT>
@@ -41,3 +42,4 @@ class ConcurrentChannelStore {
 };
 
 }  // namespace base
+}  // namespace husky

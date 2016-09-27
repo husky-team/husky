@@ -51,7 +51,7 @@ void pi() {
     ch.flush();
     list_execute(pi_list, [&](PIObject& pi) {
         float sum = ch.get(pi);
-        base::log_msg(std::to_string(ch.get(pi) / husky::Context::get_worker_info()->get_num_workers()));
+        husky::base::log_msg(std::to_string(ch.get(pi) / husky::Context::get_worker_info()->get_num_workers()));
     });
 }
 

@@ -68,7 +68,7 @@ class AttrList : public AttrListBase {
     AttrT& get(const size_t idx) {
         size_t objlist_size = master_data_ptr_->get_size();
         if (idx >= objlist_size) {
-            throw HuskyException("AttrList<T>::get error: index out of range");
+            throw base::HuskyException("AttrList<T>::get error: index out of range");
         }
         if (idx >= data_.size()) {
             data_.resize(objlist_size);
@@ -87,7 +87,7 @@ class AttrList : public AttrListBase {
     void set(const size_t idx, AttrT&& attr) {
         size_t objlist_size = master_data_ptr_->get_size();
         if (idx >= objlist_size) {
-            throw HuskyException("AttrList<T>::set error: index out of range");
+            throw base::HuskyException("AttrList<T>::set error: index out of range");
         }
         if (idx >= data_.size()) {
             data_.resize(objlist_size);
@@ -98,7 +98,7 @@ class AttrList : public AttrListBase {
     void set(const size_t idx, const AttrT& attr) {
         size_t objlist_size = master_data_ptr_->get_size();
         if (idx >= objlist_size) {
-            throw HuskyException("AttrList<T>::set error: index out of range");
+            throw base::HuskyException("AttrList<T>::set error: index out of range");
         }
         if (idx >= data_.size()) {
             data_.resize(objlist_size);

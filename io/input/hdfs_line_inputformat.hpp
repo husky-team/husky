@@ -23,6 +23,7 @@
 #include "io/input/hdfs_file_splitter.hpp"
 #include "io/input/inputformat_base.hpp"
 
+namespace husky {
 namespace io {
 
 class HDFSLineInputFormat final : public InputFormatBase {
@@ -50,3 +51,4 @@ class HDFSLineInputFormat final : public InputFormatBase {
 };
 
 }  // namespace io
+}  // namespace husky

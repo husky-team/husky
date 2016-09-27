@@ -21,6 +21,7 @@
 
 #include "hdfs/hdfs.h"
 
+namespace husky {
 namespace io {
 
 class HDFSFileSplitter {
@@ -48,3 +49,4 @@ class HDFSFileSplitter {
 };
 
 }  // namespace io
+}  // namespace husky

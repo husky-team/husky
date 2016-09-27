@@ -21,6 +21,7 @@
 
 #include "base/log.hpp"
 
+namespace husky {
 namespace io {
 
 using base::log_msg;
@@ -84,3 +85,4 @@ void MongoDBOutputFormat::flush_all() {
 }
 
 }  // namespace io
+}  // namespace husky

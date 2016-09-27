@@ -7,6 +7,7 @@
 
 #include "gtest/gtest.h"
 
+namespace husky {
 namespace {
 
 using base::BinStream;
@@ -209,3 +210,4 @@ TEST_F(TestSerialization, Mixture) {
 }
 
 }  // namespace
+}  // namespace husky

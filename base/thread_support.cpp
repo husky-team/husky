@@ -18,6 +18,7 @@
 
 #include "base/session_local.hpp"
 
+namespace husky {
 namespace base {
 
 int gCallOnceFlag = 0;
@@ -56,3 +57,4 @@ void KBarrier::wait(int num_threads) {
 }
 
 }  // namespace base
+}  // namespace husky

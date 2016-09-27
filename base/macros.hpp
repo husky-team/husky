@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+namespace husky {
 namespace base {
 
 #ifdef __GNUC__
@@ -27,3 +28,4 @@ namespace base {
 #endif
 
 }  // namespace base
+}  // namespace husky

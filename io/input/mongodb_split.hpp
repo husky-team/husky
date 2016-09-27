@@ -18,6 +18,7 @@
 
 #include "base/serialization.hpp"
 
+namespace husky {
 namespace io {
 
 using base::BinStream;
@@ -51,3 +52,4 @@ BinStream& operator<<(BinStream& stream, MongoDBSplit& split);
 BinStream& operator>>(BinStream& stream, MongoDBSplit& split);
 
 }  // namespace io
+}  // namespace husky

@@ -19,6 +19,7 @@
 #include <mutex>
 #include <string>
 
+namespace husky {
 namespace base {
 
 std::mutex gPrintLock;
@@ -80,3 +81,4 @@ void log_msg(const std::string& msg, LOG_TYPE type, const std::string& file_name
 }
 
 }  // namespace base
+}  // namespace husky

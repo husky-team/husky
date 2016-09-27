@@ -16,6 +16,7 @@
 
 #include <string>
 
+namespace husky {
 namespace lib {
 
 const char kKeepAggregate = 0;
@@ -54,3 +55,4 @@ std::string AggregatorState::to_string() {
 }
 
 }  // namespace lib
+}  // namespace husky

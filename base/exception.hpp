@@ -17,6 +17,9 @@
 #include <exception>
 #include <string>
 
+namespace husky {
+namespace base {
+
 class HuskyException : public std::exception {
    public:
     explicit HuskyException(const std::string& message_) : message("[HuskyException]: " + message_) {}
@@ -25,3 +28,6 @@ class HuskyException : public std::exception {
 
     std::string message;
 };
+
+}  // namespace base
+}  // namespace husky

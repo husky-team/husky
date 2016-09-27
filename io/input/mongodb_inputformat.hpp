@@ -22,6 +22,7 @@
 #include "io/input/inputformat_base.hpp"
 #include "io/input/mongodb_split.hpp"
 
+namespace husky {
 namespace io {
 
 class MongoDBInputFormat final : public InputFormatBase {
@@ -56,3 +57,4 @@ class MongoDBInputFormat final : public InputFormatBase {
 };
 
 }  // namespace io
+}  // namespace husky

@@ -21,6 +21,7 @@
 #include "io/input/hdfs_file_splitter.hpp"
 #include "io/input/inputformat_helper.hpp"
 
+namespace husky {
 namespace io {
 
 enum HDFSLineInputFormatSetUp {
@@ -126,3 +127,4 @@ void HDFSLineInputFormat::clear_buffer() {
 }
 
 }  // namespace io
+}  // namespace husky

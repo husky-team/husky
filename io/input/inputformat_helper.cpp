@@ -18,6 +18,7 @@
 
 #include "boost/utility/string_ref.hpp"
 
+namespace husky {
 namespace io {
 namespace helper {
 
@@ -42,3 +43,4 @@ size_t find_next(boost::string_ref sref, size_t l, const std::string& str) {
 
 }  // namespace helper
 }  // namespace io
+}  // namespace husky

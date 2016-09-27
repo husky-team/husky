@@ -17,6 +17,7 @@
 #include <functional>
 #include <vector>
 
+namespace husky {
 namespace base {
 
 class SessionLocal {
@@ -52,3 +53,4 @@ class RegSessionThreadFinalizer {
 };
 
 }  // namespace base
+}  // namespace husky

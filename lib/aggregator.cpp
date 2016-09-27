@@ -28,6 +28,7 @@
 #include "core/shuffler.hpp"
 #include "core/worker_info.hpp"
 
+namespace husky {
 namespace lib {
 
 const bool AGG_ON = true;
@@ -372,3 +373,4 @@ AggregatorWorker& AggregatorWorker::get() {
 h3::AggregatorChannel& AggregatorWorker::get_channel() { return this->_channel; }
 
 }  // namespace lib
+}  // namespace husky

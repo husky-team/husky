@@ -22,7 +22,6 @@
 #include "io/input/mongodb_inputformat.hpp"
 
 using namespace husky;
-using namespace io;
 
 class Word {
    public:
@@ -37,7 +36,7 @@ class Word {
 };
 
 void wc() {
-    HDFSLineInputFormat infmt;
+    io::HDFSLineInputFormat infmt;
     infmt.set_input(Context::get_param("input"));
 
     auto& word_list = ObjListFactory::create_objlist<Word>();

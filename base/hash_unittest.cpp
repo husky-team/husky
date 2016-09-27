@@ -14,6 +14,7 @@ typedef std::hash<std::string> HashString;
 typedef std::hash<PairInt> HashPairInt;
 typedef std::hash<PairString> HashPairString;
 
+namespace husky {
 namespace {
 
 class TestHash : public testing::Test {
@@ -51,3 +52,4 @@ TEST_F(TestHash, CheckHashValue) {
 }
 
 }  // namespace
+}  // namespace husky

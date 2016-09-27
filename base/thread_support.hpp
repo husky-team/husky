@@ -20,6 +20,7 @@
 
 #include "base/log.hpp"
 
+namespace husky {
 namespace base {
 
 class HBarrier {
@@ -63,3 +64,4 @@ void call_once_each_time(const Func& func, Args&&... args) {
 }
 
 }  // namespace base
+}  // namespace husky

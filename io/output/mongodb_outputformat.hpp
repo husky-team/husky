@@ -21,6 +21,7 @@
 
 #include "io/output/outputformat_base.hpp"
 
+namespace husky {
 namespace io {
 
 class MongoDBOutputFormat final : public OutputFormatBase {
@@ -47,3 +48,4 @@ class MongoDBOutputFormat final : public OutputFormatBase {
 };
 
 }  // namespace io
+}  // namespace husky

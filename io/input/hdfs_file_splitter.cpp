@@ -21,6 +21,7 @@
 #include "core/context.hpp"
 #include "core/coordinator.hpp"
 
+namespace husky {
 namespace io {
 
 using base::BinStream;
@@ -117,3 +118,4 @@ int HDFSFileSplitter::read_block(const std::string& fn) {
 }
 
 }  // namespace io
+}  // namespace husky

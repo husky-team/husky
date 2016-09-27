@@ -25,6 +25,7 @@
 
 #include "hdfs/hdfs.h"
 
+namespace husky {
 namespace io {
 
 class HDFSManager {
@@ -61,4 +62,5 @@ void CloseFile(const std::string& host, const std::string& port);
 }  // namespace HDFS
 
 }  // namespace io
+}  // namespace husky
 #endif

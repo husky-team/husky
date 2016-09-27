@@ -7,6 +7,7 @@
 
 #include "base/serialization.hpp"
 
+namespace husky {
 namespace {
 
 using base::BinStream;
@@ -115,3 +116,4 @@ TEST_F(TestConcurrentQueue, ConcurrentPushAndPop) {
 }
 
 }  // namespace
+}  // namespace husky

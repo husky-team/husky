@@ -25,6 +25,7 @@
 #include "core/context.hpp"
 #include "core/shuffler.hpp"
 
+namespace husky {
 namespace lib {
 
 using Base::BinStream;
@@ -393,3 +394,4 @@ class Aggregator {
 };
 
 }  // namespace lib
+}  // namespace husky
