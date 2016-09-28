@@ -15,8 +15,7 @@ function check_all {
         echo "[ERROR] clang-format-check exits"
         exit
     fi
-
-    find $HUSKY_ROOT -name "*.cpp" -or -name "*.hpp" -exec sh -c "$CLANG_FORMAT -style=file {} | diff -u {} -" \;
+    find $HUSKY_ROOT -name "*.[ch]pp" -exec sh -c "$CLANG_FORMAT -style=file {} | diff -u {} -" \;
 }
 
 function check_single {

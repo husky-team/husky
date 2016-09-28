@@ -15,7 +15,7 @@ function check_all {
         echo "[ERROR] clang-format exits"
         exit
     fi
-    find $HUSKY_ROOT -name "*.cpp" -or -name "*.hpp" | xargs $CLANG_FORMAT -style=file -i
+    find $HUSKY_ROOT -name "*.[ch]pp" | xargs $CLANG_FORMAT -style=file -i
 }
 
 function check_single {
