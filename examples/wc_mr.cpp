@@ -20,6 +20,7 @@
 #include "core/engine.hpp"
 #include "io/input/hdfs_line_inputformat.hpp"
 #include "io/input/mongodb_inputformat.hpp"
+#include "io/input/nfs_line_inputformat.hpp"
 
 using namespace husky;
 
@@ -36,6 +37,7 @@ class Word {
 };
 
 void wc() {
+    // choose an inputformat
     io::HDFSLineInputFormat infmt;
     infmt.set_input(Context::get_param("input"));
 

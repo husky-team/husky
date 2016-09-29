@@ -15,7 +15,7 @@
 
 include_directories(${PROJECT_SOURCE_DIR} ${Boost_INCLUDE_DIRS})
 
-set(input_cpps inputformat_helper.cpp)
+set(input_cpps inputformat_helper.cpp nfs_file_splitter.cpp nfs_line_inputformat.cpp)
 
 if(LIBHDFS3_FOUND)
     include_directories(${LIBHDFS3_INCLUDE_DIR})
