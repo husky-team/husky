@@ -83,6 +83,8 @@ class AttrList : public AttrListBase {
 
     inline AttrT& operator[](const size_t idx) { return this->get(idx); }
 
+    inline AttrT& operator[](const ObjT& obj) { return this->get(obj); }
+
     // Setter
     void set(const size_t idx, AttrT&& attr) {
         size_t objlist_size = master_data_ptr_->get_size();

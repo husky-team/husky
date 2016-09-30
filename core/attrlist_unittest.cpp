@@ -91,6 +91,8 @@ TEST_F(TestAttrList, SetAttrAndGet) {
     attr_list.set(objvec[10], AttrDb(1.23));
     EXPECT_EQ(intlist.get(objvec[10]), 123);
     EXPECT_DOUBLE_EQ(attr_list.get(objvec[10]).val, 1.23);
+    EXPECT_EQ(intlist[objvec[10]], 123);
+    EXPECT_DOUBLE_EQ(attr_list[objvec[10]].val, 1.23);
 
     // get by index
     for (int i = 0; i < 10; ++i) {
