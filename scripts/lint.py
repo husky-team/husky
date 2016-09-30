@@ -2,6 +2,7 @@
 
 import getopt
 import os
+import subprocess
 import sys
 
 
@@ -10,8 +11,37 @@ CPPLINT_EXTENSIONS = ['cpp', 'hpp', 'tpp']
 CPPLINT_FILTERS = ['-whitespace/indent', '-runtime/references', '+build/include_alpha', '-build/c++11', '-legal/copyright', '-readability/casting']
 CPPLINT_LINE_LENGTH = 120
 
+cpp_suffix = '*.[ch]pp'
+default_dirs = [
+    'base',
+    'core',
+    'io',
+    'lib',
+    'master',
+    'examples'
+]
+husky_root = os.getenv('HUSKY_ROOT', '.')
+os.chdir(husky_root)
+
 def usage():
-    print "Run command as: $ lint.py PATH_DIRECTORY"
+    print "Run command as: $ lint.py $HUSKY_ROOT or $PATH_OF_DIR"
+
+def list_files(paths=None):
+    dirs = None
+    if paths is not None:
+        dirs = paths
+
+    if dirs is None:
+        files = []
+        for d in default_dirs:
+            cmd = 'find {} -name {}'.format(d, cpp_suffix)
+            res = subprocess.check_output(cmd, shell=True).rstrip()
+            files += res.split('\n')
+        return files
+
+    cmd = 'find {} -name {}'.format(' '.join(dirs), cpp_suffix)
+    res = subprocess.check_output(cmd, shell=True).rstrip()
+    return res.split('\n')
 
 def main(argv=None):
     if argv is None:
@@ -29,13 +59,16 @@ def main(argv=None):
             usage()
             return 0
 
-    if args is None:
-        print "Need a directory path"
-        usage()
+    files = None
+    if len(args) == 0:
+        files = list_files()
+    else:
+        files = list_files(args)
+
+    if files is None:
+        print '[Error] Path {} does not exist'.format(args.path)
         return 2
 
-
-    find_files_cmd = "find " + ' '.join(args)
     cpplint_cmd = [
         CPPLINT_PY,
         '--linelength={}'.format(CPPLINT_LINE_LENGTH),
@@ -44,10 +77,9 @@ def main(argv=None):
     if (len(CPPLINT_FILTERS) > 0):
         cpplint_cmd.append('--filter={}'.format(','.join(CPPLINT_FILTERS)))
 
-    run_cmd = find_files_cmd + ' | xargs ' + ' '.join(cpplint_cmd)
-    return  os.system(run_cmd)
+    run_cmd = ' '.join(cpplint_cmd) + ' ' + ' '.join(files)
+    os.system(run_cmd)
 
 
 if __name__ == '__main__':
     sys.exit(main())
-

@@ -22,14 +22,12 @@
 #include "io/input/mongodb_inputformat.hpp"
 #include "io/input/nfs_line_inputformat.hpp"
 
-using namespace husky;
-
 class Word {
    public:
     using KeyT = std::string;
 
     Word() = default;
-    Word(const KeyT& w) : word(w) {}
+    explicit Word(const KeyT& w) : word(w) {}
     const KeyT& id() const { return word; }
 
     KeyT word;
@@ -38,11 +36,11 @@ class Word {
 
 void wc() {
     // choose an inputformat
-    io::HDFSLineInputFormat infmt;
-    infmt.set_input(Context::get_param("input"));
+    husky::io::HDFSLineInputFormat infmt;
+    infmt.set_input(husky::Context::get_param("input"));
 
-    auto& word_list = ObjListFactory::create_objlist<Word>();
-    auto& ch = ChannelFactory::create_push_combined_channel<int, SumCombiner<int>>(infmt, word_list);
+    auto& word_list = husky::ObjListFactory::create_objlist<Word>();
+    auto& ch = husky::ChannelFactory::create_push_combined_channel<int, husky::SumCombiner<int>>(infmt, word_list);
 
     auto parse_wc = [&](boost::string_ref& chunk) {
         if (chunk.size() == 0)
@@ -59,13 +57,16 @@ void wc() {
     ListExecuteStyle style = ListExecuteStyle::simple;
     if (style == ListExecuteStyle::simple) {
         // This_list execute style is simple and direct
-        load(infmt, parse_wc);
-        list_execute(word_list, [&ch](Word& word) { base::log_msg(word.word + ": " + std::to_string(ch.get(word))); });
+        husky::load(infmt, parse_wc);
+        husky::list_execute(word_list, [&ch](Word& word) {
+            husky::base::log_msg(word.word + ": " + std::to_string(ch.get(word)));
+        });
     } else if (style == ListExecuteStyle::precise) {
         // This_list execute is precise. Need to decide which channels to be used as in/out channels
-        load(infmt, {&ch}, parse_wc);
-        list_execute(word_list, {&ch}, {},
-                     [&ch](Word& word) { base::log_msg(word.word + ": " + std::to_string(ch.get(word))); });
+        husky::load(infmt, {&ch}, parse_wc);
+        husky::list_execute(word_list, {&ch}, {}, [&ch](Word& word) {
+            husky::base::log_msg(word.word + ": " + std::to_string(ch.get(word)));
+        });
     }
 }
 
@@ -74,8 +75,8 @@ int main(int argc, char** argv) {
     args.push_back("hdfs_namenode");
     args.push_back("hdfs_namenode_port");
     args.push_back("input");
-    if (init_with_args(argc, argv, args)) {
-        run_job(wc);
+    if (husky::init_with_args(argc, argv, args)) {
+        husky::run_job(wc);
         return 0;
     }
     return 1;

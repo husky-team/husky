@@ -33,14 +33,10 @@ install:
   - rm -rf tmp
 
 before_script:
-  - ./scripts/lint.py base
-  - ./scripts/lint.py core
-  - ./scripts/lint.py io
-  - ./scripts/lint.py lib
-  - ./scripts/lint.py master
   - export HUSKY_ROOT=.
   - export CLANG_FORMAT=clang-format-3.8
-  - ./scripts/check-clang-format.sh
+  - ./scripts/lint.py
+  - ./scripts/clang-format.py -o check
 
 script:
   - export CXX=g++-4.9
