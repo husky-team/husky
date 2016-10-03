@@ -14,119 +14,120 @@
 
 #pragma once
 
-#include <string>
 #include <vector>
 
 #include "core/accessor.hpp"
-#include "core/utils.hpp"
 
 namespace husky {
+namespace core {
 
-/* *
-* Two situations may occur:
-* 1. Computation Bound
-* A: ----------|---------------------computation(X)-------------------|-------------
-*            commit                                                 commit
-* B: |---------|>>>>>>>>>>>>>>|-------computation(X)-------|----------|>>>>>>>>>>>>>|
-*  access    access'        leave                        access     access'       leave
-*
-* 2. Access Bound
-* A: -------|----------|-------computation(X+1)------|---------------------|---------
-*         commit    commit'                        commit               commit'
-* B: |>>>>>>>>>>>>>>>>>|--------computation(X)----------|>>>>>>>>>>>>>>>>>>|---------
-*  access            leave                            access             leave
-*
-* `generation` used here is to avoid a situation that some slow threads keep access
-* too long, causing the owner thread unable to commit and so those fast threads will
-* get out-of-date data if they start a new round of access.
-*
-* A. Every thread should commit before accessing data in other threads.
-* B. After access, you should leave.
-* C. Don't commit more than one time each round. I cannot stop you from this if you insist.
-* */
-
+// TODO(zzxx): delete_collection can be invoked by the last one who leaves the shuffler
+// Shuffler is designed for collection accessing management.
+// A collection can be maintained inside a shuffler and fetched using `storage()`
+// Units can access the collection when a unit has `commit()` this shuffler
+// A unit can `commit()` this shuffler again only when all accessing units have `leave()`
+// When other units are accessing the shuffler, owner unit can still use `storage()` to fetch the collection for write
 template <typename CollectT>
-class Shuffler : virtual public Accessor<CollectT> {
+class Shuffler : public Accessor<CollectT> {
    public:
-    typedef typename Accessor<CollectT>::NameType NameType;
-    Shuffler(const NameType& name, unsigned max_visitor) : Accessor<CollectT>(name, max_visitor) {
-        write_ = this->collection;
-        this->collection = nullptr;
+    Shuffler() : Accessor<CollectT>("Shuffler") {}
+
+    Shuffler(Shuffler&& s)
+        : Accessor<CollectT>(std::move(s)), _write(s._write), _need_delete_write(s._need_delete_write) {
+        s._write = nullptr;
+        s._need_delete_write = false;
     }
 
-    Shuffler(Shuffler<CollectT>&& s) : Accessor<CollectT>(std::move(s)), write_(s.write_) { s.write_ = nullptr; }
-
-    virtual ~Shuffler() {
-        // collection will be deleted in ~Accessor if ~Shuffler is invoked
-        if (write_) {
-            delete write_;
-            write_ = nullptr;
-        }
+    CollectT& storage() {
+        this->require_init();
+        init_write_if_null();
+        return *_write;
     }
 
-    CollectT& storage() { return *write_; }
+    void commit(CollectT& collection) {
+        this->require_init();
+        this->owner_barrier();
+        _write = &collection;
+        _need_delete_write = false;
+        this->delete_collection();
+        move_write_to_collection();
+        this->commit_to_visitors();
+    }
 
     void commit() {
-        ++this->thread_generation.value();  // odd -> even
-        this->wait_for_accessory();         // odd -> even
-        if (this->collection)
-            delete this->collection;
-        this->collection = write_;
-        this->num_visitor = this->max_visitor;
-        this->to_be_accessible();           // even -> odd
-        ++this->thread_generation.value();  // even -> odd
-        write_ = new CollectT();
+        this->require_init();
+        init_write_if_null();
+        this->owner_barrier();
+        this->delete_collection();
+        move_write_to_collection();
+        this->commit_to_visitors();
+    }
+
+    virtual ~Shuffler() {
+        this->owner_barrier();
+        delete_write();
     }
 
    protected:
-    CollectT* write_;
+    CollectT* _write = nullptr;
+    bool _need_delete_write = false;
+
+    void init_write_if_null() {
+        if (_write == nullptr) {
+            _write = new CollectT();
+            _need_delete_write = true;
+        }
+    }
+
+    void move_write_to_collection() {
+        this->collection_ = _write;
+        this->need_delete_collection_ = _need_delete_write;
+        _write = nullptr;
+        _need_delete_write = false;
+    }
+
+    void delete_write() {
+        if (_write) {
+            if (_need_delete_write) {
+                delete _write;
+                _need_delete_write = false;
+            }
+            _write = nullptr;
+        }
+    }
 };
 
 template <typename CellT>
 class ShuffleCombiner {
-   public:
+   protected:
     typedef std::vector<CellT> CollectT;
-    typedef typename Shuffler<CollectT>::NameType NameType;
 
-    ShuffleCombiner(const NameType& name, unsigned num_workers) {
-        messages_.reserve(num_workers);
-        for (unsigned i = 0; i < num_workers; ++i)
-            messages_.push_back(Shuffler<CollectT>(name + std::to_string(i), 1));
+   public:
+    ShuffleCombiner() {}
+
+    ShuffleCombiner(ShuffleCombiner&& sc) : messages_(std::move(sc.messages_)), num_units_(sc.num_units_) {
+        sc.num_units_ = 0;
     }
 
-    ShuffleCombiner(ShuffleCombiner<CellT>&& s) : messages_(std::move(s.messages_)) {}
-
-    virtual ~ShuffleCombiner() {}
-
-    void init() {
-        if (is_init_)
-            return;
-        is_init_ = true;
-
-        for (auto& i : messages_)
-            i.init();
+    void init(int num_units) {
+        num_units_ = num_units;
+        messages_.resize(num_units_);
+        for (Shuffler<CollectT>& s : messages_)
+            s.init(1);
     }
 
-    void commit(unsigned idx) {
-        assert(is_init_);
-        messages_[idx].commit();
-    }
+    CollectT& storage(unsigned idx) { return messages_[idx].storage(); }
 
-    void leave(unsigned idx) {
-        assert(is_init_);
-        messages_[idx].leave();
-    }
-
-    CollectT& storage(unsigned idx) {
-        assert(is_init_);
-        return messages_[idx].storage();
-    }
+    void commit(unsigned idx) { messages_[idx].commit(); }
 
     CollectT& access(unsigned idx) { return messages_[idx].access(); }
 
+    void leave(unsigned idx) { messages_[idx].leave(); }
+
    protected:
     std::vector<Shuffler<CollectT>> messages_;
-    bool is_init_ = false;
+    int num_units_ = 0;
 };
 
+}  // namespace core
 }  // namespace husky

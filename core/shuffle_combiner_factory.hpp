@@ -23,6 +23,8 @@
 
 namespace husky {
 
+using core::ShuffleCombiner;
+
 class ShuffleCombinerSetBase {
    public:
     virtual ~ShuffleCombinerSetBase() {}
@@ -46,17 +48,16 @@ class ShuffleCombinerFactory {
             std::lock_guard<std::mutex> lock(shuffle_combiners_map_mutex);
             if (shuffle_combiners_map.find(channel_id) == shuffle_combiners_map.end()) {
                 ShuffleCombinerSet<KeyT, MsgT>* shuffle_combiner_set = new ShuffleCombinerSet<KeyT, MsgT>();
-                for (int i = 0; i < num_local_threads; i++) {
-                    ShuffleCombiner<std::pair<KeyT, MsgT>> shuffle_combiner(std::to_string(channel_id),
-                                                                            num_global_threads);
-                    shuffle_combiner_set->data.push_back(std::move(shuffle_combiner));
+                shuffle_combiner_set->data.resize(num_local_threads);
+                for (auto& s : shuffle_combiner_set->data) {
+                    s.init(num_global_threads);
                 }
                 ShuffleCombinerFactory::num_local_threads.insert(std::make_pair(channel_id, num_local_threads));
                 shuffle_combiners_map.insert(std::make_pair(channel_id, shuffle_combiner_set));
             }
         }
         auto& data = dynamic_cast<ShuffleCombinerSet<KeyT, MsgT>*>(shuffle_combiners_map[channel_id])->data;
-        data[local_id].init();
+        // data[local_id].init();
         return &data;
     }
 

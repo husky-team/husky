@@ -46,3 +46,11 @@ add_executable(PageRank pagerank.cpp)
 target_link_libraries(PageRank ${husky})
 target_link_libraries(PageRank ${EXTERNAL_LIB})
 set_property(TARGET PageRank PROPERTY CXX_STANDARD 14)
+
+# Aggregator
+add_executable(Aggregator aggregator.cpp)
+target_link_libraries(Aggregator ${husky})
+target_link_libraries(Aggregator ${EXTERNAL_LIB})
+set_property(TARGET Aggregator PROPERTY CXX_STANDARD 14)
+
+

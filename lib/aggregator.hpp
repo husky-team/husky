@@ -14,383 +14,274 @@
 
 #pragma once
 
-#include <algorithm>
-#include <mutex>
-#include <string>
+#include <atomic>
+#include <cassert>
+#include <functional>
+#include <memory>
 #include <vector>
 
 #include "base/serialization.hpp"
-#include "base/thread_support.hpp"
-#include "core/channel/aggregator_channel.hpp"
-#include "core/context.hpp"
-#include "core/shuffler.hpp"
+#include "core/utils.hpp"
+#include "lib/aggregator_object.hpp"
 
 namespace husky {
 namespace lib {
 
-using Base::BinStream;
-
-// HBarrier from core/misc.
-typedef HBarrier Barrier;
-// typedef boost::barrier Barrier;
-
-template <typename T>
-void new_copy(T& a, const T& b) {
-    a = b;
-}
-
-enum class CacheType { is_worker_cached, non_worker_cached };
-
-struct AggregatorInfo {
-    AggregatorObject* value;
-    AggregatorObject* update;
-    std::mutex lock;
-    int master_id;
-    int local_master_id;
-    CacheType cache;
+class AggregatorInfo {
+   public:
+    AggregatorState* value;
+    std::atomic_uint num_holder;
+    virtual ~AggregatorInfo();
 };
 
-class AggregatorWorker {
+template <typename ValueType>
+class AggregatorInfoWithInitValue : public AggregatorInfo {
    public:
-    virtual ~AggregatorWorker();
+    ValueType init_value;
+};
 
-    int get_num_global_workers();
-    int get_num_local_workers();
-    int get_global_wid();
-    int get_machine_id();
-    int get_machine_id(int global_wid);
+class AggregatorFactoryBase {
+   public:
+    static inline void sync() { get_factory().synchronize(); }
 
-    void wait_for_others();
-    int get_next_agg_id();
-    void AGG_enable(bool option);
-    bool is_local_leader();
-    AggregatorWorker();
-    int get_num_aggregator();
+    static size_t get_num_aggregator() { return get_factory().num_aggregator_; }
 
-    AggregatorChannel& get_channel();
-    static AggregatorWorker& get();
-    static h3::AggregatorChannel& channel() { return AggregatorWorker::get().get_channel(); }
+    static size_t get_num_active_aggregator() { return get_factory().num_active_aggregator_; }
 
-    template <typename AggregatorT, typename ValueT, typename... Args>
-    void create_agg(const std::string& agg_name, const ValueT& init_val, CacheType cache, Args&&... args) {
-        _create_agg<AggregatorT>(Name("list_" + agg_name), init_val, cache, args...);
+    // Note: registration should finish before anyone calls create_factory()
+    // Priority can be applied here if there are multiple types of factory
+    static void register_factory_constructor(const std::function<AggregatorFactoryBase*()>& ctor) {
+        ASSERT_MSG(ctor != nullptr, "Cannot register a nullptr aggregator factory constructor");
+        get_factory_constructor() = ctor;
     }
 
-    template <typename AggregatorT, typename ValueT, typename... Args>
-    void create_agg(const std::string& agg_name, const ValueT& init_val, Args&&... args) {
-        _create_agg<AggregatorT>(Name("list_" + agg_name), init_val, is_worker_cached, args...);
-    }
+    // Inactivate the factory: all aggregators still accept and store updates but will not synchronize the updates
+    static void inactivate() { get_factory().is_active_ = false; }
 
-    template <typename AggregatorT, typename ValueT, typename... Args>
-    void create_agg(const std::string& agg_name, CacheType cache, Args&&... args) {
-        _create_agg<AggregatorT>(Name("list_" + agg_name), ValueT(), cache, args...);
-    }
+    // Activate the factory:
+    // 1. all aggregators still accept and store udpates
+    // 2. only active aggregators will synchronize the updates
+    // 3. activating the factory will not turn original inactive aggregators to be active
+    static void activate() { get_factory().is_active_ = true; }
 
-    template <typename AggregatorT, typename ValueT, typename... Args>
-    void create_agg(const std::string& agg_name, Args&&... args) {
-        _create_agg<AggregatorT>(Name("list_" + agg_name), ValueT(), is_worker_cached, args...);
-    }
+    virtual ~AggregatorFactoryBase();
 
-    bool is_agg_existed(const std::string& agg_name);
-
-    template <typename AggregatorT, typename ValueT>
-    void update_agg(const std::string& agg_name, const ValueT& value) {
-        _update_agg<AggregatorT>(Name("list_" + agg_name), value);
-    }
-
-    template <typename AggregatorT>
-    typename AggregatorT::ValueT& get_agg_value(const std::string& agg_name) {
-        return _get_agg_value<AggregatorT>(Name("list_" + agg_name));
-    }
-
-    void set_agg_option(const std::string& agg_name, char option);
-
-    void remove_agg(const std::string& agg_name);
+    virtual size_t get_factory_id() = 0;
+    virtual size_t get_num_global_factory() = 0;
+    virtual size_t get_num_local_factory() = 0;
+    virtual size_t get_machine_id() = 0;
+    // get the mch id of the factory with id `fid`, should be [0, get_num_machine())
+    virtual size_t get_machine_id(size_t fid) = 0;
+    virtual size_t get_num_machine() = 0;
 
    protected:
-    void post_execute();
-    void push_to_obj_list(BinStream&);
-    bool same_machine(int worker_id);
-
-    /* * Some Checks
-     * 1. Subclass check
-     * 2. duplicate key check
-     * 3. key existence check
-     * */
-    template <typename AggregatorT, typename ValueT, typename... Args>
-    AggregatorTuple& _create_agg(const AggKey& agg_key, const ValueT& init_val, CacheType cache, Args&&... args) {
-        static_assert(std::is_base_of<AggregatorObject, AggregatorT>::value,
-                      "Cannot create an aggregator which is NOT a subclass of BaseAggregator!");
-        if (cache == is_worker_cached) {
-            (local_aggs->storage()[agg_key] = new AggregatorT(args...))->to_reset_each_round();
+    static AggregatorFactoryBase& get_factory() {
+        if (factory_ == nullptr) {
+            factory_ = std::shared_ptr<AggregatorFactoryBase>(create_factory());
+            factory_->init_factory();
         }
-        // other workers may be using the machine_aggs ...
-        wait_for_others();
-        if (is_local_leader()) {
-            ASSERT_MSG(machine_aggs->find(agg_key) == machine_aggs->end(),
-                       "Could NOT create Aggregators of same names");
-            auto& agg = (*machine_aggs)[agg_key];
-            agg.value = new AggregatorT(args...);
-            static_cast<AggregatorT*>(agg.value)->value = init_val;
-            agg.value->set_non_zero();
-            agg.update = new AggregatorT(args...);
-            agg.update->to_reset_each_round();
-            agg.update->set_zero();
-            agg.master_id = global_assign();
-            agg.cache = cache;
-        }
-        wait_for_others();
-        auto& tuple = (*machine_aggs)[agg_key];
-        wait_for_others();
-        if (tuple.master_id == this->get_global_wid()) {
-            global_task.push_back(agg_key);
-            husky::log_msg("New aggregator " + std::to_string(agg_key.val) + " is assigned to worker " +
-                           std::to_string(this->get_global_wid()));
-        }
-        if (local_assign() == this->get_global_wid()) {
-            local_task.push_back(agg_key);
-            tuple.local_master_id = this->get_global_wid();
-        }
-        return tuple;
+        return *factory_;
     }
 
-    template <typename AggregatorT, typename ValueT>
-    void _update_agg(const Name& agg_key, const ValueT& value) {
-        static_assert(std::is_base_of<AggregatorObject, AggregatorT>::value,
-                      "Cannot update an aggregator which is NOT a subclass of BaseAggregator!");
-        ASSERT_MSG(machine_aggs->find(agg_key) != machine_aggs->end(), "Aggregator NOT exists, update_agg_value");
-        auto& tuple = (*machine_aggs)[agg_key];
+    void sync_aggregator_cache();
+    size_t get_local_factory_idx();
+    std::vector<AggregatorState*>& get_local_aggs();
+    virtual void init_factory();
+    virtual void synchronize();
+    virtual bool same_machine(size_t fid);
+    virtual size_t get_local_center(size_t machine_id, size_t agg_idx);
 
-        if (tuple.cache == is_worker_cached) {
-            AggregatorT* agg = static_cast<AggregatorT*>(local_aggs->storage()[agg_key]);
-            agg->aggregate(agg->get_value(), value);
-        } else {
-            AggregatorT* agg = static_cast<AggregatorT*>(tuple.update);
-            tuple.lock.lock();
-            agg->aggregate(agg->get_value(), value);
-            tuple.lock.unlock();
-        }
-    }
+    // set and get the leader of the factories
+    virtual void set_factory_leader(AggregatorFactoryBase*);
+    virtual AggregatorFactoryBase* get_factory_leader();
 
-    template <typename AggregatorT>
-    void _update_agg(const Name& agg_key, const typename AggregatorT::ValueT& value) {
-        static_assert(std::is_base_of<AggregatorObject, AggregatorT>::value,
-                      "Cannot update an aggregator which is NOT a subclass of BaseAggregator!");
-        ASSERT_MSG(machine_aggs->find(agg_key) != machine_aggs->end(), "Aggregator NOT exists, update_agg");
-        auto& tuple = (*machine_aggs)[agg_key];
+    // send local updates to global centers on other machines
+    virtual void send_local_update(std::vector<BinStream>&) = 0;
+    // handle the BinStreams received from local centers on other machines
+    virtual void on_recv_local_update(const std::function<void(BinStream&)>&) = 0;
+    // broadcast aggregators to local centers on other machines
+    virtual void broadcast_aggregator(std::vector<BinStream>&) = 0;
+    // handle the BinStreams received from global centers on other machines
+    virtual void on_recv_broadcast(const std::function<void(BinStream&)>&) = 0;
 
-        if (tuple.cache == is_worker_cached) {
-            AggregatorT* agg = static_cast<AggregatorT*>(local_aggs->storage()[agg_key]);
-            if (agg->is_non_zero()) {
-                agg->aggregate(agg->get_value(), value);
-            } else {
-                agg->value = value;
-                agg->set_non_zero();
-            }
-        } else {
-            AggregatorT* agg = static_cast<AggregatorT*>(tuple.update);
-            tuple.lock.lock();
-            if (agg->is_non_zero()) {
-                agg->aggregate(agg->get_value(), value);
-            } else {
-                agg->value = value;
-                agg->set_non_zero();
-            }
-            tuple.lock.unlock();
-        }
-    }
+    // access the local_aggs_ of other local factories when they are ready
+    virtual void on_access_other_local_update(const std::function<void(std::vector<AggregatorState*>&)>&) = 0;
+    virtual void call_once(const std::function<void()>& lambda) = 0;
+    virtual void wait_for_others() = 0;
 
-    void _set_agg_option(const Name& agg_key, char option);
+    // a structure which stores information that is shared by all the factories on the same machine
+    class InnerSharedData {
+       public:  // public so that AggregatorFactoryBase can access the member freely
+        virtual void initialize(AggregatorFactoryBase*);
+        virtual ~InnerSharedData();
+        std::vector<AggregatorInfo*> global_aggs;
+        std::vector<std::vector<size_t>> all_factory;
+        std::vector<size_t> global_centers;
+        std::vector<size_t> local_centers;
+        std::atomic_uint num_holder{0};
+    };
 
-    void _set_agg_option(AggregatorObject& agg_key, char option);
-
-    void _remove_agg(const Name& agg_key);
-
-    template <typename AggregatorT>
-    typename AggregatorT::ValueT& _get_agg_value(const Name& agg_key) {
-        static_assert(std::is_base_of<AggregatorObject, AggregatorT>::value,
-                      "Cannot get value from an aggregator which is NOT a subclass of BaseAggregator!");
-        ASSERT_MSG(machine_aggs->find(agg_key) != machine_aggs->end(), "Aggregator NOT exists, get_agg_value");
-        return (reinterpret_cast<AggregatorT*>((*machine_aggs)[agg_key].value))->get_value();
-    }
+    virtual InnerSharedData* create_shared_data() = 0;
+    InnerSharedData* get_shared_data();
 
    private:
-    static thread_local std::shared_ptr<AggregatorWorker> agg_worker;
-
-    typedef Name AggKey;
-
-    static std::mutex lock;
-    static void* tmp_buf;
-    bool* agg_option;
-    AggregatorWorker* leader;
-    Barrier* barrier;
-    std::unordered_map<AggKey, AggregatorTuple>* machine_aggs;
-    Accessor<std::unordered_map<AggKey, AggregatorObject*>>* worker_aggs;
-    Accessor<std::unordered_map<AggKey, AggregatorObject*>>* local_aggs;
-
-#ifdef BBQ
-    int block_queue_gen = 0;
-#endif
-    int assign_x = 0, assign_y = 0, assign_i = 0, local_vec, this_col;
-    size_t max_num_row;
-    std::vector<std::vector<int>>* worker_info;
-    std::vector<AggKey> local_task, global_task;
-
-    int global_assign();
-
-    int local_assign();
-
-    friend class AggregatorChannel;
     template <typename ValueType>
     friend class Aggregator;
 
-    h3::AggregatorChannel _channel;
+    static std::function<AggregatorFactoryBase*()>& get_factory_constructor() {
+        // just to store the factory constructor here
+        static std::function<AggregatorFactoryBase*()> factory_constructor = nullptr;
+        return factory_constructor;
+    }
+
+    static AggregatorFactoryBase* create_factory() {
+        // use registered factory constructor to create a factory
+        auto ctor = get_factory_constructor();
+        ASSERT_MSG(ctor != nullptr, "No subclass of AggregatorFactoryBase registered");
+        return ctor();
+    }
+
+    // Assumption: each factory should create an aggregator together
+    // i.e. the amount and the order of aggregators created by each factory must be the same
+    // Push the local agg into local_aggs_ and return the global one in global_aggs
+    // TODO(zzxx): support user defined Aggregator class, will do when it's in need
+    template <typename ValueType>
+    AggregatorInfo* create_aggregator(const ValueType& init_val, AggregatorObject<ValueType>* new_local_agg) {
+        local_aggs_.push_back(new_local_agg);
+        call_once([&] {
+            auto* info = new AggregatorInfoWithInitValue<ValueType>();
+            // init_val may be a local variable and may be already destroyed when zero lambda is called
+            // so here a copy of init value and its destructor are made in advance.
+            copy_assign(info->init_value, init_val);
+            info->value = new AggregatorObject<ValueType>(
+                new_local_agg->get_aggregate_lambda(), [info](ValueType& v) { copy_assign(v, info->init_value); },
+                new_local_agg->get_load_lambda(), new_local_agg->get_save_lambda());
+            info->value->prepare_value();
+            info->num_holder.store(static_cast<uint32_t>(get_num_local_factory()));
+            shared_data_->global_aggs.push_back(info);
+        });
+        ++num_active_aggregator_;
+        ++num_aggregator_;
+        return shared_data_->global_aggs[local_aggs_.size() - 1];
+    }
+
+    void remove_aggregator(AggregatorState* local, AggregatorInfo* global_info);
+
+    AggregatorFactoryBase*& default_factory_leader();
+
+    bool is_active_{true};
+    size_t num_active_aggregator_{0};
+    size_t num_aggregator_{0};
+    size_t local_factory_idx_{0};   // index of this factory among all local factories
+    size_t global_factory_idx_{0};  // index of this factory among all global factories
+    std::vector<AggregatorState*> local_aggs_;
+    InnerSharedData* shared_data_{nullptr};
+
+    static thread_local std::shared_ptr<AggregatorFactoryBase> factory_;
 };
 
-template <typename ValueT>
+// Note for using aggregator:
+// 1. An instance of Aggregator created by one thread should not be passed to another thread.
+// 2. `Init value` is the initial value of an aggregator, it's the value that an aggregator returns
+//   if the aggregator has aggregated nothing.
+// 3. `Zero value` is the value set to a local update copy of aggregator ONLY when
+//   a. the aggregator is updated using `update_any`;
+//   b. the local copy is updated for the first time.
+// 4. `Zero value` should satisfies the following property, otherwise the behavior is undefined:
+//   `Init value` aggregate `Zero value` == `Init value`
+// 5. For the following functions, once they're called, they should be called by all worker thread in the same order:
+//   a. to_keep_aggregate()
+//   b. to_reset_each_iter()
+//   c. activate()
+//   d. inactivate()
+//   e. constructor
+//   f. destructor
+//  Otherwise, the behavior is undefined and exceptions may be thrown.
+// 6. Inactive aggregators still accept and store updates but will not synchronize the updates
+//
+// TODO(zzxx): construct AggregateLambdaType `a = sum(a, b)` if sum is given
+// TODO(zzxx): only ZeroLambdaType is given and AggregateLambdaType uses the default one
+template <typename ValueType>
 class Aggregator {
-    typedef Name AggKey;
-    typedef std::function<void(ValueT&, const ValueT&)> AggregateType;
-    typedef std::function<void(ValueT&)> ZeroType;
-
-    class AggregatorType : public BaseAggregator<ValueT> {
-       public:
-        AggregatorType() : _aggregate(nullptr), _zero(nullptr) {}
-        AggregateType _aggregate;
-        ZeroType _zero;
-        void zero(ValueT& v) { _zero(v); }
-        void aggregate(ValueT& a, const ValueT& b) { _aggregate(a, b); }
-    };
-
-    const Name self_key;
-    int* reference_count;
-    AggregatorTuple* tuple;  // I am very satisfied that std::unordered_map is pointer-safe
-    AggregatorType* object;
-
-   protected:
-    Aggregator(const AggKey& name, const ValueT& init_val, AggregateType lambda, ZeroType zero, CacheType worker_cached,
-               int* ref_count)
-        : self_key(name), reference_count(ref_count) {
-        auto& worker = AggregatorWorker::get();
-        tuple = &(worker._create_agg<AggregatorType>(self_key, init_val, worker_cached));
-        object = static_cast<AggregatorType*>(worker.local_aggs->storage()[self_key]);
-        object->_aggregate = lambda;
-        if (zero == nullptr)
-            zero = [](ValueT& v) { v = ValueT(); };
-        object->_zero = zero;
-        if (worker.is_local_leader()) {
-            auto value = static_cast<AggregatorType*>(tuple->value);
-            auto update = static_cast<AggregatorType*>(tuple->update);
-            update->_aggregate = value->_aggregate = lambda;
-            update->_zero = value->_zero = zero;
-        }
-    }
-    void finalize() {
-        // worker may be no longer exists and neither the aggregators
-        // if (!SessionLocalBase::is_session_end()) {
-        AggregatorWorker::get()._remove_agg(self_key);
-        tuple = nullptr;
-        object = nullptr;
-        // }
-        delete reference_count;
-        reference_count = nullptr;
-    }
+   private:
+    typedef std::function<void(ValueType&, const ValueType&)> AggregateLambdaType;
+    typedef std::function<void(ValueType&)> ZeroLambdaType;
+    typedef std::function<void(BinStream&, ValueType&)> LoadLambdaType;
+    typedef std::function<void(BinStream&, const ValueType&)> SaveLambdaType;
+    typedef std::function<void(ValueType&)> UpdateAnyLambdaType;
 
    public:
-    Aggregator(const Aggregator<ValueT>& b)
-        : self_key(b.self_key), reference_count(b.reference_count), tuple(b.tuple), object(b.object) {
-        if (reference_count)
-            (*reference_count)++;
+    Aggregator()
+        : Aggregator(ValueType(), [](ValueType& a, const ValueType& b) { a += b; },
+                     nullptr,  // [](ValueType& a) { copy_assign(a, ValueType()); },
+                     [](BinStream& in, ValueType& b) { in >> b; },
+                     [](BinStream& out, const ValueType& b) { out << b; }) {}
+
+    explicit Aggregator(const ValueType& init_val)
+        : Aggregator(init_val, [](ValueType& a, const ValueType& b) { a += b; },
+                     nullptr,  // [](ValueType& a) { copy_assign(a, ValueType()); },
+                     [](BinStream& in, ValueType& b) { in >> b; },
+                     [](BinStream& out, const ValueType& b) { out << b; }) {}
+
+    Aggregator(const ValueType& init_val, const AggregateLambdaType& aggregate, const ZeroLambdaType& zero = nullptr)
+        : Aggregator(init_val, aggregate, zero, [](BinStream& in, ValueType& b) { in >> b; },
+                     [](BinStream& out, const ValueType& b) { out << b; }) {}
+
+    Aggregator(const ValueType& init_val, const AggregateLambdaType& aggregate, const ZeroLambdaType& zero,
+               const LoadLambdaType& load, const SaveLambdaType& save) {
+        shared_cnt = new int(1);
+        // create aggregator first
+        local_agg_ = new AggregatorObject<ValueType>(aggregate, zero, load, save);
+        // then get the pointer of aggregator
+        global_agg_info_ = AggregatorFactoryBase::get_factory().create_aggregator(init_val, local_agg_);
+        global_agg_ = reinterpret_cast<AggregatorObject<ValueType>*>(global_agg_info_->value);
     }
-    explicit Aggregator(AggregateType lambda, ZeroType zero = nullptr, CacheType worker_cached = is_worker_cached)
-        : Aggregator(Name("tmp_" + std::to_string(AggregatorWorker::get().get_next_agg_id())), ValueT(), lambda, zero,
-                     worker_cached, new int(1)) {}
-    Aggregator(const ValueT& init_val, AggregateType lambda, ZeroType zero = nullptr,
-               CacheType worker_cached = is_worker_cached)
-        : Aggregator(Name("tmp_" + std::to_string(AggregatorWorker::get().get_next_agg_id())), init_val, lambda, zero,
-                     worker_cached, new int(1)) {}
-    Aggregator(const std::string& name, const ValueT& init_val, AggregateType lambda, ZeroType zero = nullptr,
-               CacheType worker_cached = is_worker_cached)
-        : Aggregator(Name("list_" + name), init_val, lambda, zero, worker_cached, nullptr) {}
-    // this is used for getting a aggregator from existing ones.
-    explicit Aggregator(const std::string& name) : self_key(Name("list_" + name)), reference_count(nullptr) {
-        auto& worker = AggregatorWorker::get();
-        tuple = &(*(worker.machine_aggs))[self_key];
-        if (tuple->cache == is_worker_cached) {
-            object = static_cast<AggregatorType*>(worker.local_aggs->storage()[self_key]);
+
+    Aggregator(const Aggregator<ValueType>& b)
+        : local_agg_(b.local_agg_),
+          global_agg_(b.global_agg_),
+          global_agg_info_(b.global_agg_info_),
+          shared_cnt(b.shared_cnt) {
+        ++*shared_cnt;
+    }
+
+    void update(const ValueType& b) { local_agg_->aggregate(b); }
+
+    template <typename U>
+    void update(const std::function<void(ValueType&, const U&)>& lambda, const U& val) {
+        lambda(local_agg_->get_value(), val);
+    }
+
+    void update_any(const UpdateAnyLambdaType& lambda) { lambda(local_agg_->get_value()); }
+
+    ValueType& get_value() { return global_agg_->get_value(); }
+
+    void to_keep_aggregate() { local_agg_->set_keep_aggregate(); }
+
+    void to_reset_each_iter() { local_agg_->set_reset_each_iter(); }
+
+    void activate() {
+        AggregatorFactoryBase::get_factory().num_active_aggregator_ += !(local_agg_->is_active());
+        local_agg_->set_active();
+    }
+
+    void inactivate() {
+        AggregatorFactoryBase::get_factory().num_active_aggregator_ -= local_agg_->is_active();
+        local_agg_->set_inactive();
+    }
+
+    ~Aggregator() {
+        if (--*shared_cnt == 0) {
+            AggregatorFactoryBase::get_factory().remove_aggregator(local_agg_, global_agg_info_);
+            delete shared_cnt;
         }
     }
-    Aggregator& operator=(const Aggregator<ValueT>& b) {
-        if (tuple != b.tuple) {
-            if (reference_count && (--(*reference_count)) == 0) {
-                finalize();
-            }
-            self_key = b.self_key;
-            tuple = b.tuple;
-            object = b.object;
-            if (b.reference_count) {
-                reference_count = b.reference_count;
-                ++(*reference_count);
-            }
-        }
-        return *this;
-    }
-    ValueT& get_value() { return static_cast<AggregatorType*>(tuple->value)->get_value(); }
-    void aggregate(ValueT& a, const ValueT& b) { object->_aggregate(a, b); }
-    template <typename ValueType>
-    void update(const ValueType& value) {
-        if (tuple->cache == is_worker_cached) {
-            // update the local one
-            aggregate(object->get_value(), value);
-        } else {
-            // update the global one directly
-            tuple->lock.lock();
-            aggregate(static_cast<AggregatorType*>(tuple->update)->get_value(), value);
-            tuple->lock.unlock();
-        }
-    }
-    template <typename ValueType, typename AggregateLambda>
-    void update(const ValueType& value, const AggregateLambda& aggregate) {
-        if (tuple->cache == is_worker_cached) {
-            // update the local one
-            aggregate(object->get_value(), value);
-        } else {
-            // update the global one directly
-            tuple->lock.lock();
-            aggregate(static_cast<AggregatorType*>(tuple->update)->get_value(), value);
-            tuple->lock.unlock();
-        }
-    }
-    void update(const ValueT& value) {
-        if (tuple->cache == is_worker_cached) {
-            if (object->is_non_zero()) {
-                aggregate(object->value, value);
-            } else {
-                object->value = value;
-                object->set_non_zero();
-            }
-        } else {
-            tuple->lock.lock();
-            AggregatorType* update = static_cast<AggregatorType*>(tuple->update);
-            if (update->is_non_zero()) {
-                aggregate(update->value, value);
-            } else {
-                update->value = value;
-                update->set_non_zero();
-            }
-            tuple->lock.unlock();
-        }
-    }
-    void set_agg_option(char option) {
-        // simple assignment, no need to lock
-        AggregatorWorker::get()._set_agg_option(*tuple->value, option);
-    }
-    virtual ~Aggregator() {
-        if (reference_count && (--(*reference_count) == 0)) {
-            finalize();
-        }
-    }
-    static h3::AggregatorChannel& get_channel() { return AggregatorWorker::get().get_channel(); }
+
+   private:
+    AggregatorInfo* global_agg_info_ = nullptr;
+    AggregatorObject<ValueType>* global_agg_ = nullptr;
+    AggregatorObject<ValueType>* local_agg_ = nullptr;
+    int* shared_cnt = nullptr;
 };
 
 }  // namespace lib

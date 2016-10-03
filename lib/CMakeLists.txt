@@ -15,18 +15,14 @@
 
 include_directories(${PROJECT_SOURCE_DIR} ${Boost_INCLUDE_DIRS})
 
-option(AGGBBQ "Switch for Blocked Queue in Aggregator" false)
-option(AGGBBQ "Switch for printing agg messages in Aggregator" true)
-
-if(AGGBBQ)
-    add_definitions(-DBBQ)
-endif(AGGBBQ)
-
-add_library(dcaggregator-objs OBJECT aggregator_obj.cpp)
-set_property(TARGET dcaggregator-objs PROPERTY CXX_STANDARD 14)
+add_library(aggregator-objs OBJECT
+    aggregator.cpp
+    aggregator_object.cpp
+    aggregator_factory.cpp)
+set_property(TARGET aggregator-objs PROPERTY CXX_STANDARD 14)
 
 # Combine lib-objs
-set(lib-objs $<TARGET_OBJECTS:dcaggregator-objs>)
+set(lib-objs $<TARGET_OBJECTS:aggregator-objs>)
 
 # Visible to parent directory
 set(lib-objs ${lib-objs} PARENT_SCOPE)

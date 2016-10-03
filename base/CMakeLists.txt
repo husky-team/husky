@@ -16,6 +16,8 @@
 include_directories(${PROJECT_SOURCE_DIR} ${Boost_INCLUDE_DIRS})
 
 add_library(base-objs OBJECT
+    counter_barrier.cpp
+    generation_lock.cpp
     hash.cpp
     log.cpp
     serialization.cpp

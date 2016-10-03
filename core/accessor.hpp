@@ -12,132 +12,155 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+/**
+ * State Machine of Accessor:
+ *
+ *                     destroy(O)
+ *                          ^
+ *                          |
+ *         +------------ leave(V) <--------+
+ *         |              | ^              |
+ *         v              v |              |
+ * +-> storage(O) ----> commit(O) ----> access(V) <-+
+ * |    |  ^              ^                |        |
+ * +----+  |              |                +--------+
+ *         +------------ init(O)
+ *
+ * 0. Accessor needs to be initialized (by any thread) before being used;
+ * 1. Visitors can access the collection only after owner commits;
+ * 2. Owner can commit a new collection only after all visitors leave;
+ * 3. Owner can update the collection only after all visitors leave.
+ *
+ * Note: Each thread must hold no more than one visitor unit for each Accessor.
+ * Note: Accessor is not copyable, as it uses CounterBarrier
+ *
+ * */
+
 #pragma once
 
-#include <atomic>
-#include <list>
-#include <mutex>
 #include <string>
 #include <thread>
-#include <unordered_map>
-#include <utility>
+#include <unordered_set>
 #include <vector>
+
+#include "base/counter_barrier.hpp"
+#include "base/generation_lock.hpp"
 
 namespace husky {
 
-struct ThreadGenerationManager {
-    // index
-    std::list<unsigned> trash_bin;
-    // <Name, <Count, Index> >
-    std::unordered_map<std::string, std::pair<unsigned, unsigned>> name2id;
-    std::mutex map_lock;
-    unsigned cur_max_id = 0;
+using base::CounterBarrier;
+using base::GenerationLock;
 
-    void init() {
-        trash_bin.clear();
-        name2id.clear();
-        cur_max_id = 0;
-    }
-};
+namespace core {
 
-class ThreadGeneration {
+class AccessorBase {
    public:
-    typedef std::string NameType;
-    NameType name;
-
-    explicit ThreadGeneration(const NameType& name);
-    ThreadGeneration(ThreadGeneration&& g);
-    virtual ~ThreadGeneration();
-
-    unsigned& value();
-    void init();
-
-    static ThreadGenerationManager& get_thread_generation_manager() { return TGManager; }
-
-    static std::vector<unsigned>& get_shuffler_buffer() { return shuffler_buffer; }
+    void init(size_t num_unit);
 
    protected:
-    unsigned index_;
+    explicit AccessorBase(const std::string class_name);
+    AccessorBase(AccessorBase&&);
+    void commit_to_visitors();
+    void owner_barrier();
+    void visitor_barrier();
+    void require_init();
+    ~AccessorBase();
 
-    static unsigned& generate(const NameType& name);
-    static void finalize(const NameType& name);
+    typedef base::CounterBarrier BarrierType;
+    // typedef base::FutureCounterBarrier BarrierType;
+    BarrierType* commit_barrier_ = nullptr;
+    GenerationLock* access_barrier_ = nullptr;
 
-    static ThreadGenerationManager TGManager;
-    static thread_local std::vector<unsigned> shuffler_buffer;
+   private:
+    bool owner_can_access_collection_ = true;
+    const std::string class_name_;
+    size_t num_unit_ = 0;
+
+    static thread_local std::unordered_set<AccessorBase*> access_states_;
 };
 
+// Accessor is designed for collection accessing management.
+// A collection can be maintained inside Accessor and fetched using `storage()`,
+// or the collection can be passed into Accessor by `commit()`
+// Units can fetch the collection by `access()` once a unit has `commit()` this Accessor
+// Units should `leave()` after they don't use the collection any more.
+// A unit can commit this accessor again only when all the accessing units have left.
 template <typename CollectT>
-class Accessor {
-    // Circle: commit -> access -> leave -> commit -> ...
-   protected:
-    bool has_init = false;
-    ThreadGeneration thread_generation;
-    CollectT* collection;
-    unsigned generation, max_visitor;
-    std::atomic_uint num_visitor;
-
-    void to_be_accessible() { ++generation; }
-    void wait_for_accessory() {
-        while (thread_generation.value() > generation) {
-            std::this_thread::sleep_for(std::chrono::microseconds(1));
-        }
-    }
-
+class Accessor : public AccessorBase {
    public:
-    typedef typename ThreadGeneration::NameType NameType;
-    Accessor(const NameType& name, unsigned _max_visitor)
-        : thread_generation(name),
-          collection(new CollectT()),
-          generation(2),  // even
-          max_visitor(_max_visitor),
-          num_visitor(0) {}
-    Accessor(Accessor<CollectT>&& acc)
-        : thread_generation(std::move(acc.thread_generation)),
-          collection(acc.collection),
-          generation(acc.generation),
-          max_visitor(acc.max_visitor),
-          num_visitor(acc.num_visitor.load()) {
-        acc.collection = nullptr;
+    Accessor() : AccessorBase("Accessor") {}
+
+    Accessor(Accessor&& a)
+        : AccessorBase(std::move(a)), need_delete_collection_(a.need_delete_collection_), collection_(a.collection_) {
+        a.collection_ = nullptr;
+        need_delete_collection_ = a.need_delete_collection_;
     }
-    void init() {
-        if (has_init)
-            return;
-        thread_generation.init();
-        has_init = true;
-    }
-    CollectT& access() {
-        wait_for_accessory();  // thread is odd, generation:even -> odd
-        return *collection;
-    }
-    void leave() {
-        wait_for_accessory();
-        if (num_visitor.fetch_sub(1) == 1)
-            to_be_accessible();  // odd -> even
-    }
+
     CollectT& storage() {
-        if (thread_generation.value() & 1) {  // is odd
-            ++thread_generation.value();      // to be even
-            wait_for_accessory();             // even to odd
-        }                                     // is even
-        return *collection;
+        require_init();
+        init_collection_if_null();
+        owner_barrier();
+        return *collection_;
     }
+
+    void commit(CollectT& collection) {
+        require_init();
+        owner_barrier();
+
+        delete_collection();
+        collection_ = &collection;
+
+        commit_to_visitors();
+    }
+
     void commit() {
-        if (thread_generation.value() & 1) {  // is odd
-            ++thread_generation.value();      // to be even
-            wait_for_accessory();             // generation: odd -> even
-        }                                     // thread is even
-        num_visitor = max_visitor;
-        to_be_accessible();           // generation:even -> odd
-        ++thread_generation.value();  // odd
+        require_init();
+        init_collection_if_null();
+        owner_barrier();
+        commit_to_visitors();
     }
-    ~Accessor() {
-        if (collection) {
-            delete collection;
-            collection = nullptr;
+
+    CollectT& access() {
+        require_init();
+        visitor_barrier();
+        return *collection_;  // commit ensures collection is not nullptr;
+    }
+
+    void leave() {
+        require_init();
+        visitor_barrier();
+        commit_barrier_->lock();
+        access_states_.erase(this);
+    }
+
+    virtual ~Accessor() {
+        owner_barrier();
+        delete_collection();
+    }
+
+   protected:
+    explicit Accessor(const std::string& class_name) : AccessorBase(class_name) {}
+
+    void delete_collection() {
+        if (collection_) {
+            if (need_delete_collection_) {
+                delete collection_;
+                need_delete_collection_ = false;
+            }
+            collection_ = nullptr;
         }
-        while (0 != num_visitor.load())
-            std::this_thread::yield();
     }
+
+    void init_collection_if_null() {
+        if (collection_ == nullptr) {
+            collection_ = new CollectT();
+            need_delete_collection_ = true;
+        }
+    }
+
+    bool need_delete_collection_ = false;
+    CollectT* collection_ = nullptr;
 };
 
+}  // namespace core
 }  // namespace husky

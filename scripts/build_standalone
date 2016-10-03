@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ -z $HUSKY_ROOT]; then
+if [ -z $HUSKY_ROOT ]; then
   export HUSKY_ROOT=/PATH/TO/HUSKY
 fi
 export HUSKY_BUILD=$HUSKY_ROOT/release

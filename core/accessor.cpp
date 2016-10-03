@@ -15,74 +15,65 @@
 #include "core/accessor.hpp"
 
 #include <string>
-#include <vector>
+#include <unordered_set>
 
 #include "core/utils.hpp"
 
 namespace husky {
+namespace core {
 
-ThreadGenerationManager ThreadGeneration::TGManager;
-thread_local std::vector<unsigned> ThreadGeneration::shuffler_buffer;
+thread_local std::unordered_set<AccessorBase*> AccessorBase::access_states_;
 
-ThreadGeneration::ThreadGeneration(const ThreadGeneration::NameType& name) : name(name), index_(generate(name)) {}
+AccessorBase::AccessorBase(const std::string class_name)
+    : class_name_(class_name), commit_barrier_(new BarrierType()), access_barrier_(new GenerationLock()) {}
 
-ThreadGeneration::ThreadGeneration(ThreadGeneration&& g) : name(g.name), index_(g.index_) {
-    g.name = ThreadGeneration::NameType();
+AccessorBase::AccessorBase(AccessorBase&& ab)
+    : owner_can_access_collection_(ab.owner_can_access_collection_),
+      class_name_(std::move(ab.class_name_)),
+      num_unit_(ab.num_unit_),
+      commit_barrier_(ab.commit_barrier_),
+      access_barrier_(ab.access_barrier_) {
+    ab.owner_can_access_collection_ = true;
+    ab.num_unit_ = 0;
+    ab.commit_barrier_ = new BarrierType();
+    ab.access_barrier_ = new GenerationLock();
 }
 
-ThreadGeneration::~ThreadGeneration() {
-    if (name != NameType())
-        finalize(name);
+AccessorBase::~AccessorBase() {
+    delete commit_barrier_;
+    delete access_barrier_;
 }
 
-void ThreadGeneration::init() {
-    auto& buffer = get_shuffler_buffer();
-    if (buffer.size() <= index_) {
-        buffer.resize(index_ + 1, 1u);
-    }
-    buffer[index_] = 1;
-}
-
-unsigned& ThreadGeneration::value() {
-    ASSERT_MSG(get_shuffler_buffer().size() > index_,
-               ("Expected: larger than " + std::to_string(get_shuffler_buffer().size()) + ", in fact: " +
-                std::to_string(index_))
-                   .c_str());
-    return get_shuffler_buffer()[index_];
-}
-
-unsigned& ThreadGeneration::generate(const ThreadGeneration::NameType& name) {
-    auto& manager = get_thread_generation_manager();
-    std::lock_guard<std::mutex> guard(manager.map_lock);
-    auto& id = manager.name2id[name];
-    if (++id.first > 1) {
-        return id.second;
-    }
-    if (manager.trash_bin.empty()) {
-        id.second = manager.cur_max_id++;
-    } else {
-        id.second = manager.trash_bin.back();
-        manager.trash_bin.pop_back();
-    }
-    return id.second;
-}
-
-void ThreadGeneration::finalize(const ThreadGeneration::NameType& name) {
-    try {
-        auto& manager = get_thread_generation_manager();
-        std::lock_guard<std::mutex> guard(manager.map_lock);
-        const auto& iter = manager.name2id.find(name);
-        assert(manager.name2id.size() != 0);
-        assert(iter != manager.name2id.end());
-
-        if (--iter->second.first == 0) {
-            manager.trash_bin.push_front(iter->second.second);
-            manager.name2id.erase(iter);
-        }
-    } catch (std::string error_string) {
-        if (error_string != "Context destroyed")
-            throw;
+void AccessorBase::init(size_t num_unit) {
+    if (num_unit_ == 0) {
+        ASSERT_MSG(num_unit > 0, (class_name_ + ": number of unit should be larger than 0").data());
+        num_unit_ = num_unit + 1;
+        commit_barrier_->set_target_count(num_unit_);
     }
 }
 
+void AccessorBase::commit_to_visitors() {
+    access_barrier_->notify();
+    owner_can_access_collection_ = false;
+}
+
+void AccessorBase::require_init() {
+    ASSERT_MSG(num_unit_ != 0, (class_name_ + ": owner needs to call `void init(num_unit)` to be initialized").data());
+}
+
+void AccessorBase::owner_barrier() {
+    if (!owner_can_access_collection_) {
+        commit_barrier_->lock(true);
+        owner_can_access_collection_ = true;
+    }
+}
+
+void AccessorBase::visitor_barrier() {
+    if (!access_states_.count(this)) {
+        access_barrier_->wait();
+        access_states_.insert(this);
+    }
+}
+
+}  // namespace core
 }  // namespace husky

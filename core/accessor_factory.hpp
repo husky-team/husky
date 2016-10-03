@@ -22,6 +22,8 @@
 
 namespace husky {
 
+using core::Accessor;
+
 class AccessorSetBase {
    public:
     virtual ~AccessorSetBase() {}
@@ -43,16 +45,16 @@ class AccessorFactory {
             std::lock_guard<std::mutex> lock(accessors_map_mutex);
             if (accessors_map.find(channel_id) == accessors_map.end()) {
                 AccessorSet<CollectT>* accessor_set = new AccessorSet<CollectT>();
-                for (int i = 0; i < num_local_threads; i++) {
-                    Accessor<CollectT> accessor("ac" + std::to_string(channel_id), num_local_threads);
-                    accessor_set->data.push_back(std::move(accessor));
+                accessor_set->data.resize(num_local_threads);
+                for (auto& i : accessor_set->data) {
+                    i.init(num_local_threads);
                 }
                 AccessorFactory::num_local_threads.insert(std::make_pair(channel_id, num_local_threads));
                 accessors_map.insert(std::make_pair(channel_id, accessor_set));
             }
         }
         auto& data = dynamic_cast<AccessorSet<CollectT>*>(accessors_map[channel_id])->data;
-        data[local_id].init();
+        // data[local_id].init();
         return &data;
     }
 

@@ -41,8 +41,6 @@ class AggregatorChannel : public ChannelBase {
 
    private:
     std::function<void()> do_something = nullptr;
-
-    friend class AggregatorWorker;
 };
 
 }  // namespace husky

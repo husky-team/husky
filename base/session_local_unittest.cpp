@@ -22,6 +22,8 @@ class TestSessionLocal : public testing::Test {
 };
 
 TEST_F(TestSessionLocal, Register) {
+    SessionLocal::get_initializers().clear();
+    SessionLocal::get_finalizers().clear();
     // Something that needs NOT to be initialized
     int session_no = 0;
 
@@ -35,16 +37,21 @@ TEST_F(TestSessionLocal, Register) {
     } some_struct;
     std::vector<float> some_vec;
 
+    EXPECT_EQ(SessionLocal::get_initializers().size(), 0);
     SessionLocal::register_initializer([&]() {
         some_string = "This is session " + std::to_string(session_no);
         some_int = session_no * session_no;
         some_double = 3.1415926535897932384626;
     });
+    EXPECT_EQ(SessionLocal::get_initializers().size(), 1);
     SessionLocal::register_initializer([&]() {
         some_struct.some_int64 = (session_no + 0LL) << 40LL;
         some_struct.some_pair = std::make_pair('A', 'C');
     });
+    EXPECT_EQ(SessionLocal::get_initializers().size(), 2);
+    EXPECT_EQ(SessionLocal::get_finalizers().size(), 0);
     SessionLocal::register_finalizer([&]() { some_int = 0; });
+    EXPECT_EQ(SessionLocal::get_finalizers().size(), 1);
     SessionLocal::register_initializer([&]() {
         some_vec.resize(10);
         for (int i = 0; i < some_vec.size(); i++) {

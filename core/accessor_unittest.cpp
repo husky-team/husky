@@ -1,17 +1,14 @@
 #include "core/accessor.hpp"
 
-#include <stdlib.h>
-#include <time.h>
-
-#include <utility>
+#include <atomic>
+#include <chrono>
+#include <thread>
 #include <vector>
 
 #include "gtest/gtest.h"
 
-#include "core/context.hpp"
-
 namespace husky {
-namespace {
+namespace core {
 
 class TestAccessor : public testing::Test {
    public:
@@ -19,23 +16,21 @@ class TestAccessor : public testing::Test {
     ~TestAccessor() {}
 
    protected:
-    void SetUp() { Context::init_global(); }
-    void TearDown() { Context::finalize_global(); }
+    void SetUp() {}
+    void TearDown() {}
 };
 
 TEST_F(TestAccessor, Accessor) {
-    const int N = 4, Round = 3, MaxTime = 2;
+    const int N = 4, Round = 3, MaxTime = 10;
     std::atomic_int done(0);
-    std::vector<Accessor<int>> V;
+    std::vector<Accessor<int>> V(N);
     std::vector<std::thread*> workers(N);
-    for (int i = 0; i < N; i++)
-        V.push_back(Accessor<int>("Accessor", N));
+    for (auto& i : V)
+        i.init(N);
     for (int i = 0; i < N; i++) {
         workers[i] = new std::thread([&V, i, N, Round, MaxTime, &done]() {
             unsigned int seed = time(NULL);
-            Context::init_local();
             Accessor<int>& v = V[i];
-            v.init();
             for (int round = 1, sum = 0; round <= Round; round++, sum = 0) {
                 v.storage() += i * round;
                 std::this_thread::sleep_for(std::chrono::milliseconds(rand_r(&seed) % MaxTime));
@@ -45,17 +40,17 @@ TEST_F(TestAccessor, Accessor) {
                     std::this_thread::sleep_for(std::chrono::milliseconds(rand_r(&seed) % MaxTime));
                     V[j].leave();
                 }
-                ASSERT_EQ(sum << 2, N * (N - 1) * round * (round + 1));
+                EXPECT_EQ(sum << 2, N * (N - 1) * round * (round + 1));
             }
             done++;
         });
     }
-    std::thread([&done, MaxTime, Round, N]() {
-        auto MaxWait = std::chrono::milliseconds(MaxTime * Round * N * 200);
+    std::thread([&done, N]() {
+        auto max_wait = std::chrono::seconds(5);
         for (auto start = std::chrono::system_clock::now();
-             done.load() != N && std::chrono::system_clock::now() - start < MaxWait;)
-            std::this_thread::sleep_for(std::chrono::milliseconds(MaxTime));
-        ASSERT_EQ(done.load(), N);
+             done.load() != N && std::chrono::system_clock::now() - start < max_wait;)
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        EXPECT_EQ(done.load(), N);
     }).join();
     for (auto i : workers) {
         i->join();
@@ -63,5 +58,5 @@ TEST_F(TestAccessor, Accessor) {
     }
 }
 
-}  // namespace
+}  // namespace core
 }  // namespace husky
