@@ -260,11 +260,12 @@ TEST_F(TestMailbox, OutOfOrder) {
                 }
                 for (int i_ = 0; i_ < 4; i_++)
                     mailboxes[i]->send_complete(i_, j);
-                std::pair<int, int> active_pair;
                 int sum = 0;
                 BinStream recv_bin_stream;
-                while (mailboxes[i]->poll({{0, j}, {1, j}, {2, j}, {3, j}}, &active_pair)) {
-                    recv_bin_stream = mailboxes[i]->recv(active_pair.first, active_pair.second);
+                std::vector<std::pair<int, int>> poll_list = {{0, j}, {1, j}, {2, j}, {3, j}};
+                int active_idx;
+                while (mailboxes[i]->poll(poll_list, &active_idx)) {
+                    recv_bin_stream = mailboxes[i]->recv(poll_list[active_idx].first, poll_list[active_idx].second);
                     int i_;
                     recv_bin_stream >> i_;
                     sum += i_;

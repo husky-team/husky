@@ -57,16 +57,8 @@ class ChannelManager {
         if (channel_progress_pairs.empty()) {
             return;
         }
-        while (mailbox_->poll(channel_progress_pairs, &pair)) {
-            // TODO(yuzhen, fan): Let the mailbox poll function return the index
-            for (int i = 0; i < channel_progress_pairs.size(); ++i) {
-                if (pair == channel_progress_pairs[i]) {
-                    idx = i;
-                    break;
-                }
-            }
+        while (mailbox_->poll(channel_progress_pairs, &idx)) {
             ASSERT_MSG(idx != -1, "ChannelManager: Mailbox poll error");
-            // TODO(yuzhen): use mailbox_ through recv(std::pair<int,int>)
             auto bin = mailbox_->recv(channel_progress_pairs[idx].first, channel_progress_pairs[idx].second);
             selected_channels[idx]->in(bin);
         }

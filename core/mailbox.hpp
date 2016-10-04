@@ -51,7 +51,7 @@ class LocalMailbox {
     // Return true if there's any message to process
     // Return false if no more message is available
     bool poll(int channel_id, int progress);
-    bool poll(const std::vector<std::pair<int, int>>&, std::pair<int, int>*);
+    bool poll(const std::vector<std::pair<int, int>>& channel_progress_pairs, int* active_idx);
     void send(int thread_id, int channel_id, int progress, BinStream& bin_stream);
     void send_complete(int channel_id, int progress);
     BinStream recv(int channel_id, int progress);
@@ -62,6 +62,7 @@ class LocalMailbox {
     int thread_id_;
     zmq::context_t* zmq_context_;
     std::condition_variable poll_cv_;
+    std::mutex notify_lock;
 
     ConcurrentChannelStore<ConcurrentQueue<BinStream*>> in_queue_;
     ConcurrentChannelStore<bool> comm_completed_;

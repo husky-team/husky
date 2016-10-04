@@ -47,7 +47,8 @@ bool LocalMailbox::poll(int channel_id, int progress) {
 
     // step 2: check the flag
     // block when the queue is not empty but the flag is true
-    std::unique_lock<std::mutex> lock(poll_mutex_.get(channel_id, progress));
+    // std::unique_lock<std::mutex> lock(poll_mutex_.get(channel_id, progress));
+    std::unique_lock<std::mutex> lock(notify_lock);
 
     poll_cv_.wait(lock, [&]() {
         if (in_queue_.get(channel_id, progress).size() > 0)
@@ -72,30 +73,32 @@ bool LocalMailbox::poll(int channel_id, int progress) {
     return false;
 }
 
-bool LocalMailbox::poll(const std::vector<std::pair<int, int>>& channel_progress_pairs,
-                        std::pair<int, int>* active_pair) {
-    for (auto& chnl_prgs_pair : channel_progress_pairs) {
-        if (in_queue_.get(chnl_prgs_pair.first, chnl_prgs_pair.second).size() > 0) {
-            *active_pair = chnl_prgs_pair;
+bool LocalMailbox::poll(const std::vector<std::pair<int, int>>& channel_progress_pairs, int* active_idx) {
+    for (int i=0; i<channel_progress_pairs.size(); i++) {
+        if (in_queue_.get(channel_progress_pairs[i].first, channel_progress_pairs[i].second).size() > 0) {
+            *active_idx = i;
             return true;
         }
     }
 
-    std::mutex dummy;
-    std::unique_lock<std::mutex> lock(dummy);
+    std::unique_lock<std::mutex> lock(notify_lock);
     poll_cv_.wait(lock, [&]() {
-        for (auto& chnl_prgs_pair : channel_progress_pairs) {
+        for (auto& chnl_prgs_pair : channel_progress_pairs)
             if (in_queue_.get(chnl_prgs_pair.first, chnl_prgs_pair.second).size() > 0)
                 return true;
+
+        int num_completes = 0;
+        for (auto& chnl_prgs_pair : channel_progress_pairs)
             if (comm_completed_.get(chnl_prgs_pair.first, chnl_prgs_pair.second))
-                return true;
-        }
+                num_completes += 1;
+        if(num_completes == channel_progress_pairs.size()) return true;
+
         return false;
     });
 
-    for (auto& chnl_prgs_pair : channel_progress_pairs) {
-        if (in_queue_.get(chnl_prgs_pair.first, chnl_prgs_pair.second).size() > 0) {
-            *active_pair = chnl_prgs_pair;
+    for (int i=0; i<channel_progress_pairs.size(); i++) {
+        if (in_queue_.get(channel_progress_pairs[i].first, channel_progress_pairs[i].second).size() > 0) {
+            *active_idx = i;
             return true;
         }
     }
@@ -300,9 +303,9 @@ void CentralEventLoop::_recv_comm_complete_handler(int channel_id, int progress)
         for (auto& tid_mailbox_pair : registered_mailbox_) {
             int thread_id = tid_mailbox_pair.first;
             auto& mailbox = *(registered_mailbox_[thread_id]);
-            std::unique_lock<std::mutex> lock(mailbox.poll_mutex_.get(channel_id, progress));
+            std::unique_lock<std::mutex> cv_lock(mailbox.notify_lock);
             mailbox.comm_completed_.get(channel_id, progress) = true;
-            lock.unlock();
+            cv_lock.unlock();
             mailbox.poll_cv_.notify_one();
         }
         recv_comm_complete_counter_.erase(chnl_prgs_pair);
