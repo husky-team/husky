@@ -33,8 +33,8 @@ enum MongoDBInputFormatSetUp {
     NSSetUp = 1 << 1,
     ServerSetUp = 1 << 2,
     // TODO(legend): how to check if needs auth.
-    AuthSetUp = 1 << 3,
-    QuerySetUp = 1 << 3,
+    AuthSetUp = 1 << 2,
+    QuerySetUp = 1 << 2,
     AllSetUp = NSSetUp | ServerSetUp | AuthSetUp | QuerySetUp,
 };
 

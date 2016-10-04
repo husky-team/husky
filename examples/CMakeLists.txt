@@ -35,6 +35,12 @@ target_link_libraries(WordCountMR ${husky})
 target_link_libraries(WordCountMR ${EXTERNAL_LIB})
 set_property(TARGET WordCountMR PROPERTY CXX_STANDARD 14)
 
+# WordCountMongo
+add_executable(WordCountMongo wc_mr_mongo.cpp)
+target_link_libraries(WordCountMongo ${husky})
+target_link_libraries(WordCountMongo ${EXTERNAL_LIB})
+set_property(TARGET WordCountMongo PROPERTY CXX_STANDARD 14)
+
 # PI
 add_executable(PI pi.cpp)
 target_link_libraries(PI ${husky})
@@ -52,5 +58,3 @@ add_executable(Aggregator aggregator.cpp)
 target_link_libraries(Aggregator ${husky})
 target_link_libraries(Aggregator ${EXTERNAL_LIB})
 set_property(TARGET Aggregator PROPERTY CXX_STANDARD 14)
-
-
