@@ -74,10 +74,23 @@ class PushCombinedChannel : public Source2ObjListChannel<DstObjT> {
 
     const MsgT& get(const DstObjT& obj) {
         auto idx = this->dst_ptr_->index_of(&obj);
-        if (idx >= recv_buffer_.size()) {  // resize recv_buffer_ if it is not large enough
+        if (idx >= recv_buffer_.size()) {  // resize recv_buffer_ and recv_flag_ if it is not large enough
             recv_buffer_.resize(this->dst_ptr_->get_size());
+            recv_flag_.resize(this->dst_ptr_->get_size());
+        }
+        if (recv_flag_[idx] == false) {
+            recv_buffer_[idx] = MsgT();
         }
         return recv_buffer_[idx];
+    }
+
+    bool has_msgs(const DstObjT& obj) {
+        auto idx = this->dst_ptr_->index_of(&obj);
+        if (idx >= recv_buffer_.size()) {  // resize recv_buffer_ and recv_flag_ if it is not large enough
+            recv_buffer_.resize(this->dst_ptr_->get_size());
+            recv_flag_.resize(this->dst_ptr_->get_size());
+        }
+        return recv_flag_[idx];
     }
 
     void prepare() override { clear_recv_buffer_(); }
@@ -113,10 +126,7 @@ class PushCombinedChannel : public Source2ObjListChannel<DstObjT> {
     }
 
    protected:
-    void clear_recv_buffer_() {
-        for (auto& msg : recv_buffer_)
-            msg = MsgT();
-    }
+    void clear_recv_buffer_() { std::fill(recv_flag_.begin(), recv_flag_.end(), false); }
 
     void process_bin(BinStream& bin_push) {
         while (bin_push.size() != 0) {
@@ -133,9 +143,16 @@ class PushCombinedChannel : public Source2ObjListChannel<DstObjT> {
             } else {
                 idx = this->dst_ptr_->index_of(recver_obj);
             }
-            if (idx >= recv_buffer_.size())
+            if (idx >= recv_buffer_.size()) {
                 recv_buffer_.resize(idx + 1);
-            CombineT::combine(recv_buffer_[idx], msg);
+                recv_flag_.resize(idx + 1);
+            }
+            if (recv_flag_[idx] == true)
+                CombineT::combine(recv_buffer_[idx], msg);
+            else {
+                recv_buffer_[idx] = std::move(msg);
+                recv_flag_[idx] = true;
+            }
         }
     }
 
@@ -185,6 +202,7 @@ class PushCombinedChannel : public Source2ObjListChannel<DstObjT> {
     std::vector<ShuffleCombiner<std::pair<typename DstObjT::KeyT, MsgT>>>* shuffle_combiner_;
     std::vector<BinStream> send_buffer_;
     std::vector<MsgT> recv_buffer_;
+    std::vector<bool> recv_flag_;
 };
 
 }  // namespace husky

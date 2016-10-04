@@ -38,6 +38,11 @@ struct SumCombiner {
 };
 
 template <typename MsgT>
+struct MinCombiner {
+    static void combine(MsgT& val, MsgT const& other) { val = std::min(val, other); }
+};
+
+template <typename MsgT>
 struct HashIdenCombiner : public HashCombinerBase {
     static void combine(MsgT& val, MsgT const& inc) {}
 };

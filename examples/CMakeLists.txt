@@ -47,6 +47,12 @@ target_link_libraries(PI ${husky})
 target_link_libraries(PI ${EXTERNAL_LIB})
 set_property(TARGET PI PROPERTY CXX_STANDARD 14)
 
+# CC
+add_executable(CC connected_components.cpp)
+target_link_libraries(CC ${husky})
+target_link_libraries(CC ${EXTERNAL_LIB})
+set_property(TARGET CC PROPERTY CXX_STANDARD 14)
+
 # PageRank
 add_executable(PageRank pagerank.cpp)
 target_link_libraries(PageRank ${husky})
