@@ -41,7 +41,7 @@ void run_job(const std::function<void()>& job) {
     WorkerInfo& worker_info = *(Context::get_worker_info());
 
     // Initialize mailbox sub-system
-    auto* el = new CentralEventLoop(&zmq_context);
+    auto* el = new MailboxEventLoop(&zmq_context);
     el->set_process_id(worker_info.get_proc_id());
     std::vector<LocalMailbox*> mailboxes;
     for (int i = 0; i < worker_info.get_num_processes(); i++)

@@ -171,20 +171,20 @@ void CentralRecver::serve() {
     }
 }
 
-CentralEventLoop::CentralEventLoop(zmq::context_t* zmq_context)
+MailboxEventLoop::MailboxEventLoop(zmq::context_t* zmq_context)
     : zmq_context_(zmq_context), event_recver_(*zmq_context_, ZMQ_PULL) {
     event_recver_.bind(kEventLoopListenAddress);
 
     // register event handlers
-    register_event_handler(MAILBOX_EVENT_SEND_COMM, std::bind(&CentralEventLoop::send_comm_handler, this));
-    register_event_handler(MAILBOX_EVENT_SEND_COMM_END, std::bind(&CentralEventLoop::send_comm_complete_handler, this));
-    register_event_handler(MAILBOX_EVENT_RECV_COMM, std::bind(&CentralEventLoop::recv_comm_handler, this));
-    register_event_handler(MAILBOX_EVENT_RECV_COMM_END, std::bind(&CentralEventLoop::recv_comm_complete_handler, this));
+    register_event_handler(MAILBOX_EVENT_SEND_COMM, std::bind(&MailboxEventLoop::send_comm_handler, this));
+    register_event_handler(MAILBOX_EVENT_SEND_COMM_END, std::bind(&MailboxEventLoop::send_comm_complete_handler, this));
+    register_event_handler(MAILBOX_EVENT_RECV_COMM, std::bind(&MailboxEventLoop::recv_comm_handler, this));
+    register_event_handler(MAILBOX_EVENT_RECV_COMM_END, std::bind(&MailboxEventLoop::recv_comm_complete_handler, this));
 
     event_loop_thread_ = new std::thread([&]() { serve(); });
 }
 
-CentralEventLoop::~CentralEventLoop() {
+MailboxEventLoop::~MailboxEventLoop() {
     zmq::socket_t event_sender(*zmq_context_, ZMQ_PUSH);
     event_sender.connect(kEventLoopListenAddress);
     zmq_send_int32(&event_sender, MAILBOX_EVENT_DESTROY);
@@ -195,7 +195,7 @@ CentralEventLoop::~CentralEventLoop() {
         delete pair.second;
 }
 
-void CentralEventLoop::serve() {
+void MailboxEventLoop::serve() {
     while (true) {
         int event_type = zmq_recv_int32(&event_recver_);
         if (event_type == MAILBOX_EVENT_DESTROY)
@@ -205,7 +205,7 @@ void CentralEventLoop::serve() {
     }
 }
 
-void CentralEventLoop::register_mailbox(LocalMailbox& local_mailbox) {
+void MailboxEventLoop::register_mailbox(LocalMailbox& local_mailbox) {
     int tid = local_mailbox.get_thread_id();
     ASSERT_MSG(registered_mailbox_.find(tid) == registered_mailbox_.end(),
                "Shouldn't register a same mailbox more than once");
@@ -217,13 +217,13 @@ void CentralEventLoop::register_mailbox(LocalMailbox& local_mailbox) {
     registered_mailbox_[tid] = &local_mailbox;
 }
 
-void CentralEventLoop::set_process_id(int process_id) { process_id_ = process_id; }
+void MailboxEventLoop::set_process_id(int process_id) { process_id_ = process_id; }
 
-void CentralEventLoop::register_event_handler(int event_type, std::function<void()> handler) {
+void MailboxEventLoop::register_event_handler(int event_type, std::function<void()> handler) {
     event_handler_[event_type] = handler;
 }
 
-void CentralEventLoop::recv_comm_handler() {
+void MailboxEventLoop::recv_comm_handler() {
     int thread_id = zmq_recv_int32(&event_recver_);
     int channel_id = zmq_recv_int32(&event_recver_);
     int progress = zmq_recv_int32(&event_recver_);
@@ -231,7 +231,7 @@ void CentralEventLoop::recv_comm_handler() {
     _recv_comm_handler(thread_id, channel_id, progress, recv_bin_stream_ptr);
 }
 
-void CentralEventLoop::_recv_comm_handler(int thread_id, int channel_id, int progress, BinStream* recv_bin_stream_ptr) {
+void MailboxEventLoop::_recv_comm_handler(int thread_id, int channel_id, int progress, BinStream* recv_bin_stream_ptr) {
     ASSERT_MSG(registered_mailbox_.find(thread_id) != registered_mailbox_.end(),
                ("[ERROR] Local mailbox for " + std::to_string(thread_id) + " does not exist").c_str());
 
@@ -240,7 +240,7 @@ void CentralEventLoop::_recv_comm_handler(int thread_id, int channel_id, int pro
     mailbox.in_queue_.get(channel_id, progress).push(std::move(recv_bin_stream_ptr));
 }
 
-void CentralEventLoop::send_comm_handler() {
+void MailboxEventLoop::send_comm_handler() {
     int thread_id = zmq_recv_int32(&event_recver_);
     int channel_id = zmq_recv_int32(&event_recver_);
     int progress = zmq_recv_int32(&event_recver_);
@@ -248,7 +248,7 @@ void CentralEventLoop::send_comm_handler() {
     _send_comm_handler(thread_id, channel_id, progress, bin_stream_ptr);
 }
 
-void CentralEventLoop::_send_comm_handler(int thread_id, int channel_id, int progress, BinStream* send_bin_stream_ptr) {
+void MailboxEventLoop::_send_comm_handler(int thread_id, int channel_id, int progress, BinStream* send_bin_stream_ptr) {
     int pid = tid_to_pid_[thread_id];
     if (pid != process_id_) {
         zmq_sendmore_int32(sender_[pid], thread_id);
@@ -262,13 +262,13 @@ void CentralEventLoop::_send_comm_handler(int thread_id, int channel_id, int pro
     }
 }
 
-void CentralEventLoop::send_comm_complete_handler() {
+void MailboxEventLoop::send_comm_complete_handler() {
     int channel_id = zmq_recv_int32(&event_recver_);
     int progress = zmq_recv_int32(&event_recver_);
     _send_comm_complete_handler(channel_id, progress);
 }
 
-void CentralEventLoop::_send_comm_complete_handler(int channel_id, int progress) {
+void MailboxEventLoop::_send_comm_complete_handler(int channel_id, int progress) {
     auto chnl_prgs_pair = std::make_pair(channel_id, progress);
     if (send_comm_complete_counter_.find(chnl_prgs_pair) == send_comm_complete_counter_.end())
         send_comm_complete_counter_[chnl_prgs_pair] = 0;
@@ -287,13 +287,13 @@ void CentralEventLoop::_send_comm_complete_handler(int channel_id, int progress)
     }
 }
 
-void CentralEventLoop::recv_comm_complete_handler() {
+void MailboxEventLoop::recv_comm_complete_handler() {
     int channel_id = zmq_recv_int32(&event_recver_);
     int progress = zmq_recv_int32(&event_recver_);
     _recv_comm_complete_handler(channel_id, progress);
 }
 
-void CentralEventLoop::_recv_comm_complete_handler(int channel_id, int progress) {
+void MailboxEventLoop::_recv_comm_complete_handler(int channel_id, int progress) {
     auto chnl_prgs_pair = std::make_pair(channel_id, progress);
     if (recv_comm_complete_counter_.find(chnl_prgs_pair) == recv_comm_complete_counter_.end())
         recv_comm_complete_counter_[chnl_prgs_pair] = 0;
@@ -312,7 +312,7 @@ void CentralEventLoop::_recv_comm_complete_handler(int channel_id, int progress)
     }
 }
 
-void CentralEventLoop::register_peer_recver(int process_id, const std::string& addr) {
+void MailboxEventLoop::register_peer_recver(int process_id, const std::string& addr) {
     ASSERT_MSG(sender_.count(process_id) == 0, "Register the same peer recver more than once");
     sender_[process_id] = new zmq::socket_t(*zmq_context_, ZMQ_PUSH);
     int linger = 2000;
@@ -321,7 +321,7 @@ void CentralEventLoop::register_peer_recver(int process_id, const std::string& a
     num_global_processes_ += 1;
 }
 
-void CentralEventLoop::register_peer_thread(int process_id, int thread_id) { tid_to_pid_[thread_id] = process_id; }
+void MailboxEventLoop::register_peer_thread(int process_id, int thread_id) { tid_to_pid_[thread_id] = process_id; }
 
 EventLoopConnector::EventLoopConnector(zmq::context_t* zmq_context) : event_sender_(*zmq_context, ZMQ_PUSH) {
     event_sender_.connect(kEventLoopListenAddress);

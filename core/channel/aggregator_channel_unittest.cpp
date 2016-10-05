@@ -31,7 +31,7 @@ TEST_F(TestAggregatorChannel, Create) {
 
     // Mailbox Setup
     zmq::context_t zmq_context;
-    CentralEventLoop el(&zmq_context);
+    MailboxEventLoop el(&zmq_context);
     el.set_process_id(0);
     LocalMailbox mailbox(&zmq_context);
     mailbox.set_thread_id(0);
@@ -57,7 +57,7 @@ TEST_F(TestAggregatorChannel, Aggregate) {
 
     // Mailbox Setup
     zmq::context_t zmq_context;
-    CentralEventLoop el(&zmq_context);
+    MailboxEventLoop el(&zmq_context);
     el.set_process_id(0);
     LocalMailbox mailbox(&zmq_context);
     mailbox.set_thread_id(0);
@@ -108,7 +108,7 @@ TEST_F(TestAggregatorChannel, MultiThread) {
 
     // Mailbox Setup
     zmq::context_t zmq_context;
-    CentralEventLoop el(&zmq_context);
+    MailboxEventLoop el(&zmq_context);
     el.set_process_id(0);
 
     std::vector<LocalMailbox*> mailboxes;

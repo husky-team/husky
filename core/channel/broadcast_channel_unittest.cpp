@@ -48,7 +48,7 @@ TEST_F(TestBroadcastChannel, Create) {
 
     // Mailbox Setup
     zmq::context_t zmq_context;
-    CentralEventLoop el(&zmq_context);
+    MailboxEventLoop el(&zmq_context);
     el.set_process_id(0);
     CentralRecver recver(&zmq_context, "inproc://test");
     LocalMailbox mailbox(&zmq_context);
@@ -78,7 +78,7 @@ TEST_F(TestBroadcastChannel, Broadcast) {
 
     // Mailbox Setup
     zmq::context_t zmq_context;
-    CentralEventLoop el(&zmq_context);
+    MailboxEventLoop el(&zmq_context);
     el.set_process_id(0);
     CentralRecver recver(&zmq_context, "inproc://test");
     LocalMailbox mailbox(&zmq_context);
@@ -136,7 +136,7 @@ TEST_F(TestBroadcastChannel, BroadcastClearDict) {
 
     // Mailbox Setup
     zmq::context_t zmq_context;
-    CentralEventLoop el(&zmq_context);
+    MailboxEventLoop el(&zmq_context);
     el.set_process_id(0);
     CentralRecver recver(&zmq_context, "inproc://test");
     LocalMailbox mailbox(&zmq_context);
@@ -188,7 +188,7 @@ TEST_F(TestBroadcastChannel, MultiThread) {
 
     // Mailbox Setup
     zmq::context_t zmq_context;
-    CentralEventLoop el(&zmq_context);
+    MailboxEventLoop el(&zmq_context);
     el.set_process_id(0);
     CentralRecver recver(&zmq_context, "inproc://test");
     // Mailbox_0

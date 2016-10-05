@@ -57,7 +57,7 @@ TEST_F(TestPushCombinedChannel, Create) {
 
     // Mailbox Setup
     zmq::context_t zmq_context;
-    CentralEventLoop el(&zmq_context);
+    MailboxEventLoop el(&zmq_context);
     el.set_process_id(0);
     CentralRecver recver(&zmq_context, "inproc://test");
     LocalMailbox mailbox(&zmq_context);
@@ -88,7 +88,7 @@ TEST_F(TestPushCombinedChannel, PushSingle) {
 
     // Mailbox Setup
     zmq::context_t zmq_context;
-    CentralEventLoop el(&zmq_context);
+    MailboxEventLoop el(&zmq_context);
     el.set_process_id(0);
     CentralRecver recver(&zmq_context, "inproc://test");
     LocalMailbox mailbox(&zmq_context);
@@ -129,7 +129,7 @@ TEST_F(TestPushCombinedChannel, PushMultipleTime) {
 
     // Mailbox Setup
     zmq::context_t zmq_context;
-    CentralEventLoop el(&zmq_context);
+    MailboxEventLoop el(&zmq_context);
     el.set_process_id(0);
     CentralRecver recver(&zmq_context, "inproc://test");
     LocalMailbox mailbox(&zmq_context);
@@ -177,7 +177,7 @@ TEST_F(TestPushCombinedChannel, IncProgress) {
 
     // Mailbox Setup
     zmq::context_t zmq_context;
-    CentralEventLoop el(&zmq_context);
+    MailboxEventLoop el(&zmq_context);
     el.set_process_id(0);
     CentralRecver recver(&zmq_context, "inproc://test");
     LocalMailbox mailbox(&zmq_context);
@@ -230,7 +230,7 @@ TEST_F(TestPushCombinedChannel, MultiThread) {
 
     // Mailbox Setup
     zmq::context_t zmq_context;
-    CentralEventLoop el(&zmq_context);
+    MailboxEventLoop el(&zmq_context);
     el.set_process_id(0);
     CentralRecver recver(&zmq_context, "inproc://test");
     // Mailbox_0

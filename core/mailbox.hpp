@@ -35,7 +35,7 @@ using base::ConcurrentQueue;
 using base::BinStream;
 
 class EventLoopConnector;
-class CentralEventLoop;
+class MailboxEventLoop;
 
 // Channels will come to this guy and get their BinStream
 class LocalMailbox {
@@ -56,7 +56,7 @@ class LocalMailbox {
     void send_complete(int channel_id, int progress);
     BinStream recv(int channel_id, int progress);
 
-    friend class CentralEventLoop;
+    friend class MailboxEventLoop;
 
    protected:
     int thread_id_;
@@ -87,12 +87,12 @@ class CentralRecver {
     EventLoopConnector* event_loop_connector_;
 };
 
-class CentralEventLoop {
+class MailboxEventLoop {
    public:
     // Create the event loop thread and the send socket
-    explicit CentralEventLoop(zmq::context_t* zmq_context);
+    explicit MailboxEventLoop(zmq::context_t* zmq_context);
     // Join the thread and free resources
-    virtual ~CentralEventLoop();
+    virtual ~MailboxEventLoop();
 
     void register_mailbox(LocalMailbox& local_mailbox);
     void set_process_id(int process_id);

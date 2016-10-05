@@ -55,7 +55,7 @@ TEST_F(TestMigrateChannel, Create) {
 
     // Mailbox Setup
     zmq::context_t zmq_context;
-    CentralEventLoop el(&zmq_context);
+    MailboxEventLoop el(&zmq_context);
     el.set_process_id(0);
     CentralRecver recver(&zmq_context, "inproc://test");
     LocalMailbox mailbox(&zmq_context);
@@ -86,7 +86,7 @@ TEST_F(TestMigrateChannel, MigrateOther) {
 
     // Mailbox Setup
     zmq::context_t zmq_context;
-    CentralEventLoop el(&zmq_context);
+    MailboxEventLoop el(&zmq_context);
     el.set_process_id(0);
     CentralRecver recver(&zmq_context, "inproc://test");
     LocalMailbox mailbox(&zmq_context);
@@ -132,7 +132,7 @@ TEST_F(TestMigrateChannel, MigrateItself) {
 
     // Mailbox Setup
     zmq::context_t zmq_context;
-    CentralEventLoop el(&zmq_context);
+    MailboxEventLoop el(&zmq_context);
     el.set_process_id(0);
     CentralRecver recver(&zmq_context, "inproc://test");
     LocalMailbox mailbox(&zmq_context);
@@ -192,7 +192,7 @@ TEST_F(TestMigrateChannel, MigrateOtherIncProgress) {
 
     // Mailbox Setup
     zmq::context_t zmq_context;
-    CentralEventLoop el(&zmq_context);
+    MailboxEventLoop el(&zmq_context);
     el.set_process_id(0);
     CentralRecver recver(&zmq_context, "inproc://test");
     LocalMailbox mailbox(&zmq_context);

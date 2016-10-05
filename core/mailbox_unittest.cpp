@@ -26,7 +26,7 @@ TEST_F(TestMailbox, InitAndDelete) {
     zmq::context_t zmq_context;
 
     // Setup
-    auto* el = new CentralEventLoop(&zmq_context);
+    auto* el = new MailboxEventLoop(&zmq_context);
     el->set_process_id(0);
     auto* recver = new CentralRecver(&zmq_context, "inproc://test");
     auto* mailbox = new LocalMailbox(&zmq_context);
@@ -42,7 +42,7 @@ TEST_F(TestMailbox, SendRecvOnce) {
     zmq::context_t zmq_context;
 
     // Setup
-    CentralEventLoop el(&zmq_context);
+    MailboxEventLoop el(&zmq_context);
     el.set_process_id(0);
     CentralRecver recver(&zmq_context, "inproc://test");
     LocalMailbox mailbox(&zmq_context);
@@ -69,7 +69,7 @@ TEST_F(TestMailbox, SendRecvMultiple) {
     zmq::context_t zmq_context;
 
     // Setup
-    CentralEventLoop el(&zmq_context);
+    MailboxEventLoop el(&zmq_context);
     el.set_process_id(0);
     CentralRecver recver(&zmq_context, "inproc://test");
     LocalMailbox mailbox(&zmq_context);
@@ -101,7 +101,7 @@ TEST_F(TestMailbox, Multithread) {
     zmq::context_t zmq_context;
 
     // Setup
-    CentralEventLoop el(&zmq_context);
+    MailboxEventLoop el(&zmq_context);
     el.set_process_id(0);
     CentralRecver recver(&zmq_context, "inproc://test");
     LocalMailbox mailbox_0(&zmq_context);
@@ -139,7 +139,7 @@ TEST_F(TestMailbox, Multithread) {
 TEST_F(TestMailbox, TwoProcesses) {
     // Setup thread 0 on process 0
     zmq::context_t zmq_context_0;
-    CentralEventLoop el_0(&zmq_context_0);
+    MailboxEventLoop el_0(&zmq_context_0);
     el_0.set_process_id(0);
     CentralRecver recver_0(&zmq_context_0, "ipc://test-0");
     LocalMailbox mailbox_0(&zmq_context_0);
@@ -148,7 +148,7 @@ TEST_F(TestMailbox, TwoProcesses) {
 
     // Setup thread 1 on process 1
     zmq::context_t zmq_context_1;
-    CentralEventLoop el_1(&zmq_context_1);
+    MailboxEventLoop el_1(&zmq_context_1);
     el_1.set_process_id(1);
     CentralRecver recver_1(&zmq_context_1, "ipc://test-1");
     LocalMailbox mailbox_1(&zmq_context_1);
@@ -188,7 +188,7 @@ TEST_F(TestMailbox, TwoProcesses) {
 TEST_F(TestMailbox, Iterative) {
     // Setup thread 0 on process 0
     zmq::context_t zmq_context_0;
-    CentralEventLoop el_0(&zmq_context_0);
+    MailboxEventLoop el_0(&zmq_context_0);
     el_0.set_process_id(0);
     CentralRecver recver_0(&zmq_context_0, "ipc://test-0");
     LocalMailbox mailbox_0(&zmq_context_0);
@@ -197,7 +197,7 @@ TEST_F(TestMailbox, Iterative) {
 
     // Setup thread 1 on process 1
     zmq::context_t zmq_context_1;
-    CentralEventLoop el_1(&zmq_context_1);
+    MailboxEventLoop el_1(&zmq_context_1);
     el_1.set_process_id(1);
     CentralRecver recver_1(&zmq_context_1, "ipc://test-1");
     LocalMailbox mailbox_1(&zmq_context_1);
@@ -238,7 +238,7 @@ TEST_F(TestMailbox, Iterative) {
 
 TEST_F(TestMailbox, OutOfOrder) {
     zmq::context_t zmq_context;
-    auto* el = new CentralEventLoop(&zmq_context);
+    auto* el = new MailboxEventLoop(&zmq_context);
     el->set_process_id(0);
     auto* recver = new CentralRecver(&zmq_context, "inproc://test");
 
