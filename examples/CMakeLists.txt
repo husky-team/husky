@@ -41,6 +41,12 @@ target_link_libraries(WordCountMongo ${husky})
 target_link_libraries(WordCountMongo ${EXTERNAL_LIB})
 set_property(TARGET WordCountMongo PROPERTY CXX_STANDARD 14)
 
+# WordCountFlume
+add_executable(WordCountFlume wc_mr_flume.cpp)
+target_link_libraries(WordCountFlume ${husky})
+target_link_libraries(WordCountFlume ${EXTERNAL_LIB})
+set_property(TARGET WordCountFlume PROPERTY CXX_STANDARD 14)
+
 # PI
 add_executable(PI pi.cpp)
 target_link_libraries(PI ${husky})

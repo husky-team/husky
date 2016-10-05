@@ -40,6 +40,11 @@ if(MONGOCLIENT_FOUND)
     set(EXTERNAL_LIB ${EXTERNAL_LIB} ${RT_LIBRARY} ${MONGOCLIENT_LIBRARY})
 endif(MONGOCLIENT_FOUND)
 
+# Thrift
+if(THRIFT_FOUND)
+    set(EXTERNAL_LIB ${EXTERNAL_LIB} ${THRIFT_LIBRARY})
+endif(THRIFT_FOUND)
+
 add_subdirectory(base)
 add_subdirectory(core)
 add_subdirectory(io)

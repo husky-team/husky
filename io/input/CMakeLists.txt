@@ -30,5 +30,12 @@ if(MONGOCLIENT_FOUND)
     set(input_cpps ${input_cpps} mongodb_split.cpp mongodb_inputformat.cpp)
 endif(MONGOCLIENT_FOUND)
 
+if(THRIFT_FOUND)
+    include_directories(${THRIFT_INCLUDE_DIR})
+    add_definitions(-DWITH_THRIFT)
+    add_subdirectory(flume_connector)
+    set(input_cpps ${input_cpps} flume_connector/flume_types.cpp flume_connector/flume_constants.cpp flume_connector/ThriftSourceProtocol.cpp flume_inputformat.cpp)
+endif(THRIFT_FOUND)
+
 add_library(input-objs OBJECT ${input_cpps})
 set_property(TARGET input-objs PROPERTY CXX_STANDARD 14)
