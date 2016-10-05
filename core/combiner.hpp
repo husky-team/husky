@@ -39,7 +39,10 @@ struct SumCombiner {
 
 template <typename MsgT>
 struct MinCombiner {
-    static void combine(MsgT& val, MsgT const& other) { val = std::min(val, other); }
+    static void combine(MsgT& val, MsgT const& other) {
+        if (other < val)
+            val = other;
+    }
 };
 
 template <typename MsgT>

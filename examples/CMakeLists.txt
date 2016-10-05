@@ -70,3 +70,9 @@ add_executable(Aggregator aggregator.cpp)
 target_link_libraries(Aggregator ${husky})
 target_link_libraries(Aggregator ${EXTERNAL_LIB})
 set_property(TARGET Aggregator PROPERTY CXX_STANDARD 14)
+
+# PR_CC
+add_executable(PR_CC pr_cc_attrlist.cpp)
+target_link_libraries(PR_CC ${husky})
+target_link_libraries(PR_CC ${EXTERNAL_LIB})
+set_property(TARGET PR_CC PROPERTY CXX_STANDARD 14)
