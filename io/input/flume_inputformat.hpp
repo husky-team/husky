@@ -22,8 +22,8 @@
 #include "thrift/protocol/TBinaryProtocol.h"
 #include "thrift/protocol/TCompactProtocol.h"
 #include "thrift/server/TSimpleServer.h"
-#include "thrift/transport/TServerSocket.h"
 #include "thrift/transport/TBufferTransports.h"
+#include "thrift/transport/TServerSocket.h"
 
 #include "boost/utility/string_ref.hpp"
 #include "io/input/inputformat_base.hpp"
@@ -37,15 +37,15 @@ using boost::shared_ptr;
 
 // flume processor
 class ThriftSourceProtocolHandler : virtual public ThriftSourceProtocolIf {
-  public:
+   public:
     ThriftSourceProtocolHandler();
     ~ThriftSourceProtocolHandler();
     Status::type append(const ThriftFlumeEvent& event);
-    Status::type appendBatch(const std::vector<ThriftFlumeEvent> & events);
+    Status::type appendBatch(const std::vector<ThriftFlumeEvent>& events);
     boost::string_ref get_next_data();
     void clear_buffer();
 
-  protected:
+   protected:
     // to do: a circle to save memory
     std::vector<std::string> buffer_;
     pthread_rwlock_t buffer_rwlock_;
@@ -56,7 +56,7 @@ namespace husky {
 namespace io {
 
 class FlumeInputFormat : public InputFormatBase {
-  public:
+   public:
     typedef boost::string_ref RecordT;
 
     explicit FlumeInputFormat(std::string receiver_host = "localhost", int receiver_port = 2016);
@@ -68,7 +68,7 @@ class FlumeInputFormat : public InputFormatBase {
     void stop_listen();
     bool is_listening_worker();
 
-  protected:
+   protected:
     void listen_();
 
     std::string receiver_host_;

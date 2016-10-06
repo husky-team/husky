@@ -35,16 +35,14 @@ XMLInputFormat::XMLInputFormat(std::string start_pattern, std::string end_patter
     is_setup_ = XMLInputFormatSetUp::NotSetUp;
 }
 
-void XMLInputFormat::set_input(const std::string & url) {
+void XMLInputFormat::set_input(const std::string& url) {
     splitter_.load(url);
     is_setup_ |= XMLInputFormatSetUp::InputSetUp;
 }
 
-bool XMLInputFormat::is_setup() const {
-    return !(is_setup_ ^ XMLInputFormatSetUp::AllSetUp);
-}
+bool XMLInputFormat::is_setup() const { return !(is_setup_ ^ XMLInputFormatSetUp::AllSetUp); }
 
-bool XMLInputFormat::next(boost::string_ref & ref) {
+bool XMLInputFormat::next(boost::string_ref& ref) {
     if (buffer_.empty()) {
         bool success = fetch_new_block();
         if (!success)

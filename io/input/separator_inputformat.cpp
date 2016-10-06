@@ -34,16 +34,14 @@ SeparatorInputFormat::SeparatorInputFormat(std::string pattern) : pattern_(patte
     is_setup_ = SeparatorInputFormatSetUp::NotSetUp;
 }
 
-void SeparatorInputFormat::set_input(const std::string & url) {
+void SeparatorInputFormat::set_input(const std::string& url) {
     splitter_.load(url);
     is_setup_ |= SeparatorInputFormatSetUp::InputSetUp;
 }
 
-bool SeparatorInputFormat::is_setup() const {
-    return !(is_setup_ ^ SeparatorInputFormatSetUp::AllSetUp);
-}
+bool SeparatorInputFormat::is_setup() const { return !(is_setup_ ^ SeparatorInputFormatSetUp::AllSetUp); }
 
-bool SeparatorInputFormat::next(boost::string_ref & ref) {
+bool SeparatorInputFormat::next(boost::string_ref& ref) {
     if (in_between_) {
         in_between_ = false;
         clear_buffer();
@@ -120,7 +118,7 @@ void SeparatorInputFormat::handle_next_block() {
             throw std::runtime_error("data format error, separatorinputformat.hpp : handle_next_block_pattern_ 2");
         }
         in_between_ = true;
-        in_between_str_ = last_part_.substr(l, r-l);
+        in_between_str_ = last_part_.substr(l, r - l);
         last_part_ = last_part_.substr(0, save_r);
         return;
     } else {

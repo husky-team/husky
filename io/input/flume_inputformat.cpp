@@ -12,26 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <unistd.h>
 #include <cstring>
 #include <iostream>
 #include <mutex>
 #include <string>
 #include <thread>
 #include <vector>
-#include <unistd.h>
 
 #include "flume_connector/ThriftSourceProtocol.h"
 #include "thrift/protocol/TBinaryProtocol.h"
 #include "thrift/protocol/TCompactProtocol.h"
 #include "thrift/server/TSimpleServer.h"
-#include "thrift/transport/TServerSocket.h"
 #include "thrift/transport/TBufferTransports.h"
+#include "thrift/transport/TServerSocket.h"
 
-#include "boost/utility/string_ref.hpp"
-#include "io/input/flume_inputformat.hpp"
-#include "core/context.hpp"
 #include "base/log.hpp"
-
+#include "boost/utility/string_ref.hpp"
+#include "core/context.hpp"
+#include "io/input/flume_inputformat.hpp"
 
 using namespace ::apache::thrift;
 using namespace ::apache::thrift::protocol;
@@ -40,13 +39,9 @@ using namespace ::apache::thrift::server;
 
 using boost::shared_ptr;
 
-ThriftSourceProtocolHandler::ThriftSourceProtocolHandler() {
-    pthread_rwlock_init(&buffer_rwlock_, NULL);
-}
+ThriftSourceProtocolHandler::ThriftSourceProtocolHandler() { pthread_rwlock_init(&buffer_rwlock_, NULL); }
 
-ThriftSourceProtocolHandler::~ThriftSourceProtocolHandler() {
-    pthread_rwlock_destroy(&buffer_rwlock_);
-}
+ThriftSourceProtocolHandler::~ThriftSourceProtocolHandler() { pthread_rwlock_destroy(&buffer_rwlock_); }
 
 Status::type ThriftSourceProtocolHandler::append(const ThriftFlumeEvent& event) {
     pthread_rwlock_wrlock(&buffer_rwlock_);
@@ -54,7 +49,7 @@ Status::type ThriftSourceProtocolHandler::append(const ThriftFlumeEvent& event) 
     pthread_rwlock_unlock(&buffer_rwlock_);
 }
 
-Status::type ThriftSourceProtocolHandler::appendBatch(const std::vector<ThriftFlumeEvent> & events) {
+Status::type ThriftSourceProtocolHandler::appendBatch(const std::vector<ThriftFlumeEvent>& events) {
     pthread_rwlock_wrlock(&buffer_rwlock_);
     for (int i = 0; i < events.size(); ++i) {
         std::string tmp = events[i].body;
@@ -76,9 +71,7 @@ boost::string_ref ThriftSourceProtocolHandler::get_next_data() {
     }
 }
 
-void ThriftSourceProtocolHandler::clear_buffer() {
-    buffer_.clear();
-}
+void ThriftSourceProtocolHandler::clear_buffer() { buffer_.clear(); }
 
 namespace husky {
 namespace io {
@@ -99,13 +92,13 @@ FlumeInputFormat::FlumeInputFormat(std::string rcv_host, int rcv_port) {
     // //debug
     receiver_host_ = rcv_host;
     receiver_port_ = rcv_port;
-    if(!is_listening_worker()){
+    if (!is_listening_worker()) {
         is_setup_ = FlumeInputFormatSetUp::AllSetUp;
         flume_handler_ = NULL;
         server_ = NULL;
         return;
     }
-    
+
     // else
     flume_handler_ = new ThriftSourceProtocolHandler();
 
@@ -122,17 +115,14 @@ FlumeInputFormat::FlumeInputFormat(std::string rcv_host, int rcv_port) {
     // start_listen();
 }
 
-FlumeInputFormat::~FlumeInputFormat() {
-    stop_listen();
-}
+FlumeInputFormat::~FlumeInputFormat() { stop_listen(); }
 
-bool FlumeInputFormat::is_setup() const {
-    return !(is_setup_ ^ FlumeInputFormatSetUp::AllSetUp);
-}
+bool FlumeInputFormat::is_setup() const { return !(is_setup_ ^ FlumeInputFormatSetUp::AllSetUp); }
 
 void FlumeInputFormat::start_listen() {
     is_setup_ = FlumeInputFormatSetUp::AllSetUp;
-    if (!is_listening_worker()) return;
+    if (!is_listening_worker())
+        return;
 
     // for worker 0 on listening machines, spawn a new thread to listen flume data
     std::thread lst_thread(&FlumeInputFormat::listen_, this);
@@ -148,13 +138,13 @@ void FlumeInputFormat::start_listen() {
     husky::base::log_msg(log);
 }
 
-void FlumeInputFormat::listen_() {
-    server_->serve();
-}
+void FlumeInputFormat::listen_() { server_->serve(); }
 
 void FlumeInputFormat::stop_listen() {
-    if (!is_listening_worker()) return;
-    if(is_listening_worker()) server_->stop();
+    if (!is_listening_worker())
+        return;
+    if (is_listening_worker())
+        server_->stop();
 }
 
 bool FlumeInputFormat::is_listening_worker() {
@@ -162,7 +152,7 @@ bool FlumeInputFormat::is_listening_worker() {
     if (receiver_host_ != "localhost") {
         char hostname[1024];
         gethostname(hostname, 1023);
-        if (strcmp(hostname, receiver_host_.c_str() ) != 0)
+        if (strcmp(hostname, receiver_host_.c_str()) != 0)
             return false;
     }
 
@@ -174,18 +164,17 @@ bool FlumeInputFormat::is_listening_worker() {
         return true;
 }
 
-bool FlumeInputFormat::next(boost::string_ref& ref)  {
+bool FlumeInputFormat::next(boost::string_ref& ref) {
     // In the same machine, workers except first one do nothing
     if (!is_listening_worker())
         return false;
     else {
+        ref = flume_handler_->get_next_data();
 
-    ref = flume_handler_->get_next_data();
-
-    if (ref.size() == 0)
-        return false;
-    else
-        return true;
+        if (ref.size() == 0)
+            return false;
+        else
+            return true;
     }
 }
 

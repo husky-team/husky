@@ -31,8 +31,8 @@ class SeparatorInputFormat : public InputFormatBase {
     typedef boost::string_ref RecordT;
 
     explicit SeparatorInputFormat(std::string pattern);
-    virtual void set_input(const std::string & url);
-    virtual bool next(boost::string_ref & ref);
+    virtual void set_input(const std::string& url);
+    virtual bool next(boost::string_ref& ref);
     virtual bool is_setup() const;
 
    protected:

@@ -74,7 +74,7 @@ bool LocalMailbox::poll(int channel_id, int progress) {
 }
 
 bool LocalMailbox::poll(const std::vector<std::pair<int, int>>& channel_progress_pairs, int* active_idx) {
-    for (int i=0; i<channel_progress_pairs.size(); i++) {
+    for (int i = 0; i < channel_progress_pairs.size(); i++) {
         if (in_queue_.get(channel_progress_pairs[i].first, channel_progress_pairs[i].second).size() > 0) {
             *active_idx = i;
             return true;
@@ -91,12 +91,13 @@ bool LocalMailbox::poll(const std::vector<std::pair<int, int>>& channel_progress
         for (auto& chnl_prgs_pair : channel_progress_pairs)
             if (comm_completed_.get(chnl_prgs_pair.first, chnl_prgs_pair.second))
                 num_completes += 1;
-        if(num_completes == channel_progress_pairs.size()) return true;
+        if (num_completes == channel_progress_pairs.size())
+            return true;
 
         return false;
     });
 
-    for (int i=0; i<channel_progress_pairs.size(); i++) {
+    for (int i = 0; i < channel_progress_pairs.size(); i++) {
         if (in_queue_.get(channel_progress_pairs[i].first, channel_progress_pairs[i].second).size() > 0) {
             *active_idx = i;
             return true;

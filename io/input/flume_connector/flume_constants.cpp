@@ -6,12 +6,6 @@
  */
 #include "flume_constants.h"
 
-
-
 const flumeConstants g_flume_constants;
 
-flumeConstants::flumeConstants() {
-}
-
-
-
+flumeConstants::flumeConstants() {}

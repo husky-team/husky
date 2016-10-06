@@ -1,4 +1,4 @@
-// Copyright 2015 Husky Team
+// Copyright 2016 Husky Team
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "base/log.hpp"
+#include <string>
+
 #include "boost/tokenizer.hpp"
 
+#include "base/log.hpp"
 #include "core/engine.hpp"
 #include "io/input/flume_inputformat.hpp"
-
-using namespace husky;
 
 class Word {
    public:
@@ -53,7 +53,7 @@ void test_load() {
     };
 
     for (int i = 0; i < 10000000; ++i) {
-        load(infmt, parse_wc);
+        husky::load(infmt, parse_wc);
         husky::list_execute(word_list, [&ch](Word& word) {
             int sum = ch.get(word);
             if(sum == 0)
@@ -70,8 +70,8 @@ int main(int argc, char ** argv) {
     // if hostname = "localhost", listen all machines
     args.push_back("hostname");
     args.push_back("port");
-    if (init_with_args(argc, argv, args)) {
-        run_job(test_load);
+    if (husky::init_with_args(argc, argv, args)) {
+        husky::run_job(test_load);
         return 0;
     }
     return 1;

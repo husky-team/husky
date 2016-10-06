@@ -34,16 +34,14 @@ ChunkInputFormat::ChunkInputFormat(int chunk_size) : chunk_size_(chunk_size) {
     is_setup_ = ChunkInputFormatSetUp::NotSetUp;
 }
 
-void ChunkInputFormat::set_input(const std::string & url) {
+void ChunkInputFormat::set_input(const std::string& url) {
     splitter_.load(url);
     is_setup_ |= ChunkInputFormatSetUp::InputSetUp;
 }
 
-bool ChunkInputFormat::is_setup() const {
-    return !(is_setup_ ^ ChunkInputFormatSetUp::AllSetUp);
-}
+bool ChunkInputFormat::is_setup() const { return !(is_setup_ ^ ChunkInputFormatSetUp::AllSetUp); }
 
-bool ChunkInputFormat::next(boost::string_ref & ref) {
+bool ChunkInputFormat::next(boost::string_ref& ref) {
     if (buffer_.size() == 0) {
         // fetch new block
         bool success = fetch_new_block();
