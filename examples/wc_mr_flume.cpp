@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include <string>
+#include <vector>
 
 #include "boost/tokenizer.hpp"
 
@@ -56,9 +57,9 @@ void test_load() {
         husky::load(infmt, parse_wc);
         husky::list_execute(word_list, [&ch](Word& word) {
             int sum = ch.get(word);
-            if(sum == 0)
+            if (sum == 0)
                 return;
-            else 
+            else
                 husky::base::log_msg(word.word + ": " + std::to_string(sum));
         });
     }

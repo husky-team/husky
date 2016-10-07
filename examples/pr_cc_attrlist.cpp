@@ -100,7 +100,8 @@ void pr_cc() {
     not_finished.to_reset_each_iter();
 
     auto& agg_ch = husky::lib::AggregatorFactory::get_channel();
-    auto& cidch = husky::ChannelFactory::create_push_combined_channel<int, husky::MinCombiner<int>>(vertex_list, vertex_list);
+    auto& cidch =
+        husky::ChannelFactory::create_push_combined_channel<int, husky::MinCombiner<int>>(vertex_list, vertex_list);
     // Initilization
     husky::list_execute(vertex_list, {}, {&cidch, &agg_ch}, [&cidch, &cid_list, &not_finished](Vertex& v) {
         int& cid = cid_list[v];
@@ -136,7 +137,7 @@ void pr_cc() {
     std::string small_graph = husky::Context::get_param("print");
     if (small_graph == "1") {
         husky::list_execute(vertex_list, [&cid_list](Vertex& v) {
-            husky::base::log_msg("vertex: "+std::to_string(v.id()) + " component id: "+std::to_string(cid_list[v]));
+            husky::base::log_msg("vertex: " + std::to_string(v.id()) + " component id: " + std::to_string(cid_list[v]));
         });
     }
 }

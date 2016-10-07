@@ -147,9 +147,9 @@ class PushCombinedChannel : public Source2ObjListChannel<DstObjT> {
                 recv_buffer_.resize(idx + 1);
                 recv_flag_.resize(idx + 1);
             }
-            if (recv_flag_[idx] == true)
+            if (recv_flag_[idx] == true) {
                 CombineT::combine(recv_buffer_[idx], msg);
-            else {
+            } else {
                 recv_buffer_[idx] = std::move(msg);
                 recv_flag_[idx] = true;
             }
