@@ -17,6 +17,9 @@
 #include <condition_variable>
 #include <mutex>
 #include <unordered_map>
+#include <utility>
+
+#include "base/time.hpp"
 
 namespace husky {
 namespace base {
@@ -30,8 +33,9 @@ class GenerationBase {
     size_t get_generation();
 
    private:
+    size_t time_stamp_ = base::get_current_time_milliseconds();
     size_t generation_ = 0;
-    static thread_local std::unordered_map<GenerationBase*, size_t> count_;
+    static thread_local std::unordered_map<GenerationBase*, std::pair<size_t, size_t>> count_;
 };
 
 // GenerationLock is designed for thread synchronization.

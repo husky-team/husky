@@ -17,15 +17,23 @@
 #include <condition_variable>
 #include <mutex>
 #include <unordered_map>
+#include <utility>
 
 namespace husky {
 namespace base {
 
-thread_local std::unordered_map<GenerationBase*, size_t> GenerationBase::count_;
+thread_local std::unordered_map<GenerationBase*, std::pair<size_t, size_t>> GenerationBase::count_;
 
 void GenerationBase::inc_generation() { ++generation_; }
 
-size_t GenerationBase::inc_count() { return ++count_[this]; }
+size_t GenerationBase::inc_count() {
+    std::pair<size_t, size_t>& self_gen = count_[this];
+    if (self_gen.first != time_stamp_) {
+        self_gen.first = time_stamp_;
+        self_gen.second = 0;
+    }
+    return ++self_gen.second;
+}
 
 size_t GenerationBase::get_generation() { return generation_; }
 
