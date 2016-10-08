@@ -11,15 +11,20 @@ CPPLINT_EXTENSIONS = ['cpp', 'hpp', 'tpp']
 CPPLINT_FILTERS = ['-whitespace/indent', '-runtime/references', '+build/include_alpha', '-build/c++11', '-legal/copyright', '-readability/casting']
 CPPLINT_LINE_LENGTH = 120
 
-cpp_suffix = '*.[ch]pp'
 default_dirs = [
     'base',
     'core',
     'io',
     'lib',
     'master',
-    'examples'
+    'examples',
 ]
+ignored_dirs = [
+    'io/input/flume_connector',
+]
+
+cpp_suffix = '*.[ch]pp'
+
 husky_root = os.getenv('HUSKY_ROOT', '.')
 os.chdir(husky_root)
 
@@ -32,11 +37,18 @@ def list_files(paths=None):
         dirs = paths
 
     if dirs is None:
-        files = []
-        for d in default_dirs:
-            cmd = 'find {} -name {}'.format(d, cpp_suffix)
+        dirs, files = default_dirs, []
+        for d in dirs:
+            cmd = 'find {} -name "{}"'.format(d, cpp_suffix)
             res = subprocess.check_output(cmd, shell=True).rstrip()
             files += res.split('\n')
+        removes = []
+        for f in files:
+            for d in ignored_dirs:
+                if f.find(d) != -1:
+                    removes.append(f)
+        for r in removes:
+            files.remove(r)
         return files
 
     cmd = 'find {} -name {}'.format(' '.join(dirs), cpp_suffix)
