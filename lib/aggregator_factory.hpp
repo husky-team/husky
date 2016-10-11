@@ -68,12 +68,5 @@ class AggregatorFactory : public AggregatorFactoryBase {
     AggregatorChannel aggregator_channel_;
 };
 
-class AutoRegisterAggregatorFactory {
-   public:
-    AutoRegisterAggregatorFactory();
-};
-
-extern AutoRegisterAggregatorFactory auto_reg_agg_factory;
-
 }  // namespace lib
 }  // namespace husky

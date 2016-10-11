@@ -32,8 +32,6 @@ using core::Accessor;
 using lib::AggregatorFactory;
 using lib::AggregatorState;
 
-AutoRegisterAggregatorFactory auto_reg_agg_factory;
-
 AggregatorChannel& AggregatorFactory::get_channel() { return static_cast<AggregatorFactory&>(get_factory()).channel(); }
 
 AggregatorChannel& AggregatorFactory::channel() { return aggregator_channel_; }
@@ -105,10 +103,6 @@ void AggregatorFactory::on_recv(AggregatorChannel& channel, const std::function<
             recv(bin);
         }
     }
-}
-
-AutoRegisterAggregatorFactory::AutoRegisterAggregatorFactory() {
-    AggregatorFactory::register_factory_constructor([]() { return new AggregatorFactory(); });
 }
 
 }  // namespace lib

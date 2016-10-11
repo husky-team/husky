@@ -134,12 +134,7 @@ class AggregatorFactoryBase {
         return factory_constructor;
     }
 
-    static AggregatorFactoryBase* create_factory() {
-        // use registered factory constructor to create a factory
-        auto ctor = get_factory_constructor();
-        ASSERT_MSG(ctor != nullptr, "No subclass of AggregatorFactoryBase registered");
-        return ctor();
-    }
+    static AggregatorFactoryBase* create_factory();
 
     // Assumption: each factory should create an aggregator together
     // i.e. the amount and the order of aggregators created by each factory must be the same
@@ -247,8 +242,8 @@ class Aggregator {
 
     void update(const ValueType& b) { local_agg_->aggregate(b); }
 
-    template <typename U>
-    void update(const std::function<void(ValueType&, const U&)>& lambda, const U& val) {
+    template <typename UpdateLambdaType, typename U>
+    void update(const UpdateLambdaType& lambda, const U& val) {
         lambda(local_agg_->get_value(), val);
     }
 

@@ -22,6 +22,7 @@
 
 #include "base/serialization.hpp"
 #include "core/utils.hpp"
+#include "lib/aggregator_factory.hpp"
 #include "lib/aggregator_object.hpp"
 
 namespace husky {
@@ -32,6 +33,15 @@ thread_local std::shared_ptr<AggregatorFactoryBase> AggregatorFactoryBase::facto
 AggregatorInfo::~AggregatorInfo() {
     if (value != nullptr)
         delete value;
+}
+
+AggregatorFactoryBase* AggregatorFactoryBase::create_factory() {
+    // use registered factory constructor to create a factory
+    auto& ctor = get_factory_constructor();
+    if (ctor == nullptr) {
+        ctor = []() { return new AggregatorFactory(); };
+    }
+    return ctor();
 }
 
 void AggregatorFactoryBase::init_factory() {

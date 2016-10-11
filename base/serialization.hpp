@@ -159,5 +159,12 @@ BinStream& operator>>(BinStream& stream, std::string& x);
 BinStream& operator<<(BinStream& stream, const std::vector<bool>& v);
 BinStream& operator>>(BinStream& stream, std::vector<bool>& v);
 
+template <typename Value>
+Value deser(BinStream& in) {
+    Value v;
+    in >> v;
+    return v;
+}
+
 }  // namespace base
 }  // namespace husky

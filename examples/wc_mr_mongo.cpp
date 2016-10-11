@@ -26,11 +26,6 @@
 #include "io/input/mongodb_inputformat.hpp"
 #include "lib/aggregator_factory.hpp"
 
-namespace husky {
-
-using lib::Aggregator;
-using lib::AggregatorFactory;
-
 class Word {
    public:
     using KeyT = std::string;
@@ -43,52 +38,18 @@ class Word {
     int count = 0;
 };
 
-class TopKPairs {
-   public:
-    TopKPairs() {}
-
-    friend bool operator<(const std::pair<int, std::string>& a, const std::pair<int, std::string>& b) {
-        return a.first == b.first ? a.second < b.second : a.first < b.first;
-    }
-
-    void push(const std::pair<int, std::string>& p) {
-        if (tops.size() == kMaxNum && *tops.begin() < p) tops.erase(tops.begin());
-        if (tops.size() < kMaxNum) tops.insert(p);
-    }
-
-    friend base::BinStream& operator>>(base::BinStream& in, TopKPairs& b) {
-        size_t n;
-        in >> n;
-        b.tops.clear();
-        for (std::pair<int, std::string> p; n--;) {
-            in >> p;
-            b.push(p);
-        }
-        return in;
-    }
-
-    friend base::BinStream& operator<<(base::BinStream& out, const TopKPairs& b) {
-        out << b.tops.size();
-        for (auto& i : b.tops) {
-           out << i;
-        }
-        return out;
-    }
-
-    std::set<std::pair<int, std::string>> tops;
-    static const int kMaxNum;
-};
-
-const int TopKPairs::kMaxNum = 100;
+bool operator<(const std::pair<int, std::string>& a, const std::pair<int, std::string>& b) {
+    return a.first == b.first ? a.second < b.second : a.first < b.first;
+}
 
 void wc() {
-    io::MongoDBInputFormat infmt;
-    infmt.set_server(Context::get_param("mongo_server"));
-    infmt.set_ns(Context::get_param("mongo_db"), Context::get_param("mongo_collection"));
+    husky::io::MongoDBInputFormat infmt;
+    infmt.set_server(husky::Context::get_param("mongo_server"));
+    infmt.set_ns(husky::Context::get_param("mongo_db"), husky::Context::get_param("mongo_collection"));
     infmt.set_query("");
 
-    auto& word_list = ObjListFactory::create_objlist<Word>();
-    auto& ch = ChannelFactory::create_push_combined_channel<int, SumCombiner<int>>(infmt, word_list);
+    auto& word_list = husky::ObjListFactory::create_objlist<Word>();
+    auto& ch = husky::ChannelFactory::create_push_combined_channel<int, husky::SumCombiner<int>>(infmt, word_list);
 
     auto parse_wc = [&](std::string& chunk) {
         mongo::BSONObj o = mongo::fromjson(chunk);
@@ -102,37 +63,53 @@ void wc() {
         }
     };
 
-    load(infmt, parse_wc);
+    husky::load(infmt, parse_wc);
 
     // Show topk words.
-    Aggregator<TopKPairs> unique_topk(TopKPairs(),
-        [](TopKPairs& a, const TopKPairs& b) {
-            for (auto& i : b.tops)
-                a.push(i);
-        }, [](TopKPairs& a) { a.tops.clear(); });
-    list_execute(word_list, [&ch, &unique_topk](Word& word) {
-        unique_topk.update_any([&ch, &word](TopKPairs& p) {
-            p.push({ch.get(word), word.id()});
+    const int kMaxNum = 100;
+    typedef std::set<std::pair<int, std::string> > TopKPairs;
+    auto add_to_topk = [](TopKPairs& pairs, const std::pair<int, std::string>& p) {
+        if (pairs.size() == kMaxNum && *pairs.begin() < p) pairs.erase(pairs.begin());
+        if (pairs.size() < kMaxNum) pairs.insert(p);
+    };
+    husky::lib::Aggregator<TopKPairs> unique_topk(
+        TopKPairs(),
+        [add_to_topk](TopKPairs& a, const TopKPairs& b) {
+            for (auto& i : b) {
+                add_to_topk(a, i);
+            }
+        },
+        [](TopKPairs& a) { a.clear(); },
+        [add_to_topk](husky::base::BinStream& in, TopKPairs& pairs) {
+            pairs.clear();
+            for (size_t n = husky::base::deser<size_t>(in); n--;)
+                add_to_topk(pairs, husky::base::deser<std::pair<int, std::string>>(in));
+        },
+        [](husky::base::BinStream& out, const TopKPairs& pairs) {
+            out << pairs.size();
+            for (auto& p : pairs)
+                out << p;
         });
-    });
-    AggregatorFactory::sync();
-    if (Context::get_global_tid() == 0)
-      for (auto& i : unique_topk.get_value().tops)
-          base::log_msg(i.second + " " + std::to_string(i.first));
-}
 
-}  // namespace husky
+    husky::list_execute(word_list, [&ch, &unique_topk, add_to_topk](Word& word) {
+        unique_topk.update(add_to_topk, std::make_pair(ch.get(word), word.id()));
+    });
+
+    husky::lib::AggregatorFactory::sync();
+
+    if (husky::Context::get_global_tid() == 0) {
+        for (auto& i : unique_topk.get_value())
+            husky::base::log_msg(i.second + " " + std::to_string(i.first));
+    }
+}
 
 int main(int argc, char** argv) {
     std::vector<std::string> args;
     args.push_back("mongo_server");
     args.push_back("mongo_db");
     args.push_back("mongo_collection");
-    husky::lib::AggregatorFactory::register_factory_constructor([]() {
-        return new husky::lib::AggregatorFactory();
-    });
     if (husky::init_with_args(argc, argv, args)) {
-        husky::run_job(husky::wc);
+        husky::run_job(wc);
         return 0;
     }
     return 1;
