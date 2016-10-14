@@ -68,7 +68,7 @@ bool Config::init_with_args(int ac, char** av, const std::vector<std::string>& c
                                                                     "Communication port");
 
     po::options_description worker_info_options("Worker Info options");
-    worker_info_options.add_options()("worker.info", po::value<std::vector<std::string>>(),
+    worker_info_options.add_options()("worker.info", po::value<std::vector<std::string>>()->multitoken(),
                                       "Worker information.\nFormat is '%worker_hostname:%thread_number'.\nUse "
                                       "colon ':' as separator.");
 
