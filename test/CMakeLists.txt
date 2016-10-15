@@ -51,3 +51,9 @@ target_link_libraries(HuskyUnitTest ${EXTERNAL_LIB})
 target_link_libraries(HuskyUnitTest ${GTEST_LIBRARIES})
 target_link_libraries(HuskyUnitTest ${GMOCK_LIBRARIES})
 set_property(TARGET HuskyUnitTest PROPERTY CXX_STANDARD 14)
+
+# TestAsync 
+add_executable(TestAsync test-async.cpp)
+target_link_libraries(TestAsync ${husky})
+target_link_libraries(TestAsync ${EXTERNAL_LIB})
+set_property(TARGET TestAsync PROPERTY CXX_STANDARD 14)

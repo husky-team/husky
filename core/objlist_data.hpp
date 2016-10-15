@@ -33,6 +33,7 @@ class ObjListData {
     ObjListData& operator=(ObjListData&&) = delete;
 
     inline size_t get_size() const { return data_.size() - num_del_; }
+    inline size_t get_vector_size() const { return data_.size(); }
 
     // Find the index of an obj
     size_t index_of(const ObjT* const obj_ptr) const {

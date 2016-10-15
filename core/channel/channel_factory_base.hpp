@@ -17,6 +17,8 @@
 #include <string>
 #include <unordered_map>
 
+#include "core/channel/async_migrate_channel.hpp"
+#include "core/channel/async_push_channel.hpp"
 #include "core/channel/broadcast_channel.hpp"
 #include "core/channel/channel_base.hpp"
 #include "core/channel/migrate_channel.hpp"
@@ -100,6 +102,46 @@ class ChannelFactoryBase {
         auto* broadcast_channel = new BroadcastChannel<KeyT, MsgT>(&src_list);
         channel_map.insert({channel_name, broadcast_channel});
         return *broadcast_channel;
+    }
+
+    // Create AsyncPushChannel
+    template <typename MsgT, typename ObjT>
+    static AsyncPushChannel<MsgT, ObjT>& create_async_push_channel(ObjList<ObjT>& obj_list,
+                                                                   const std::string& name = "") {
+        std::string channel_name = name.empty() ? channel_name_prefix + std::to_string(default_channel_id++) : name;
+        ASSERT_MSG(channel_map.find(channel_name) == channel_map.end(),
+                   "ChannelFactoryBase::create_channel: Channel name already exists");
+        auto* async_push_channel = new AsyncPushChannel<MsgT, ObjT>(&obj_list);
+        channel_map.insert({channel_name, async_push_channel});
+        return *async_push_channel;
+    }
+
+    template <typename MsgT, typename ObjT>
+    static AsyncPushChannel<MsgT, ObjT>& get_async_push_channel(const std::string& name = "") {
+        ASSERT_MSG(channel_map.find(name) != channel_map.end(),
+                   "ChannelFactoryBase::get_channel: Channel name doesn't exist");
+        auto* channel = channel_map[name];
+        return *dynamic_cast<AsyncPushChannel<MsgT, ObjT>*>(channel);
+    }
+
+    // Create AsyncMigrateChannel
+    template <typename ObjT>
+    static AsyncMigrateChannel<ObjT>& create_async_migrate_channel(ObjList<ObjT>& obj_list,
+                                                                   const std::string& name = "") {
+        std::string channel_name = name.empty() ? channel_name_prefix + std::to_string(default_channel_id++) : name;
+        ASSERT_MSG(channel_map.find(channel_name) == channel_map.end(),
+                   "ChannelFactoryBase::create_channel: Channel name already exists");
+        auto* async_migrate_channel = new AsyncMigrateChannel<ObjT>(&obj_list);
+        channel_map.insert({channel_name, async_migrate_channel});
+        return *async_migrate_channel;
+    }
+
+    template <typename ObjT>
+    static AsyncMigrateChannel<ObjT>& get_async_migrate_channel(const std::string& name = "") {
+        ASSERT_MSG(channel_map.find(name) != channel_map.end(),
+                   "ChannelFactoryBase::get_channel: Channel name doesn't exist");
+        auto* channel = channel_map[name];
+        return *dynamic_cast<AsyncMigrateChannel<ObjT>*>(channel);
     }
 
     template <typename KeyT, typename MsgT>

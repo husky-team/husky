@@ -73,6 +73,36 @@ bool LocalMailbox::poll(int channel_id, int progress) {
     return false;
 }
 
+// This function will not block the thread, it will return
+// immediately whether there is message or not
+bool LocalMailbox::poll_non_block(int channel_id, int progress) { return in_queue_.get(channel_id, progress).size(); }
+
+// If there is message, this function will return True immediately.
+// Otherwise, this function will wait until a message come or the
+// waiting time specified by the user is used up
+bool LocalMailbox::poll_with_timeout(int channel_id, int progress, double timeout) {
+    // step 1: check the queue size
+    if (in_queue_.get(channel_id, progress).size() > 0)
+        return true;
+
+    // step 2: check the flag
+    // block when the queue is not empty but the flag is true
+    std::unique_lock<std::mutex> lock(poll_mutex_.get(channel_id, progress));
+
+    poll_cv_.wait_for(lock, std::chrono::duration<double>(timeout), [&]() {
+        if (in_queue_.get(channel_id, progress).size() > 0)
+            return true;
+        if (comm_completed_.get(channel_id, progress))
+            return true;
+
+        return false;
+    });
+
+    if (in_queue_.get(channel_id, progress).size() > 0)
+        return true;
+    return false;
+}
+
 bool LocalMailbox::poll(const std::vector<std::pair<int, int>>& channel_progress_pairs, int* active_idx) {
     for (int i = 0; i < channel_progress_pairs.size(); i++) {
         if (in_queue_.get(channel_progress_pairs[i].first, channel_progress_pairs[i].second).size() > 0) {
@@ -239,6 +269,7 @@ void MailboxEventLoop::_recv_comm_handler(int thread_id, int channel_id, int pro
     auto& mailbox = *(registered_mailbox_[thread_id]);
 
     mailbox.in_queue_.get(channel_id, progress).push(std::move(recv_bin_stream_ptr));
+    mailbox.poll_cv_.notify_one();
 }
 
 void MailboxEventLoop::send_comm_handler() {

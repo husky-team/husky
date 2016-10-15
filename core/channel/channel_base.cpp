@@ -22,7 +22,10 @@ namespace husky {
 
 thread_local size_t ChannelBase::counter = 0;
 
-ChannelBase::ChannelBase() : channel_id_(counter), progress_(0) { counter += 1; }
+ChannelBase::ChannelBase() : channel_id_(counter), progress_(0) {
+    counter += 1;
+    set_as_sync_channel();
+}
 
 void ChannelBase::set_local_id(size_t local_id) { local_id_ = local_id; }
 
@@ -33,6 +36,10 @@ void ChannelBase::set_worker_info(WorkerInfo* worker_info) { worker_info_ = work
 void ChannelBase::set_mailbox(LocalMailbox* mailbox) { mailbox_ = mailbox; }
 
 void ChannelBase::set_hash_ring(HashRing* hash_ring) { hash_ring_ = hash_ring; }
+
+void ChannelBase::set_as_async_channel() { type_ = ChannelType::Async; }
+
+void ChannelBase::set_as_sync_channel() { type_ = ChannelType::Sync; }
 
 void ChannelBase::setup(size_t local_id, size_t global_id, WorkerInfo* worker_info, LocalMailbox* mailbox,
                         HashRing* hash_ring) {

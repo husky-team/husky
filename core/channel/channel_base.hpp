@@ -28,6 +28,8 @@ using base::BinStream;
 
 class ChannelBase {
    public:
+    enum class ChannelType { Sync, Async };
+
     virtual ~ChannelBase() = default;
 
     /// Getter
@@ -37,6 +39,7 @@ class ChannelBase {
     inline size_t get_global_id() const { return global_id_; }
     inline size_t get_local_id() const { return local_id_; }
     inline size_t get_progress() const { return progress_; }
+    inline ChannelType get_channel_type() const { return type_; }
 
     /// Setter
     void set_local_id(size_t local_id);
@@ -44,6 +47,9 @@ class ChannelBase {
     void set_worker_info(WorkerInfo* worker_info);
     void set_mailbox(LocalMailbox* mailbox);
     void set_hash_ring(HashRing* hash_ring);
+
+    void set_as_async_channel();
+    void set_as_sync_channel();
 
     void setup(size_t, size_t, WorkerInfo*, LocalMailbox*, HashRing*);
 
@@ -70,6 +76,8 @@ class ChannelBase {
     /// reset the flushed_ so that prepare/prepare_messages won't be invoked next time
     inline void reset_flushed() { flushed_[progress_] = false; }
 
+    void inc_progress();
+
    protected:
     ChannelBase();
 
@@ -79,12 +87,12 @@ class ChannelBase {
     ChannelBase(ChannelBase&&) = default;
     ChannelBase& operator=(ChannelBase&&) = default;
 
-    void inc_progress();
-
     size_t channel_id_;
     size_t global_id_;
     size_t local_id_;
     size_t progress_;
+
+    ChannelType type_;
 
     std::vector<bool> flushed_{0};
 

@@ -14,6 +14,8 @@
 
 #pragma once
 
+#include <chrono>
+#include <iostream>
 #include <vector>
 
 #include "base/log.hpp"
@@ -43,6 +45,57 @@ void globalize(ObjList<ObjT>& obj_list) {
 
     ChannelFactory::drop_channel("tmp_globalize");
     // TODO(all): Maybe we can skip using unordered_map to index obj since in the end we need to sort them
+}
+
+/// Warning: can only handle async push and async migrate
+/// Channel must be AsyncPushChannel or AsyncMigrateChannel
+/// Only one channel is allowed so far
+/// TODO(Wei): Multiple channels should be allowed to bind to one object list
+template <typename ObjT, typename ExecT>
+void list_execute_async(ObjList<ObjT>& obj_list, ExecT execute, int async_time, double timeout = 0.0) {
+    std::vector<ChannelBase*> channels = obj_list.get_inchannels();
+    ChannelBase* channel;
+    int flag = false;
+    for (auto* ch : channels) {
+        if (!flag && ch->get_channel_type() == ChannelBase::ChannelType::Async) {
+            flag = true;
+            channel = ch;
+        } else if (ch->get_channel_type() == ChannelBase::ChannelType::Async) {
+            base::log_msg("Async list execution only support exactly one async channel.");
+            return;
+        }
+    }
+
+    auto start = std::chrono::steady_clock::now();
+    auto duration = std::chrono::seconds(async_time);
+    auto* mailbox = channel->get_mailbox();
+    while (std::chrono::steady_clock::now() - start < duration) {
+        // 1. receive messages if any
+        channel->prepare();
+        if (timeout == 0.0) {
+            while (mailbox->poll_non_block(channel->get_channel_id(), channel->get_progress())) {
+                auto bin = mailbox->recv(channel->get_channel_id(), channel->get_progress());
+                channel->in(bin);
+            }
+        } else {
+            while (mailbox->poll_with_timeout(channel->get_channel_id(), channel->get_progress(), timeout)) {
+                auto bin = mailbox->recv(channel->get_channel_id(), channel->get_progress());
+                channel->in(bin);
+            }
+        }
+
+        // 2. iterate over the list
+        for (size_t i = 0; i < obj_list.get_size(); ++i) {
+            if (obj_list.get_del(i))
+                continue;
+            execute(obj_list.get(i));
+        }
+
+        // 3. flush
+        channel->out();
+    }
+    channel->inc_progress();
+    mailbox->send_complete(channel->get_channel_id(), channel->get_progress());
 }
 
 template <typename ObjT, typename ExecT>

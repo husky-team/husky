@@ -246,7 +246,7 @@ class ObjList : public ObjListBase {
     inline size_t get_num_del() const { return objlist_data_.num_del_; }
     inline size_t get_hashed_size() const { return hashed_objs.size(); }
     inline size_t get_size() const override { return objlist_data_.get_size(); }
-    inline size_t get_vector_size() const { return objlist_data_.data_.size(); }
+    inline size_t get_vector_size() const { return objlist_data_.get_vector_size(); }
     inline ObjT& get(size_t i) { return objlist_data_.data_[i]; }
 
    protected:

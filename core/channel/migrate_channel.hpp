@@ -29,7 +29,7 @@ namespace husky {
 using base::BinStream;
 
 template <typename ObjT>
-class MigrateChannel final : public ObjList2ObjListChannel<ObjT, ObjT> {
+class MigrateChannel : public ObjList2ObjListChannel<ObjT, ObjT> {
    public:
     MigrateChannel(ObjList<ObjT>* src, ObjList<ObjT>* dst) : ObjList2ObjListChannel<ObjT, ObjT>(src, dst) {
         this->src_ptr_->register_outchannel(this->channel_id_, this);

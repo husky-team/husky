@@ -65,6 +65,71 @@ TEST_F(TestMailbox, SendRecvOnce) {
     assert(recv_int == 1);
 }
 
+TEST_F(TestMailbox, SendRecvOnceAsync) {
+    zmq::context_t zmq_context;
+
+    // Setup
+    MailboxEventLoop el(&zmq_context);
+    el.set_process_id(0);
+    CentralRecver recver(&zmq_context, "inproc://test");
+    LocalMailbox mailbox(&zmq_context);
+    mailbox.set_thread_id(0);
+    el.register_mailbox(mailbox);
+
+    // send a message
+    BinStream send_bin_stream;
+    int send_int = 1;
+    send_bin_stream << send_int;
+    mailbox.send(0, 0, 0, send_bin_stream);
+    mailbox.send_complete(0, 0);
+
+    // Recv the message
+    while(1) {
+        if (mailbox.poll_non_block(0, 0)) {
+            BinStream recv_bin_stream = mailbox.recv(0, 0);
+            assert(mailbox.poll_non_block(0, 0) == false);
+            int recv_int;
+            recv_bin_stream >> recv_int;
+            assert(recv_int == 1);
+            break;
+        }
+    }
+}
+
+TEST_F(TestMailbox, SendRecvOnceAsyncTimeout) {
+    zmq::context_t zmq_context;
+
+    // Setup
+    MailboxEventLoop el(&zmq_context);
+    el.set_process_id(0);
+    CentralRecver recver(&zmq_context, "inproc://test");
+    LocalMailbox mailbox(&zmq_context);
+    mailbox.set_thread_id(0);
+    el.register_mailbox(mailbox);
+
+    // send a message
+    BinStream send_bin_stream;
+    int send_int = 1;
+    send_bin_stream << send_int;
+    mailbox.send(0, 0, 0, send_bin_stream);
+    mailbox.send_complete(0, 0);
+
+    // Recv the message
+    bool if_recv = false;
+    while(1) {
+        bool flag = mailbox.poll_with_timeout(0, 0, 0.1);
+        if(flag) {
+            BinStream recv_bin_stream = mailbox.recv(0, 0);
+            int recv_int;
+            recv_bin_stream >> recv_int;
+            assert(recv_int == 1);
+            if_recv = true;
+        } else if (if_recv) {
+            break;
+        }
+    }
+}
+
 TEST_F(TestMailbox, SendRecvMultiple) {
     zmq::context_t zmq_context;
 

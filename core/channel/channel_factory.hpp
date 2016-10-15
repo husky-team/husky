@@ -64,6 +64,24 @@ class ChannelFactory : public ChannelFactoryBase {
         return ch;
     }
 
+    // Create PushAsyncChannel
+    template <typename MsgT, typename ObjT>
+    static AsyncPushChannel<MsgT, ObjT>& create_async_push_channel(ObjList<ObjT>& obj_list,
+                                                                   const std::string& name = "") {
+        auto& ch = ChannelFactoryBase::create_async_push_channel<MsgT>(obj_list, name);
+        setup(ch);
+        return ch;
+    }
+
+    // Create MigrateAsyncChannel
+    template <typename ObjT>
+    static AsyncMigrateChannel<ObjT>& create_async_migrate_channel(ObjList<ObjT>& obj_list,
+                                                                   const std::string& name = "") {
+        auto& ch = ChannelFactoryBase::create_async_migrate_channel<ObjT>(obj_list, name);
+        setup(ch);
+        return ch;
+    }
+
     static void setup(ChannelBase& ch) {
         ch.setup(Context::get_local_tid(), Context::get_global_tid(), Context::get_worker_info(),
                  Context::get_mailbox(), Context::get_hashring());

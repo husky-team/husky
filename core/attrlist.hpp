@@ -168,7 +168,7 @@ class AttrList : public AttrListBase {
 
     void migrate(BinStream& bin, const size_t idx) override {
         if (idx >= data_.size()) {
-            data_.resize(master_data_ptr_->get_size());
+            data_.resize(master_data_ptr_->get_vector_size());
         }
         bin << data_[idx];
     }

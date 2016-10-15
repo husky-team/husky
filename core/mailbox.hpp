@@ -52,6 +52,8 @@ class LocalMailbox {
     // Return false if no more message is available
     bool poll(int channel_id, int progress);
     bool poll(const std::vector<std::pair<int, int>>& channel_progress_pairs, int* active_idx);
+    bool poll_non_block(int channel_id, int progress);
+    bool poll_with_timeout(int channel_id, int progress, double timeout);
     void send(int thread_id, int channel_id, int progress, BinStream& bin_stream);
     void send_complete(int channel_id, int progress);
     BinStream recv(int channel_id, int progress);
