@@ -17,7 +17,7 @@
 
 #include "gtest/gtest.h"
 
-#include "core/objlist.hpp"
+#include "core/objlist_unittest.hpp"
 
 namespace husky {
 namespace {
@@ -51,7 +51,7 @@ class AttrDb {
 };
 
 TEST_F(TestAttrList, InitAndGet) {
-    ObjList<Obj> obj_list;
+    ObjListForTest<Obj> obj_list;
     obj_list.create_attrlist<int>("int");
     obj_list.create_attrlist<AttrDb>("attr");
     auto& int_list = obj_list.get_attrlist<int>("int");
@@ -63,14 +63,14 @@ TEST_F(TestAttrList, InitAndGet) {
 }
 
 TEST_F(TestAttrList, InitAndDelete) {
-    ObjList<Obj> obj_list;
+    ObjListForTest<Obj> obj_list;
     obj_list.create_attrlist<int>("int");
     EXPECT_EQ(obj_list.del_attrlist("int"), 1);
     EXPECT_EQ(obj_list.del_attrlist("int"), 0);
 }
 
 TEST_F(TestAttrList, SetAttrAndGet) {
-    ObjList<Obj> obj_list;
+    ObjListForTest<Obj> obj_list;
     auto& intlist = obj_list.create_attrlist<int>("int");
     auto& attr_list = obj_list.create_attrlist<AttrDb>("attr");
     for (int i = 0; i < 10; ++i) {
@@ -105,7 +105,7 @@ TEST_F(TestAttrList, SetAttrAndGet) {
 }
 
 TEST_F(TestAttrList, Sort) {
-    ObjList<Obj> obj_list;
+    ObjListForTest<Obj> obj_list;
     auto& intlist = obj_list.create_attrlist<int>("int");
     for (int i = 0; i < 10; ++i) {
         Obj obj(10 - i - 1);  // insert obj by descending order
@@ -116,7 +116,7 @@ TEST_F(TestAttrList, Sort) {
         EXPECT_EQ(intlist[i], i);
     }
 
-    obj_list.sort();
+    obj_list.test_sort();
 
     for (int i = 0; i < 10; ++i) {
         EXPECT_EQ(intlist[i], 10 - i - 1);
@@ -124,7 +124,7 @@ TEST_F(TestAttrList, Sort) {
 }
 
 TEST_F(TestAttrList, DeleteAndSort) {
-    ObjList<Obj> obj_list;
+    ObjListForTest<Obj> obj_list;
     auto& intlist = obj_list.create_attrlist<int>("int");
     auto& attr_list = obj_list.create_attrlist<AttrDb>("attr");
     for (int i = 0; i < 10; ++i) {
@@ -138,11 +138,11 @@ TEST_F(TestAttrList, DeleteAndSort) {
     Obj* p2 = &v[7];
     obj_list.delete_object(p);
     obj_list.delete_object(p2);
-    EXPECT_EQ(obj_list.get_num_del(), 2);
+    EXPECT_EQ(obj_list.test_get_num_del(), 2);
     EXPECT_EQ(obj_list.get_del(3), 1);
     EXPECT_EQ(obj_list.get_del(5), 0);
 
-    obj_list.deletion_finalize();
+    obj_list.test_deletion_finalize();
 
     // check size
     EXPECT_EQ(intlist.size(), 8);
@@ -153,7 +153,7 @@ TEST_F(TestAttrList, DeleteAndSort) {
     EXPECT_DOUBLE_EQ(attr_list[3].val, 9.0);
     EXPECT_DOUBLE_EQ(attr_list[7].val, 8.0);
 
-    obj_list.sort();
+    obj_list.test_sort();
 
     EXPECT_EQ(v[3].key, 4);
     EXPECT_EQ(v[7].key, 9);

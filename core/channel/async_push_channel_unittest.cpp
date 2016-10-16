@@ -11,7 +11,7 @@
 #include "core/channel/migrate_channel.hpp"
 #include "core/hash_ring.hpp"
 #include "core/mailbox.hpp"
-#include "core/objlist.hpp"
+#include "core/objlist_unittest.hpp"
 #include "core/worker_info.hpp"
 
 namespace husky {
@@ -38,13 +38,13 @@ class Obj {
 
 // Create AsyncPushChannel without setting
 template <typename MsgT, typename DstObjT>
-AsyncPushChannel<MsgT, DstObjT> create_async_push_channel(ObjList<DstObjT>& obj_list) {
+AsyncPushChannel<MsgT, DstObjT> create_async_push_channel(ObjListForTest<DstObjT>& obj_list) {
     AsyncPushChannel<MsgT, DstObjT> async_push_channel(&obj_list);
     return async_push_channel;
 }
 // Create MigrateChannel without setting
 template <typename ObjT>
-MigrateChannel<ObjT> create_migrate_channel(ObjList<ObjT>& src_list, ObjList<ObjT>& dst_list) {
+MigrateChannel<ObjT> create_migrate_channel(ObjListForTest<ObjT>& src_list, ObjListForTest<ObjT>& dst_list) {
     MigrateChannel<ObjT> migrate_channel(&src_list, &dst_list);
     return migrate_channel;
 }
@@ -72,7 +72,7 @@ TEST_F(TestAsyncPushChannel, Create) {
     workerinfo.set_proc_id(0);
 
     // ObjList Setup
-    ObjList<Obj> obj_list;
+    ObjListForTest<Obj> obj_list;
 
     // PushChannel
     auto async_push_channel = create_async_push_channel<int>(obj_list);
@@ -102,7 +102,7 @@ TEST_F(TestAsyncPushChannel, PushSingle) {
     workerinfo.set_proc_id(0);
 
     // ObjList Setup
-    ObjList<Obj> obj_list;
+    ObjListForTest<Obj> obj_list;
 
     // PushChannel
     auto async_push_channel = create_async_push_channel<int>(obj_list);
@@ -135,7 +135,7 @@ TEST_F(TestAsyncPushChannel, PushMultipleTime) {
     el.register_mailbox(mailbox);
 
     // ObjList Setup
-    ObjList<Obj> obj_list;
+    ObjListForTest<Obj> obj_list;
 
     // WorkerInfo Setup
     WorkerInfo workerinfo;
@@ -194,7 +194,7 @@ TEST_F(TestAsyncPushChannel, IncProgress) {
     workerinfo.set_proc_id(0);
 
     // ObjList Setup
-    ObjList<Obj> obj_list;
+    ObjListForTest<Obj> obj_list;
 
     // PushChannel
     // Round 1
@@ -254,7 +254,7 @@ TEST_F(TestAsyncPushChannel, MultiThread) {
     workerinfo.set_proc_id(0);
 
     std::thread th1 = std::thread([&]() {
-        ObjList<Obj> obj_list;
+        ObjListForTest<Obj> obj_list;
 
         obj_list.add_object(Obj(100));
         obj_list.add_object(Obj(18));
@@ -269,10 +269,10 @@ TEST_F(TestAsyncPushChannel, MultiThread) {
                 migrate_channel.migrate(obj, dst_thread_id);
             }
         }
-        obj_list.deletion_finalize();
+        obj_list.test_deletion_finalize();
         migrate_channel.out();
         migrate_channel.prepare_immigrants();
-        obj_list.sort();
+        obj_list.test_sort();
 
         // Push
         auto async_push_channel = create_async_push_channel<int>(obj_list);
@@ -293,7 +293,7 @@ TEST_F(TestAsyncPushChannel, MultiThread) {
         }
     });
     std::thread th2 = std::thread([&]() {
-        ObjList<Obj> obj_list;
+        ObjListForTest<Obj> obj_list;
 
         obj_list.add_object(Obj(1));
         obj_list.add_object(Obj(1342148));
@@ -308,10 +308,10 @@ TEST_F(TestAsyncPushChannel, MultiThread) {
                 migrate_channel.migrate(obj, dst_thread_id);
             }
         }
-        obj_list.deletion_finalize();
+        obj_list.test_deletion_finalize();
         migrate_channel.out();
         migrate_channel.prepare_immigrants();
-        obj_list.sort();
+        obj_list.test_sort();
 
         // Push
         auto async_push_channel = create_async_push_channel<int>(obj_list);

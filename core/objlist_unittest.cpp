@@ -1,4 +1,4 @@
-#include "core/objlist.hpp"
+#include "core/objlist_unittest.hpp"
 
 #include <string>
 #include <vector>
@@ -28,13 +28,13 @@ class Obj {
 };
 
 TEST_F(TestObjList, InitAndDelete) {
-    ObjList<Obj>* obj_list = new ObjList<Obj>();
+    ObjListForTest<Obj>* obj_list = new ObjListForTest<Obj>();
     ASSERT_TRUE(obj_list != nullptr);
     delete obj_list;
 }
 
 TEST_F(TestObjList, AddObject) {
-    ObjList<Obj> obj_list;
+    ObjListForTest<Obj> obj_list;
     for (int i = 0; i < 10; ++i) {
         Obj obj(i);
         obj_list.add_object(obj);
@@ -46,7 +46,7 @@ TEST_F(TestObjList, AddObject) {
 }
 
 TEST_F(TestObjList, AddMoveObject) {
-    ObjList<Obj> obj_list;
+    ObjListForTest<Obj> obj_list;
     for (int i = 0; i < 10; ++i) {
         Obj obj(i);
         obj_list.add_object(std::move(obj));
@@ -58,15 +58,15 @@ TEST_F(TestObjList, AddMoveObject) {
 }
 
 TEST_F(TestObjList, Sort) {
-    ObjList<Obj> obj_list;
+    ObjListForTest<Obj> obj_list;
     for (int i = 0; i < 10; ++i) {
         Obj obj(10 - i - 1);
         obj_list.add_object(std::move(obj));
     }
-    obj_list.sort();
-    EXPECT_EQ(obj_list.get_sorted_size(), 10);
-    EXPECT_EQ(obj_list.get_num_del(), 0);
-    EXPECT_EQ(obj_list.get_hashed_size(), 0);
+    obj_list.test_sort();
+    EXPECT_EQ(obj_list.test_get_sorted_size(), 10);
+    EXPECT_EQ(obj_list.test_get_num_del(), 0);
+    EXPECT_EQ(obj_list.test_get_hashed_size(), 0);
     EXPECT_EQ(obj_list.get_size(), 10);
     std::vector<Obj>& v = obj_list.get_data();
     for (int i = 0; i < 10; ++i) {
@@ -75,7 +75,7 @@ TEST_F(TestObjList, Sort) {
 }
 
 TEST_F(TestObjList, Delete) {
-    ObjList<Obj> obj_list;
+    ObjListForTest<Obj> obj_list;
     for (int i = 0; i < 10; ++i) {
         Obj obj(i);
         obj_list.add_object(std::move(obj));
@@ -85,16 +85,16 @@ TEST_F(TestObjList, Delete) {
     Obj* p2 = &v[7];
     obj_list.delete_object(p);
     obj_list.delete_object(p2);
-    EXPECT_EQ(obj_list.get_num_del(), 2);
+    EXPECT_EQ(obj_list.test_get_num_del(), 2);
     EXPECT_EQ(obj_list.get_del(3), 1);
     EXPECT_EQ(obj_list.get_del(5), 0);
-    obj_list.deletion_finalize();
-    EXPECT_EQ(obj_list.get_num_del(), 0);
+    obj_list.test_deletion_finalize();
+    EXPECT_EQ(obj_list.test_get_num_del(), 0);
     EXPECT_EQ(obj_list.get_size(), 8);
 }
 
 TEST_F(TestObjList, Find) {
-    ObjList<Obj> obj_list;
+    ObjListForTest<Obj> obj_list;
     for (int i = 0; i < 10; ++i) {
         Obj obj(i);
         obj_list.add_object(std::move(obj));
@@ -102,7 +102,7 @@ TEST_F(TestObjList, Find) {
     EXPECT_NE(obj_list.find(3), nullptr);
     EXPECT_NE(obj_list.find(5), nullptr);
     EXPECT_EQ(obj_list.find(10), nullptr);
-    obj_list.sort();
+    obj_list.test_sort();
     EXPECT_NE(obj_list.find(3), nullptr);
     EXPECT_NE(obj_list.find(5), nullptr);
     EXPECT_EQ(obj_list.find(10), nullptr);

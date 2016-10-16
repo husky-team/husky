@@ -8,7 +8,7 @@
 #include "base/serialization.hpp"
 #include "core/hash_ring.hpp"
 #include "core/mailbox.hpp"
-#include "core/objlist.hpp"
+#include "core/objlist_unittest.hpp"
 #include "core/worker_info.hpp"
 
 namespace husky {
@@ -43,7 +43,7 @@ class Attr {
 
 // Create AsyncMigrateChannel without setting, for setup
 template <typename ObjT>
-AsyncMigrateChannel<ObjT> create_async_migrate_channel(ObjList<ObjT>& obj_list) {
+AsyncMigrateChannel<ObjT> create_async_migrate_channel(ObjListForTest<ObjT>& obj_list) {
     AsyncMigrateChannel<ObjT> async_migrate_channel(&obj_list);
     return async_migrate_channel;
 }
@@ -71,7 +71,7 @@ TEST_F(TestAsyncMigrateChannel, Create) {
     workerinfo.set_proc_id(0);
 
     // ObjList Setup
-    ObjList<Obj> obj_list;
+    ObjListForTest<Obj> obj_list;
 
     // AsyncMigrateChannel
     auto async_migrate_channel = create_async_migrate_channel(obj_list);
@@ -101,7 +101,7 @@ TEST_F(TestAsyncMigrateChannel, MigrateOtherIncProgress) {
     workerinfo.set_proc_id(0);
 
     // ObjList Setup
-    ObjList<Obj> obj_list;
+    ObjListForTest<Obj> obj_list;
 
     auto& scr_int = obj_list.create_attrlist<int>("int");
     auto& src_attr = obj_list.create_attrlist<Attr>("attr");
@@ -118,7 +118,7 @@ TEST_F(TestAsyncMigrateChannel, MigrateOtherIncProgress) {
     Obj* p = obj_list.find(100);
     async_migrate_channel.migrate(*p, 0);  // migrate Obj(18) to thread 0
     async_migrate_channel.out();
-    obj_list.deletion_finalize();
+    obj_list.test_deletion_finalize();
     // migration done
     while (
         mailbox.poll_with_timeout(async_migrate_channel.get_channel_id(), async_migrate_channel.get_progress(), 1.0)) {
@@ -142,7 +142,7 @@ TEST_F(TestAsyncMigrateChannel, MigrateOtherIncProgress) {
     p = obj_list.find(57);
     async_migrate_channel.migrate(*p, 0);  // migrate Obj(57) to thread 0
     async_migrate_channel.out();
-    obj_list.deletion_finalize();
+    obj_list.test_deletion_finalize();
     // migration done
     while (
         mailbox.poll_with_timeout(async_migrate_channel.get_channel_id(), async_migrate_channel.get_progress(), 1.0)) {

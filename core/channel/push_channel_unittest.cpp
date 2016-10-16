@@ -11,7 +11,7 @@
 #include "core/channel/migrate_channel.hpp"
 #include "core/hash_ring.hpp"
 #include "core/mailbox.hpp"
-#include "core/objlist.hpp"
+#include "core/objlist_unittest.hpp"
 #include "core/worker_info.hpp"
 
 namespace husky {
@@ -38,13 +38,13 @@ class Obj {
 
 // Create PushChannel without setting
 template <typename MsgT, typename DstObjT>
-PushChannel<MsgT, DstObjT> create_push_channel(ChannelSource& src_list, ObjList<DstObjT>& dst_list) {
+PushChannel<MsgT, DstObjT> create_push_channel(ChannelSource& src_list, ObjListForTest<DstObjT>& dst_list) {
     PushChannel<MsgT, DstObjT> push_channel(&src_list, &dst_list);
     return push_channel;
 }
 // Create MigrateChannel without setting
 template <typename ObjT>
-MigrateChannel<ObjT> create_migrate_channel(ObjList<ObjT>& src_list, ObjList<ObjT>& dst_list) {
+MigrateChannel<ObjT> create_migrate_channel(ObjListForTest<ObjT>& src_list, ObjListForTest<ObjT>& dst_list) {
     MigrateChannel<ObjT> migrate_channel(&src_list, &dst_list);
     return migrate_channel;
 }
@@ -72,8 +72,8 @@ TEST_F(TestPushChannel, Create) {
     workerinfo.set_proc_id(0);
 
     // ObjList Setup
-    ObjList<Obj> src_list;
-    ObjList<Obj> dst_list;
+    ObjListForTest<Obj> src_list;
+    ObjListForTest<Obj> dst_list;
 
     // PushChannel
     auto push_channel = create_push_channel<int>(src_list, dst_list);
@@ -103,8 +103,8 @@ TEST_F(TestPushChannel, PushSingle) {
     workerinfo.set_proc_id(0);
 
     // ObjList Setup
-    ObjList<Obj> src_list;
-    ObjList<Obj> dst_list;
+    ObjListForTest<Obj> src_list;
+    ObjListForTest<Obj> dst_list;
 
     // PushChannel
     auto push_channel = create_push_channel<int>(src_list, dst_list);
@@ -137,8 +137,8 @@ TEST_F(TestPushChannel, PushMultipleTime) {
     el.register_mailbox(mailbox);
 
     // ObjList Setup
-    ObjList<Obj> src_list;
-    ObjList<Obj> dst_list;
+    ObjListForTest<Obj> src_list;
+    ObjListForTest<Obj> dst_list;
 
     // WorkerInfo Setup
     WorkerInfo workerinfo;
@@ -192,8 +192,8 @@ TEST_F(TestPushChannel, IncProgress) {
     workerinfo.set_proc_id(0);
 
     // ObjList Setup
-    ObjList<Obj> src_list;
-    ObjList<Obj> dst_list;
+    ObjListForTest<Obj> src_list;
+    ObjListForTest<Obj> dst_list;
 
     // PushChannel
     // Round 1
@@ -253,7 +253,7 @@ TEST_F(TestPushChannel, MultiThread) {
     workerinfo.set_proc_id(0);
 
     std::thread th1 = std::thread([&]() {
-        ObjList<Obj> src_list;
+        ObjListForTest<Obj> src_list;
 
         src_list.add_object(Obj(100));
         src_list.add_object(Obj(18));
@@ -268,10 +268,10 @@ TEST_F(TestPushChannel, MultiThread) {
                 migrate_channel.migrate(obj, dst_thread_id);
             }
         }
-        src_list.deletion_finalize();
+        src_list.test_deletion_finalize();
         migrate_channel.flush();
         migrate_channel.prepare_immigrants();
-        src_list.sort();
+        src_list.test_sort();
 
         // Push
         auto push_channel = create_push_channel<int>(src_list, src_list);
@@ -292,7 +292,7 @@ TEST_F(TestPushChannel, MultiThread) {
         }
     });
     std::thread th2 = std::thread([&]() {
-        ObjList<Obj> src_list;
+        ObjListForTest<Obj> src_list;
 
         src_list.add_object(Obj(1));
         src_list.add_object(Obj(1342148));
@@ -307,10 +307,10 @@ TEST_F(TestPushChannel, MultiThread) {
                 migrate_channel.migrate(obj, dst_thread_id);
             }
         }
-        src_list.deletion_finalize();
+        src_list.test_deletion_finalize();
         migrate_channel.flush();
         migrate_channel.prepare_immigrants();
-        src_list.sort();
+        src_list.test_sort();
 
         // Push
         auto push_channel = create_push_channel<int>(src_list, src_list);

@@ -64,63 +64,6 @@ class ObjList : public ObjListBase {
 
     std::vector<ObjT>& get_data() { return objlist_data_.data_; }
 
-    // Sort the objlist
-    void sort() {
-        auto& data = objlist_data_.data_;
-        if (data.size() == 0)
-            return;
-        std::vector<int> order(this->get_size());
-        for (int i = 0; i < order.size(); ++i) {
-            order[i] = i;
-        }
-        // sort the permutation
-        std::sort(order.begin(), order.end(),
-                  [&](const size_t a, const size_t b) { return data[a].id() < data[b].id(); });
-        // apply the permutation on all the attribute lists
-        for (auto& it : this->attrlist_map) {
-            it.second->reorder(order);
-        }
-        std::sort(data.begin(), data.end(), [](const ObjT& a, const ObjT& b) { return a.id() < b.id(); });
-        hashed_objs.clear();
-        sorted_size = data.size();
-    }
-
-    // TODO(Fan): This will invalidate the object dict
-    void deletion_finalize() {
-        auto& data = objlist_data_.data_;
-        if (data.size() == 0)
-            return;
-        size_t i = 0, j;
-        // move i to the first empty place
-        while (i < data.size() && !del_bitmap[i])
-            i++;
-
-        if (i == data.size())
-            return;
-
-        for (j = data.size() - 1; j > 0; j--) {
-            if (!del_bitmap[j]) {
-                data[i] = std::move(data[j]);
-                // move j_th attribute to i_th for all attr lists
-                for (auto& it : this->attrlist_map) {
-                    it.second->move(i, j);
-                }
-                i += 1;
-                // move i to the next empty place
-                while (i < data.size() && !del_bitmap[i])
-                    i++;
-            }
-            if (i >= j)
-                break;
-        }
-        data.resize(j);
-        del_bitmap.resize(j);
-        for (auto& it : this->attrlist_map) {
-            it.second->resize(j);
-        }
-        objlist_data_.num_del_ = 0;
-        std::fill(del_bitmap.begin(), del_bitmap.end(), 0);
-    }
 
     // Delete an object
     size_t delete_object(const ObjT* const obj_ptr) {
@@ -242,18 +185,80 @@ class ObjList : public ObjListBase {
     }
 
     // getter
+    inline size_t get_size() const override { return objlist_data_.get_size(); }
+
+   protected:
+
+    // getter
     inline size_t get_sorted_size() const { return sorted_size; }
     inline size_t get_num_del() const { return objlist_data_.num_del_; }
     inline size_t get_hashed_size() const { return hashed_objs.size(); }
-    inline size_t get_size() const override { return objlist_data_.get_size(); }
     inline size_t get_vector_size() const { return objlist_data_.get_vector_size(); }
     inline ObjT& get(size_t i) { return objlist_data_.data_[i]; }
 
-   protected:
+    // Sort the objlist
+    void sort() {
+        auto& data = objlist_data_.data_;
+        if (data.size() == 0)
+            return;
+        std::vector<int> order(this->get_size());
+        for (int i = 0; i < order.size(); ++i) {
+            order[i] = i;
+        }
+        // sort the permutation
+        std::sort(order.begin(), order.end(),
+                  [&](const size_t a, const size_t b) { return data[a].id() < data[b].id(); });
+        // apply the permutation on all the attribute lists
+        for (auto& it : this->attrlist_map) {
+            it.second->reorder(order);
+        }
+        std::sort(data.begin(), data.end(), [](const ObjT& a, const ObjT& b) { return a.id() < b.id(); });
+        hashed_objs.clear();
+        sorted_size = data.size();
+    }
+
+    // TODO(Fan): This will invalidate the object dict
+    void deletion_finalize() {
+        auto& data = objlist_data_.data_;
+        if (data.size() == 0)
+            return;
+        size_t i = 0, j;
+        // move i to the first empty place
+        while (i < data.size() && !del_bitmap[i])
+            i++;
+
+        if (i == data.size())
+            return;
+
+        for (j = data.size() - 1; j > 0; j--) {
+            if (!del_bitmap[j]) {
+                data[i] = std::move(data[j]);
+                // move j_th attribute to i_th for all attr lists
+                for (auto& it : this->attrlist_map) {
+                    it.second->move(i, j);
+                }
+                i += 1;
+                // move i to the next empty place
+                while (i < data.size() && !del_bitmap[i])
+                    i++;
+            }
+            if (i >= j)
+                break;
+        }
+        data.resize(j);
+        del_bitmap.resize(j);
+        for (auto& it : this->attrlist_map) {
+            it.second->resize(j);
+        }
+        objlist_data_.num_del_ = 0;
+        std::fill(del_bitmap.begin(), del_bitmap.end(), 0);
+    }
+
     ObjListData<ObjT> objlist_data_;
     std::vector<bool> del_bitmap;
     size_t sorted_size = 0;
     std::unordered_map<typename ObjT::KeyT, size_t> hashed_objs;
     std::unordered_map<std::string, AttrListBase*> attrlist_map;
+
 };
 }  // namespace husky
