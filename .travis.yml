@@ -44,6 +44,7 @@ script:
   - mkdir release
   - cd release
   - cmake ..
+  - make -j4 Master
+  - make -j4 PI
   - make -j4 HuskyUnitTest
   - ./HuskyUnitTest
-  - make -j4 Master
