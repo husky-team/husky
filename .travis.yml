@@ -43,7 +43,7 @@ script:
   - export CC=gcc-4.9
   - mkdir release
   - cd release
-  - cmake ..
+  - cmake -DCMAKE_BUILD_TYPE=release ..
   - make -j4 Master
   - make -j4 PI
   - make -j4 HuskyUnitTest
