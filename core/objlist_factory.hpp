@@ -52,6 +52,8 @@ class ObjListFactory {
         objlist_map.erase(name);
     }
 
+    static bool has_objlist(const std::string& name) { return objlist_map.find(name) != objlist_map.end(); }
+
     static size_t size() { return objlist_map.size(); }
 
    protected:

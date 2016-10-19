@@ -159,6 +159,8 @@ class ChannelFactoryBase {
         channel_map.erase(name);
     }
 
+    static bool has_channel(const std::string& name) { return channel_map.find(name) != channel_map.end(); }
+
     static size_t size() { return channel_map.size(); }
 
    protected:
