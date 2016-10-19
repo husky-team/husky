@@ -43,21 +43,25 @@ class BinStream {
     void resize(size_t size);
     void seek(size_t pos);
 
-    void push_back_bytes(const char* src, size_t sz);
-    void* pop_front_bytes(size_t sz);
     void append(const BinStream& m);
+    void push_back_bytes(const char* src, size_t sz);
+    virtual void* pop_front_bytes(size_t sz);
+    virtual size_t size() const { return buffer_.size() - front_; }
 
     /// Note that this method just returns the pointer pointing to the very
     /// beginning of the buffer_, and doesn't care about how much data have
     /// been read.
     inline char* get_buffer() { return &buffer_[0]; }
     inline const char* get_remained_buffer() const { return (&buffer_[0]) + front_; }
-    inline size_t size() const { return buffer_.size() - front_; }
     inline std::string to_string() const { return std::string(buffer_.begin() + front_, buffer_.end()); }
+
+    virtual ~BinStream();
+
+   protected:
+    std::vector<char> buffer_;
 
    private:
     size_t front_;
-    std::vector<char> buffer_;
 };
 
 template <typename InputT>

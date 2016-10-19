@@ -14,26 +14,34 @@
 
 #pragma once
 
-#include "core/channel/channel_source.hpp"
+#include <string>
+#include <unordered_map>
+#include <vector>
+
+#include "base/serialization.hpp"
+#include "core/constants.hpp"
+#include "core/context.hpp"
+#include "master/master.hpp"
 
 namespace husky {
-namespace io {
 
-/// Interface for InputFormat.
-class InputFormatBase : public husky::ChannelSource {
-   public:
-    virtual ~InputFormatBase() = default;
-    /// Check if all configures are set up.
-    virtual bool is_setup() const = 0;
-    /// Base function for recasting record type
-    template <typename RecordT>
-    static RecordT& recast(RecordT& t) {
-        return t;
-    }
-
-   protected:
-    int is_setup_ = 0;
+struct HDFSFileInfo {
+    std::vector<std::string> files_to_assign;
+    int finish_count{0};
+    std::string base{""};
 };
 
-}  // namespace io
+class HDFSFileAssigner {
+   public:
+    HDFSFileAssigner();
+    void setup();
+    void response();
+
+   private:
+    std::string answer(const std::string& fileurl);
+    void prepare(const std::string& url);
+
+    std::unordered_map<std::string, HDFSFileInfo> file_infos_;
+};
+
 }  // namespace husky

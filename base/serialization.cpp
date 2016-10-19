@@ -130,5 +130,7 @@ BinStream& operator>>(BinStream& stream, std::vector<bool>& v) {
     return stream;
 }
 
+BinStream::~BinStream() {}
+
 }  // namespace base
 }  // namespace husky

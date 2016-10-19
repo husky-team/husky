@@ -143,7 +143,7 @@ void load(InputFormatT& infmt, const ParseT& parse) {
         success = infmt.next(record);
         if (success == false)
             break;
-        parse(record);
+        parse(InputFormatT::recast(record));
     }
 
     ChannelManager out_manager(infmt.get_outchannels());
@@ -160,7 +160,7 @@ void load(InputFormatT& infmt, const std::vector<ChannelBase*>& out_channel, con
         success = infmt.next(record);
         if (success == false)
             break;
-        parse(record);
+        parse(InputFormatT::recast(record));
     }
 
     ChannelManager out_manager(out_channel);

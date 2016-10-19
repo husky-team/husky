@@ -14,25 +14,30 @@
 
 #pragma once
 
-#include "core/channel/channel_source.hpp"
+#include <memory>
+#include <string>
+
+#include "io/input/binary_inputformat_impl.hpp"
 
 namespace husky {
 namespace io {
 
-/// Interface for InputFormat.
-class InputFormatBase : public husky::ChannelSource {
+class BinaryInputFormat final : public InputFormatBase {
    public:
-    virtual ~InputFormatBase() = default;
-    /// Check if all configures are set up.
-    virtual bool is_setup() const = 0;
-    /// Base function for recasting record type
-    template <typename RecordT>
-    static RecordT& recast(RecordT& t) {
-        return t;
-    }
+    typedef BinaryInputFormatImpl::RecordT RecordT;
+    typedef BinaryInputFormatImpl::CastRecordT CastRecordT;
 
-   protected:
-    int is_setup_ = 0;
+    explicit BinaryInputFormat(const std::string& url, const std::string& filter = "");
+    BinaryInputFormat(const BinaryInputFormat&) = delete;
+    ~BinaryInputFormat();
+
+    bool is_setup() const override;
+    inline bool next(RecordT& t) { return infmt_impl_->next(t); }
+
+    static inline CastRecordT& recast(RecordT& t) { return BinaryInputFormatImpl::recast(t); }
+
+   private:
+    BinaryInputFormatImpl* infmt_impl_ = nullptr;
 };
 
 }  // namespace io
