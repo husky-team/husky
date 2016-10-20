@@ -24,30 +24,39 @@ using base::BinStream;
 
 class HashRing {
    public:
-    /// Insert a worker into the hash ring
-    void insert(int worker_id, int num_ranges = 1);
+    /// Insert a worker thread into the hash ring
+    void insert(int tid, int pid, int num_ranges = 1);
 
-    /// Remove a worker from the hash ring
-    void remove(int worker_id);
+    /// Remove a worker thread from the hash ring
+    void remove(int tid);
 
-    /// Given a position on the hash ring, return the worker id
+    /// Given a position on the hash ring, return the worker thread id
     int lookup(uint64_t pos) const;
 
-    inline int get_num_workers() const { return worker_set_.size(); }
+    inline int get_num_workers() const { return global_tids_vector_.size(); }
 
     template <typename KeyT>
-    int hash_lookup(const KeyT& key) {
+    int hash_lookup(const KeyT& key) const {
         // Maybe we just use std::hash<KeyT>() ??
         // uint64_t pos = ObjT::partition(key);
         uint64_t pos = std::hash<KeyT>()(key);
         return lookup(pos);
     }
 
+    std::vector<int>& get_global_pids() { return global_pids_vector_; }
+
+    int get_num_processes() { return global_pids_vector_.size(); }
+
+    int get_num_local_threads(int pid) { return num_local_threads_[pid]; }
+
     friend BinStream& operator<<(BinStream& stream, HashRing& hash_ring);
     friend BinStream& operator>>(BinStream& stream, HashRing& hash_ring);
 
    protected:
-    std::set<int> worker_set_;
+    std::vector<int> global_tids_vector_;
+    std::vector<int> global_pids_vector_;
+    std::vector<int> num_local_threads_;
+    std::vector<int> tid_to_pid_;
 };
 
 BinStream& operator<<(BinStream& stream, HashRing& hash_ring);

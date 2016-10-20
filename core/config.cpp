@@ -158,7 +158,7 @@ bool Config::init_with_args(int ac, char** av, const std::vector<std::string>& c
             }
             Context::get_global()->worker_info.add_proc(num_workers, worker_hostname);
             for (int i = 0; i < num_threads; i++) {
-                Context::get_global()->hash_ring.insert(num_global_threads);
+                Context::get_global()->hash_ring.insert(num_global_threads, num_workers);
                 Context::get_global()->worker_info.add_worker(num_workers, num_global_threads, i);
                 ++num_global_threads;
             }

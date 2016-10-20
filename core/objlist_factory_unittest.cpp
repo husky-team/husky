@@ -27,6 +27,7 @@ class Obj {
 };
 
 TEST_F(TestObjListFactoryH3, Create) {
+    Context::init_global();
     // Normal Create
     ObjList<Obj> obj_list_normal1;
 

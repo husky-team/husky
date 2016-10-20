@@ -49,7 +49,7 @@ void AggregatorChannel::send(std::vector<BinStream>& bins) {
             bins[i].clear();
         }
     }
-    this->mailbox_->send_complete(this->channel_id_, this->progress_);
+    this->mailbox_->send_complete(this->channel_id_, this->progress_, this->hash_ring_);
 }
 
 bool AggregatorChannel::poll() { return this->mailbox_->poll(this->channel_id_, this->progress_); }

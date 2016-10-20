@@ -51,7 +51,7 @@ MigrateChannel<ObjT> create_migrate_channel(ObjList<ObjT>& src_list, ObjList<Obj
 TEST_F(TestMigrateChannel, Create) {
     // HashRing Setup
     HashRing hashring;
-    hashring.insert(0);
+    hashring.insert(0, 0);
 
     // Mailbox Setup
     zmq::context_t zmq_context;
@@ -82,7 +82,7 @@ TEST_F(TestMigrateChannel, Create) {
 TEST_F(TestMigrateChannel, MigrateOther) {
     // HashRing Setup
     HashRing hashring;
-    hashring.insert(0);
+    hashring.insert(0, 0);
 
     // Mailbox Setup
     zmq::context_t zmq_context;
@@ -128,7 +128,7 @@ TEST_F(TestMigrateChannel, MigrateOther) {
 TEST_F(TestMigrateChannel, MigrateItself) {
     // HashRing Setup
     HashRing hashring;
-    hashring.insert(0);
+    hashring.insert(0, 0);
 
     // Mailbox Setup
     zmq::context_t zmq_context;
@@ -188,7 +188,7 @@ TEST_F(TestMigrateChannel, MigrateItself) {
 TEST_F(TestMigrateChannel, MigrateOtherIncProgress) {
     // HashRing Setup
     HashRing hashring;
-    hashring.insert(0);
+    hashring.insert(0, 0);
 
     // Mailbox Setup
     zmq::context_t zmq_context;

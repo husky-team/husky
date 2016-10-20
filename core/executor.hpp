@@ -33,7 +33,7 @@ void globalize(ObjList<ObjT>& obj_list) {
     auto& migrate_channel = ChannelFactory::create_migrate_channel(obj_list, obj_list, "tmp_globalize");
 
     for (auto& obj : obj_list.get_data()) {
-        int dst_thread_id = Context::get_hashring()->hash_lookup(obj.id());
+        int dst_thread_id = obj_list.get_hash_ring().hash_lookup(obj.id());
         if (dst_thread_id != Context::get_global_tid()) {
             migrate_channel.migrate(obj, dst_thread_id);
         }
@@ -95,7 +95,7 @@ void list_execute_async(ObjList<ObjT>& obj_list, ExecT execute, int async_time, 
         channel->out();
     }
     channel->inc_progress();
-    mailbox->send_complete(channel->get_channel_id(), channel->get_progress());
+    mailbox->send_complete(channel->get_channel_id(), channel->get_progress(), Context::get_hashring());
 }
 
 template <typename ObjT, typename ExecT>

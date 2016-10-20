@@ -52,7 +52,7 @@ MigrateChannel<ObjT> create_migrate_channel(ObjList<ObjT>& src_list, ObjList<Obj
 TEST_F(TestAsyncPushChannel, Create) {
     // HashRing Setup
     HashRing hashring;
-    hashring.insert(0);
+    hashring.insert(0, 0);
 
     // Mailbox Setup
     zmq::context_t zmq_context;
@@ -82,7 +82,7 @@ TEST_F(TestAsyncPushChannel, Create) {
 TEST_F(TestAsyncPushChannel, PushSingle) {
     // HashRing Setup
     HashRing hashring;
-    hashring.insert(0);
+    hashring.insert(0, 0);
 
     // Mailbox Setup
     zmq::context_t zmq_context;
@@ -123,7 +123,7 @@ TEST_F(TestAsyncPushChannel, PushSingle) {
 TEST_F(TestAsyncPushChannel, PushMultipleTime) {
     // HashRing Setup
     HashRing hashring;
-    hashring.insert(0);
+    hashring.insert(0, 0);
 
     // Mailbox Setup
     zmq::context_t zmq_context;
@@ -174,7 +174,7 @@ TEST_F(TestAsyncPushChannel, PushMultipleTime) {
 TEST_F(TestAsyncPushChannel, IncProgress) {
     // HashRing Setup
     HashRing hashring;
-    hashring.insert(0);
+    hashring.insert(0, 0);
 
     // Mailbox Setup
     zmq::context_t zmq_context;
@@ -227,8 +227,8 @@ TEST_F(TestAsyncPushChannel, IncProgress) {
 TEST_F(TestAsyncPushChannel, MultiThread) {
     // HashRing Setup
     HashRing hashring;
-    hashring.insert(0);
-    hashring.insert(1);
+    hashring.insert(0, 0);
+    hashring.insert(1, 0);
 
     // Mailbox Setup
     zmq::context_t zmq_context;

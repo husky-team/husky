@@ -29,8 +29,8 @@ class Obj {
 };
 
 TEST_F(TestChannelFactoryBaseH3, CreatePushChannel) {
-    ObjList<Obj>& src_list = ObjListFactory::create_objlist<Obj>("src_list");
-    ObjList<Obj>& dst_list = ObjListFactory::create_objlist<Obj>("dst_list");
+    ObjList<Obj> src_list;
+    ObjList<Obj> dst_list;
 
     // Create
     auto& ch1 = ChannelFactoryBase::create_push_channel<int>(src_list, dst_list, "ch1");
@@ -49,14 +49,11 @@ TEST_F(TestChannelFactoryBaseH3, CreatePushChannel) {
     EXPECT_EQ(ChannelFactoryBase::size(), 1);
     ChannelFactoryBase::drop_channel("ch2");
     EXPECT_EQ(ChannelFactoryBase::size(), 0);
-
-    ObjListFactory::drop_objlist("src_list");
-    ObjListFactory::drop_objlist("dst_list");
 }
 
 TEST_F(TestChannelFactoryBaseH3, CreatePushCombinedChannel) {
-    ObjList<Obj>& src_list = ObjListFactory::create_objlist<Obj>("src_list");
-    ObjList<Obj>& dst_list = ObjListFactory::create_objlist<Obj>("dst_list");
+    ObjList<Obj> src_list;
+    ObjList<Obj> dst_list;
 
     // Create
     auto& ch1 = ChannelFactoryBase::create_push_combined_channel<int, SumCombiner<int>>(src_list, dst_list, "ch1");
@@ -75,14 +72,11 @@ TEST_F(TestChannelFactoryBaseH3, CreatePushCombinedChannel) {
     EXPECT_EQ(ChannelFactoryBase::size(), 1);
     ChannelFactoryBase::drop_channel("ch2");
     EXPECT_EQ(ChannelFactoryBase::size(), 0);
-
-    ObjListFactory::drop_objlist("src_list");
-    ObjListFactory::drop_objlist("dst_list");
 }
 
 TEST_F(TestChannelFactoryBaseH3, CreateMigrateChannel) {
-    ObjList<Obj>& src_list = ObjListFactory::create_objlist<Obj>("src_list");
-    ObjList<Obj>& dst_list = ObjListFactory::create_objlist<Obj>("dst_list");
+    ObjList<Obj> src_list;
+    ObjList<Obj> dst_list;
 
     // Create
     auto& ch1 = ChannelFactoryBase::create_migrate_channel<Obj>(src_list, dst_list, "ch1");
@@ -101,14 +95,11 @@ TEST_F(TestChannelFactoryBaseH3, CreateMigrateChannel) {
     EXPECT_EQ(ChannelFactoryBase::size(), 1);
     ChannelFactoryBase::drop_channel("ch2");
     EXPECT_EQ(ChannelFactoryBase::size(), 0);
-
-    ObjListFactory::drop_objlist("src_list");
-    ObjListFactory::drop_objlist("dst_list");
 }
 
 TEST_F(TestChannelFactoryBaseH3, CreateBroacastChannel) {
-    ObjList<Obj>& src_list = ObjListFactory::create_objlist<Obj>("src_list");
-    ObjList<Obj>& dst_list = ObjListFactory::create_objlist<Obj>("dst_list");
+    ObjList<Obj> src_list;
+    ObjList<Obj> dst_list;
 
     // Create
     auto& ch1 = ChannelFactoryBase::create_broadcast_channel<int, int>(src_list, "ch1");
@@ -127,9 +118,6 @@ TEST_F(TestChannelFactoryBaseH3, CreateBroacastChannel) {
     EXPECT_EQ(ChannelFactoryBase::size(), 1);
     ChannelFactoryBase::drop_channel("ch2");
     EXPECT_EQ(ChannelFactoryBase::size(), 0);
-
-    ObjListFactory::drop_objlist("src_list");
-    ObjListFactory::drop_objlist("dst_list");
 }
 
 }  // namespace

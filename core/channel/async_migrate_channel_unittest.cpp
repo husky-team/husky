@@ -51,7 +51,7 @@ AsyncMigrateChannel<ObjT> create_async_migrate_channel(ObjList<ObjT>& obj_list) 
 TEST_F(TestAsyncMigrateChannel, Create) {
     // HashRing Setup
     HashRing hashring;
-    hashring.insert(0);
+    hashring.insert(0, 0);
 
     // Mailbox Setup
     zmq::context_t zmq_context;
@@ -81,7 +81,7 @@ TEST_F(TestAsyncMigrateChannel, Create) {
 TEST_F(TestAsyncMigrateChannel, MigrateOtherIncProgress) {
     // HashRing Setup
     HashRing hashring;
-    hashring.insert(0);
+    hashring.insert(0, 0);
 
     // Mailbox Setup
     zmq::context_t zmq_context;

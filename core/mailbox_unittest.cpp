@@ -1,4 +1,5 @@
 #include "core/mailbox.hpp"
+#include "core/hash_ring.hpp"
 
 #include <utility>
 #include <vector>
@@ -49,12 +50,16 @@ TEST_F(TestMailbox, SendRecvOnce) {
     mailbox.set_thread_id(0);
     el.register_mailbox(mailbox);
 
+    // Hash ring
+    HashRing hash_ring;
+    hash_ring.insert(0, 0);
+
     // send a message
     BinStream send_bin_stream;
     int send_int = 1;
     send_bin_stream << send_int;
     mailbox.send(0, 0, 0, send_bin_stream);
-    mailbox.send_complete(0, 0);
+    mailbox.send_complete(0, 0, &hash_ring);
 
     // Recv the message
     mailbox.poll(0, 0);
@@ -76,15 +81,19 @@ TEST_F(TestMailbox, SendRecvOnceAsync) {
     mailbox.set_thread_id(0);
     el.register_mailbox(mailbox);
 
+    // Hash ring
+    HashRing hash_ring;
+    hash_ring.insert(0, 0);
+
     // send a message
     BinStream send_bin_stream;
     int send_int = 1;
     send_bin_stream << send_int;
     mailbox.send(0, 0, 0, send_bin_stream);
-    mailbox.send_complete(0, 0);
+    mailbox.send_complete(0, 0, &hash_ring);
 
     // Recv the message
-    while(1) {
+    while (1) {
         if (mailbox.poll_non_block(0, 0)) {
             BinStream recv_bin_stream = mailbox.recv(0, 0);
             assert(mailbox.poll_non_block(0, 0) == false);
@@ -107,18 +116,22 @@ TEST_F(TestMailbox, SendRecvOnceAsyncTimeout) {
     mailbox.set_thread_id(0);
     el.register_mailbox(mailbox);
 
+    // Hash ring
+    HashRing hash_ring;
+    hash_ring.insert(0, 0);
+
     // send a message
     BinStream send_bin_stream;
     int send_int = 1;
     send_bin_stream << send_int;
     mailbox.send(0, 0, 0, send_bin_stream);
-    mailbox.send_complete(0, 0);
+    mailbox.send_complete(0, 0, &hash_ring);
 
     // Recv the message
     bool if_recv = false;
-    while(1) {
+    while (1) {
         bool flag = mailbox.poll_with_timeout(0, 0, 0.1);
-        if(flag) {
+        if (flag) {
             BinStream recv_bin_stream = mailbox.recv(0, 0);
             int recv_int;
             recv_bin_stream >> recv_int;
@@ -141,6 +154,10 @@ TEST_F(TestMailbox, SendRecvMultiple) {
     mailbox.set_thread_id(0);
     el.register_mailbox(mailbox);
 
+    // Hash ring
+    HashRing hash_ring;
+    hash_ring.insert(0, 0);
+
     // send a message
     BinStream send_bin_stream;
     int send_int = 419;
@@ -148,7 +165,7 @@ TEST_F(TestMailbox, SendRecvMultiple) {
     send_bin_stream << send_int;
     send_bin_stream << send_float;
     mailbox.send(0, 0, 0, send_bin_stream);
-    mailbox.send_complete(0, 0);
+    mailbox.send_complete(0, 0, &hash_ring);
 
     // Recv the message
     mailbox.poll(0, 0);
@@ -176,6 +193,11 @@ TEST_F(TestMailbox, Multithread) {
     mailbox_1.set_thread_id(1);
     el.register_mailbox(mailbox_1);
 
+    // Hash ring
+    HashRing hash_ring;
+    hash_ring.insert(0, 0);
+    hash_ring.insert(1, 0);
+
     // send a message
     BinStream send_bin_stream;
     int send_int = 419;
@@ -184,8 +206,8 @@ TEST_F(TestMailbox, Multithread) {
     send_bin_stream << send_float;
     mailbox_1.send(0, 0, 0, send_bin_stream);
 
-    mailbox_1.send_complete(0, 0);
-    mailbox_0.send_complete(0, 0);
+    mailbox_1.send_complete(0, 0, &hash_ring);
+    mailbox_0.send_complete(0, 0, &hash_ring);
 
     // Recv the message
     assert(mailbox_1.poll(0, 0) == false);
@@ -226,6 +248,11 @@ TEST_F(TestMailbox, TwoProcesses) {
     el_1.register_peer_recver(0, "ipc://test-0");
     el_1.register_peer_thread(0, 0);
 
+    // Hash ring
+    HashRing hash_ring;
+    hash_ring.insert(0, 0);
+    hash_ring.insert(1, 1);
+
     // Send the message
     BinStream send_bin_stream;
     int send_int = 419;
@@ -234,8 +261,8 @@ TEST_F(TestMailbox, TwoProcesses) {
     send_bin_stream << send_float;
     mailbox_0.send(1, 0, 0, send_bin_stream);
 
-    mailbox_0.send_complete(0, 0);
-    mailbox_1.send_complete(0, 0);
+    mailbox_0.send_complete(0, 0, &hash_ring);
+    mailbox_1.send_complete(0, 0, &hash_ring);
 
     // Recv the message
     assert(mailbox_0.poll(0, 0) == false);
@@ -275,6 +302,11 @@ TEST_F(TestMailbox, Iterative) {
     el_1.register_peer_recver(0, "ipc://test-0");
     el_1.register_peer_thread(0, 0);
 
+    // Hash ring
+    HashRing hash_ring;
+    hash_ring.insert(0, 0);
+    hash_ring.insert(1, 1);
+
     for (int i = 0; i < 100; i++) {
         // Send the message
         BinStream send_bin_stream;
@@ -284,8 +316,8 @@ TEST_F(TestMailbox, Iterative) {
         send_bin_stream << send_float;
         mailbox_0.send(1, 0, i, send_bin_stream);
 
-        mailbox_0.send_complete(0, i);
-        mailbox_1.send_complete(0, i);
+        mailbox_0.send_complete(0, i, &hash_ring);
+        mailbox_1.send_complete(0, i, &hash_ring);
 
         // Recv the message
         assert(mailbox_0.poll(0, i) == false);
@@ -307,16 +339,20 @@ TEST_F(TestMailbox, OutOfOrder) {
     el->set_process_id(0);
     auto* recver = new CentralRecver(&zmq_context, "inproc://test");
 
+    // Hash ring
+    HashRing hash_ring;
+
     std::vector<LocalMailbox*> mailboxes;
     for (int i = 0; i < 4; i++) {
         mailboxes.push_back(new LocalMailbox(&zmq_context));
         mailboxes[i]->set_thread_id(i);
         el->register_mailbox(*mailboxes[i]);
+        hash_ring.insert(i, 0);
     }
 
     std::vector<std::thread*> threads;
     for (int i = 0; i < 4; i++) {
-        threads.push_back(new std::thread([=, &mailboxes]() {
+        threads.push_back(new std::thread([=, &mailboxes, &hash_ring]() {
             for (int j = 0; j < 100; j++) {
                 for (int i_ = 0; i_ < 4; i_++) {
                     BinStream send_bin_stream;
@@ -324,7 +360,7 @@ TEST_F(TestMailbox, OutOfOrder) {
                     mailboxes[i]->send(i_, i, j, send_bin_stream);
                 }
                 for (int i_ = 0; i_ < 4; i_++)
-                    mailboxes[i]->send_complete(i_, j);
+                    mailboxes[i]->send_complete(i_, j, &hash_ring);
                 int sum = 0;
                 BinStream recv_bin_stream;
                 std::vector<std::pair<int, int>> poll_list = {{0, j}, {1, j}, {2, j}, {3, j}};

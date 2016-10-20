@@ -44,7 +44,7 @@ BroadcastChannel<KeyT, ValueT> create_broadcast_channel(ChannelSource& src_list)
 TEST_F(TestBroadcastChannel, Create) {
     // HashRing Setup
     HashRing hashring;
-    hashring.insert(0);
+    hashring.insert(0, 0);
 
     // Mailbox Setup
     zmq::context_t zmq_context;
@@ -74,7 +74,7 @@ TEST_F(TestBroadcastChannel, Create) {
 TEST_F(TestBroadcastChannel, Broadcast) {
     // HashRing Setup
     HashRing hashring;
-    hashring.insert(0);
+    hashring.insert(0, 0);
 
     // Mailbox Setup
     zmq::context_t zmq_context;
@@ -132,7 +132,7 @@ TEST_F(TestBroadcastChannel, Broadcast) {
 TEST_F(TestBroadcastChannel, BroadcastClearDict) {
     // HashRing Setup
     HashRing hashring;
-    hashring.insert(0);
+    hashring.insert(0, 0);
 
     // Mailbox Setup
     zmq::context_t zmq_context;
@@ -183,8 +183,8 @@ TEST_F(TestBroadcastChannel, BroadcastClearDict) {
 TEST_F(TestBroadcastChannel, MultiThread) {
     // HashRing Setup
     HashRing hashring;
-    hashring.insert(0);
-    hashring.insert(1);
+    hashring.insert(0, 0);
+    hashring.insert(1, 0);
 
     // Mailbox Setup
     zmq::context_t zmq_context;

@@ -27,7 +27,7 @@ class TestAggregatorChannel : public testing::Test {
 TEST_F(TestAggregatorChannel, Create) {
     // HashRing Setup
     HashRing hashring;
-    hashring.insert(0);
+    hashring.insert(0, 0);
 
     // Mailbox Setup
     zmq::context_t zmq_context;
@@ -53,7 +53,7 @@ TEST_F(TestAggregatorChannel, Create) {
 TEST_F(TestAggregatorChannel, Aggregate) {
     // HashRing Setup
     HashRing hashring;
-    hashring.insert(0);
+    hashring.insert(0, 0);
 
     // Mailbox Setup
     zmq::context_t zmq_context;
@@ -104,7 +104,7 @@ TEST_F(TestAggregatorChannel, MultiThread) {
     // HashRing Setup
     HashRing hashring;
     for (int i = 0; i < NUM_THREADS; i++)
-        hashring.insert(i);
+        hashring.insert(i, 0);
 
     // Mailbox Setup
     zmq::context_t zmq_context;
@@ -123,8 +123,9 @@ TEST_F(TestAggregatorChannel, MultiThread) {
         threads.push_back(new std::thread([&, id = i, mailbox = mailboxes[i] ]() {
             // WorkerInfo Setup
             WorkerInfo workerinfo;
-            workerinfo.add_proc(0, "master");
-            workerinfo.add_worker(0, id, id);
+            workerinfo.add_proc(0, "localhost");
+            for (int j = 0; j < NUM_THREADS; j++)
+                workerinfo.add_worker(0, j, j);
             workerinfo.set_num_processes(1);
             workerinfo.set_num_workers(NUM_THREADS);
             workerinfo.set_proc_id(0);

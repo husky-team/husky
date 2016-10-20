@@ -27,6 +27,7 @@
 #include "base/concurrent_queue.hpp"
 #include "base/hash.hpp"
 #include "base/serialization.hpp"
+#include "core/hash_ring.hpp"
 
 namespace husky {
 
@@ -55,7 +56,7 @@ class LocalMailbox {
     bool poll_non_block(int channel_id, int progress);
     bool poll_with_timeout(int channel_id, int progress, double timeout);
     void send(int thread_id, int channel_id, int progress, BinStream& bin_stream);
-    void send_complete(int channel_id, int progress);
+    void send_complete(int channel_id, int progress, HashRing* hash_ring);
     BinStream recv(int channel_id, int progress);
 
     friend class MailboxEventLoop;
@@ -108,9 +109,10 @@ class MailboxEventLoop {
     void send_comm_handler();
     void _send_comm_handler(int thread_id, int channel_id, int progress, BinStream* send_bin_stream_ptr);
     void send_comm_complete_handler();
-    void _send_comm_complete_handler(int channel_id, int progress);
+    void _send_comm_complete_handler(int channel_id, int progress, HashRing* hash_ring);
     void recv_comm_complete_handler();
     void _recv_comm_complete_handler(int channel_id, int progress);
+    void _recv_comm_complete_handler(int channel_id, int progress, int num_global_sync_processes);
 
     void serve();
 
@@ -133,9 +135,9 @@ class EventLoopConnector {
     explicit EventLoopConnector(zmq::context_t* zmq_context);
 
     void generate_in_comm_event(int thread_id, int channel_id, int progress, BinStream* bin_stream);
-    void generate_in_comm_complete_event(int channel_id, int progress);
+    void generate_in_comm_complete_event(int channel_id, int progress, int num_global_sync_proceses);
     void generate_out_comm_event(int thread_id, int channel_id, int progress, BinStream& bin_stream);
-    void generate_out_comm_complete_event(int channel_id, int progress);
+    void generate_out_comm_complete_event(int channel_id, int progress, HashRing* hash_ring);
 
    protected:
     zmq::socket_t event_sender_;

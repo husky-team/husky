@@ -17,6 +17,7 @@
 #include <string>
 #include <unordered_map>
 
+#include "core/context.hpp"
 #include "core/objlist.hpp"
 #include "core/utils.hpp"
 
@@ -33,6 +34,7 @@ class ObjListFactory {
         ASSERT_MSG(objlist_map.find(list_name) == objlist_map.end(),
                    "ObjListFactory::create_objlist: ObjList name already exists");
         auto* objlist = new ObjList<ObjT>();
+        objlist->set_hash_ring(*(Context::get_hashring()));
         objlist_map.insert({list_name, objlist});
         return *objlist;
     }

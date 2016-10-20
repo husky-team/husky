@@ -67,8 +67,9 @@ bool LocalMailbox::poll(int channel_id, int progress) {
     // The following is to re-use cells in comm_completed_.
     // It's based on the assumption that Channel progress
     // won't decrease
-    if (progress - 1 >= 0)
+    if (progress - 1 >= 0) {
         comm_completed_.get(channel_id, progress - 1) = false;
+    }
 
     return false;
 }
@@ -153,8 +154,9 @@ void LocalMailbox::send(int thread_id, int channel_id, int progress, BinStream& 
     event_loop_connector_->generate_out_comm_event(thread_id, channel_id, progress, bin_stream);
 }
 
-void LocalMailbox::send_complete(int channel_id, int progress) {
-    event_loop_connector_->generate_out_comm_complete_event(channel_id, progress);
+void LocalMailbox::send_complete(int channel_id, int progress, HashRing* hash_ring) {
+    HashRing* hash_ring_copy = new HashRing(*hash_ring);
+    event_loop_connector_->generate_out_comm_complete_event(channel_id, progress, hash_ring_copy);
 }
 
 CentralRecver::CentralRecver(zmq::context_t* zmq_context, const std::string& bind_addr)
@@ -190,7 +192,8 @@ void CentralRecver::serve() {
         if (thread_id == -2) {
             int channel_id = zmq_recv_int32(&comm_recver_);
             int progress = zmq_recv_int32(&comm_recver_);
-            event_loop_connector_->generate_in_comm_complete_event(channel_id, progress);
+            int num_global_sync_processes = zmq_recv_int32(&comm_recver_);
+            event_loop_connector_->generate_in_comm_complete_event(channel_id, progress, num_global_sync_processes);
             continue;
         }
 
@@ -297,41 +300,51 @@ void MailboxEventLoop::_send_comm_handler(int thread_id, int channel_id, int pro
 void MailboxEventLoop::send_comm_complete_handler() {
     int channel_id = zmq_recv_int32(&event_recver_);
     int progress = zmq_recv_int32(&event_recver_);
-    _send_comm_complete_handler(channel_id, progress);
+    uint64_t hash_ring_ptr = zmq_recv_int64(&event_recver_);
+    _send_comm_complete_handler(channel_id, progress, reinterpret_cast<HashRing*>(hash_ring_ptr));
 }
 
-void MailboxEventLoop::_send_comm_complete_handler(int channel_id, int progress) {
+void MailboxEventLoop::_send_comm_complete_handler(int channel_id, int progress, HashRing* hash_ring) {
     auto chnl_prgs_pair = std::make_pair(channel_id, progress);
     if (send_comm_complete_counter_.find(chnl_prgs_pair) == send_comm_complete_counter_.end())
         send_comm_complete_counter_[chnl_prgs_pair] = 0;
 
     send_comm_complete_counter_[chnl_prgs_pair] += 1;
-    if (send_comm_complete_counter_[chnl_prgs_pair] == num_local_threads_) {
-        for (auto& pid_sender_pair : sender_) {
-            auto* send_sock = pid_sender_pair.second;
+    if (send_comm_complete_counter_[chnl_prgs_pair] == hash_ring->get_num_local_threads(process_id_)) {
+        for (auto pid : hash_ring->get_global_pids()) {
+            if (pid == process_id_)
+                continue;
+            auto* send_sock = sender_[pid];
             int send_comm_complete_magic = -2;
             zmq_sendmore_int32(send_sock, send_comm_complete_magic);
             zmq_sendmore_int32(send_sock, channel_id);
-            zmq_send_int32(send_sock, progress);
+            zmq_sendmore_int32(send_sock, progress);
+            zmq_send_int32(send_sock, hash_ring->get_num_processes());
         }
-        _recv_comm_complete_handler(channel_id, progress);
+        _recv_comm_complete_handler(channel_id, progress, hash_ring->get_num_processes());
         send_comm_complete_counter_.erase(chnl_prgs_pair);
     }
+    delete hash_ring;
 }
 
 void MailboxEventLoop::recv_comm_complete_handler() {
     int channel_id = zmq_recv_int32(&event_recver_);
     int progress = zmq_recv_int32(&event_recver_);
-    _recv_comm_complete_handler(channel_id, progress);
+    int num_global_sync_proceses = zmq_recv_int32(&event_recver_);
+    _recv_comm_complete_handler(channel_id, progress, num_global_sync_proceses);
 }
 
 void MailboxEventLoop::_recv_comm_complete_handler(int channel_id, int progress) {
+    _recv_comm_complete_handler(channel_id, progress, num_global_processes_);
+}
+
+void MailboxEventLoop::_recv_comm_complete_handler(int channel_id, int progress, int num_global_sync_proceses) {
     auto chnl_prgs_pair = std::make_pair(channel_id, progress);
     if (recv_comm_complete_counter_.find(chnl_prgs_pair) == recv_comm_complete_counter_.end())
         recv_comm_complete_counter_[chnl_prgs_pair] = 0;
 
     recv_comm_complete_counter_[chnl_prgs_pair] += 1;
-    if (recv_comm_complete_counter_[chnl_prgs_pair] == num_global_processes_) {
+    if (recv_comm_complete_counter_[chnl_prgs_pair] == num_global_sync_proceses) {
         for (auto& tid_mailbox_pair : registered_mailbox_) {
             int thread_id = tid_mailbox_pair.first;
             auto& mailbox = *(registered_mailbox_[thread_id]);
@@ -368,10 +381,11 @@ void EventLoopConnector::generate_in_comm_event(int thread_id, int channel_id, i
     zmq_send_int64(&event_sender_, reinterpret_cast<uint64_t>(bin_stream_ptr));
 }
 
-void EventLoopConnector::generate_in_comm_complete_event(int channel_id, int progress) {
+void EventLoopConnector::generate_in_comm_complete_event(int channel_id, int progress, int num_global_sync_proceses) {
     zmq_sendmore_int32(&event_sender_, MAILBOX_EVENT_RECV_COMM_END);
     zmq_sendmore_int32(&event_sender_, channel_id);
-    zmq_send_int32(&event_sender_, progress);
+    zmq_sendmore_int32(&event_sender_, progress);
+    zmq_send_int32(&event_sender_, num_global_sync_proceses);
 }
 
 void EventLoopConnector::generate_out_comm_event(int thread_id, int channel_id, int progress, BinStream& bin_stream) {
@@ -383,10 +397,11 @@ void EventLoopConnector::generate_out_comm_event(int thread_id, int channel_id, 
     zmq_send_int64(&event_sender_, reinterpret_cast<uint64_t>(bin_stream_ptr));
 }
 
-void EventLoopConnector::generate_out_comm_complete_event(int channel_id, int progress) {
+void EventLoopConnector::generate_out_comm_complete_event(int channel_id, int progress, HashRing* hash_ring) {
     zmq_sendmore_int32(&event_sender_, MAILBOX_EVENT_SEND_COMM_END);
     zmq_sendmore_int32(&event_sender_, channel_id);
-    zmq_send_int32(&event_sender_, progress);
+    zmq_sendmore_int32(&event_sender_, progress);
+    zmq_send_int64(&event_sender_, reinterpret_cast<uint64_t>(hash_ring));
 }
 
 }  // namespace husky
