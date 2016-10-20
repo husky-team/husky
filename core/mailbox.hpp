@@ -47,16 +47,78 @@ class LocalMailbox {
     inline int get_thread_id() const { return thread_id_; }
     void set_thread_id(int thread_id);
 
-    // Will block if there's no messages in the buffer
-    // but more are coming
-    // Return true if there's any message to process
-    // Return false if no more message is available
+    /// \brief Use thie before receiving incoming incoming communication.
+    ///
+    /// This method will block when the incoming communication is not available.
+    /// It will return true when there's available incoming communication.
+    /// Return false when all incoming communication is received.
+    ///
+    /// @param channel_id ID of the Channel in interest.
+    /// @param progress Progress of the Channel in interest.
+    /// @return True when there's available incoming communication. Otherwise
+    ///         it returns false.
     bool poll(int channel_id, int progress);
+
+    /// \brief Poll from multiple Channel-Progress pairs.
+    ///
+    /// Similar as the poll(int channel_id, int progress) method. However, It
+    /// supports multiple Channel-Progress pairs.
+    ///
+    /// @param[in] channel_progress_pairs Channel-Progress pairs to query.
+    /// @param[out] active_idx The index of the pair that has incoming communication.
+    /// @return True when there's available incoming communication. Otherwise
+    ///         it returns false.
     bool poll(const std::vector<std::pair<int, int>>& channel_progress_pairs, int* active_idx);
+
+    /// \brief Poll without blocking.
+    ///
+    /// Similar as the poll(int channel_id, int progress) method. However, it
+    /// directly returns false when incoming communication is not available, 
+    /// even if they are still in-flight.
+    ///
+    /// @param channel_id ID of the Channel in interest.
+    /// @param progress Progress of the Channel in interest.
+    /// @return True when there's non-blocking incoming communication available.
+    ///         Otherwise it returns false.
     bool poll_non_block(int channel_id, int progress);
+
+    /// \brief Poll without blocking.
+    ///
+    /// Similar as the poll_non_block(int channel_id, int progress) method.
+    /// However, it will wait for some time, and give up when the given time
+    /// period is reached.
+    ///
+    /// @param channel_id ID of the Channel in interest.
+    /// @param progress Progress of the Channel in interest.
+    /// @param progress Maximum time to wait for (seconds).
+    /// @return True when there's non-blocking incoming communication available.
+    ///         Otherwise it returns false.
     bool poll_with_timeout(int channel_id, int progress, double timeout);
+
+    /// \brief Send outgoing communication to a specific thread
+    ///
+    /// This method can be used multiple times to send multiple BinStreams. After
+    /// that, the `send_complete` method should be used to indicate the end of this
+    /// batch of communication.
+    ///
+    /// @param thread_id ID of the destination worker thread.
+    /// @param channel_id ID of the Channel for the communication.
+    /// @param progress Progress of the communication. Progress should always
+    ///        be increasing.
+    /// @param bin_stream The actual communication in the form of BinStream.
     void send(int thread_id, int channel_id, int progress, BinStream& bin_stream);
+
     void send_complete(int channel_id, int progress, HashRing* hash_ring);
+
+    /// \brief Receive incoming communication
+    ///
+    /// Receive incoming communication in the form of BinStream. It must be called
+    /// after `poll`.
+    ///
+    /// @param channel_id ID of the Channel for the communication.
+    /// @param progress Progress of the communication. Progress should always
+    ///        be increasing.
+    /// @return The actual incoming communication in the form of BinStream.
     BinStream recv(int channel_id, int progress);
 
     friend class MailboxEventLoop;
