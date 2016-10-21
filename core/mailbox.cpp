@@ -37,6 +37,8 @@ LocalMailbox::~LocalMailbox() { delete event_loop_connector_; }
 
 void LocalMailbox::set_thread_id(int thread_id) { thread_id_ = thread_id; }
 
+void LocalMailbox::set_process_id(int process_id) { process_id_ = process_id; }
+
 // TODO(fan) When messages are very fragmented, there may be
 // a lot of locking, since each arrival of message will trigger
 // a locking
@@ -155,8 +157,16 @@ void LocalMailbox::send(int thread_id, int channel_id, int progress, BinStream& 
 }
 
 void LocalMailbox::send_complete(int channel_id, int progress, HashRing* hash_ring) {
-    HashRing* hash_ring_copy = new HashRing(*hash_ring);
-    event_loop_connector_->generate_out_comm_complete_event(channel_id, progress, hash_ring_copy);
+    send_complete(channel_id, progress, hash_ring, hash_ring);
+}
+
+void LocalMailbox::send_complete(int channel_id, int progress, HashRing* src_hash_ring, HashRing* dst_hash_ring) {
+    auto& sender_tids = src_hash_ring->get_global_tids();
+    if (std::find(sender_tids.begin(), sender_tids.end(), thread_id_) != sender_tids.end()) {
+        auto* global_pids_copy = new std::vector<int>(dst_hash_ring->get_global_pids());
+        event_loop_connector_->generate_out_comm_complete_event(
+            channel_id, progress, src_hash_ring->get_num_local_threads(process_id_), global_pids_copy);
+    }
 }
 
 CentralRecver::CentralRecver(zmq::context_t* zmq_context, const std::string& bind_addr)
@@ -241,6 +251,7 @@ void MailboxEventLoop::serve() {
 
 void MailboxEventLoop::register_mailbox(LocalMailbox& local_mailbox) {
     int tid = local_mailbox.get_thread_id();
+    local_mailbox.set_process_id(process_id_);
     ASSERT_MSG(registered_mailbox_.find(tid) == registered_mailbox_.end(),
                "Shouldn't register a same mailbox more than once");
 
@@ -300,31 +311,39 @@ void MailboxEventLoop::_send_comm_handler(int thread_id, int channel_id, int pro
 void MailboxEventLoop::send_comm_complete_handler() {
     int channel_id = zmq_recv_int32(&event_recver_);
     int progress = zmq_recv_int32(&event_recver_);
-    uint64_t hash_ring_ptr = zmq_recv_int64(&event_recver_);
-    _send_comm_complete_handler(channel_id, progress, reinterpret_cast<HashRing*>(hash_ring_ptr));
+    int num_local_threads = zmq_recv_int32(&event_recver_);
+    auto* global_pids_ptr = reinterpret_cast<std::vector<int>*>(zmq_recv_int64(&event_recver_));
+    assert(global_pids_ptr->size() != 0);
+    _send_comm_complete_handler(channel_id, progress, num_local_threads, *global_pids_ptr);
+    delete global_pids_ptr;
 }
 
-void MailboxEventLoop::_send_comm_complete_handler(int channel_id, int progress, HashRing* hash_ring) {
+void MailboxEventLoop::_send_comm_complete_handler(int channel_id, int progress, int num_local_threads,
+                                                   const std::vector<int>& global_pids) {
     auto chnl_prgs_pair = std::make_pair(channel_id, progress);
     if (send_comm_complete_counter_.find(chnl_prgs_pair) == send_comm_complete_counter_.end())
         send_comm_complete_counter_[chnl_prgs_pair] = 0;
 
+    // TODO I can actually skip before this event is generated
     send_comm_complete_counter_[chnl_prgs_pair] += 1;
-    if (send_comm_complete_counter_[chnl_prgs_pair] == hash_ring->get_num_local_threads(process_id_)) {
-        for (auto pid : hash_ring->get_global_pids()) {
-            if (pid == process_id_)
+    if (send_comm_complete_counter_[chnl_prgs_pair] == num_local_threads) {
+        bool involved_in_comm = false;
+        for (auto pid : global_pids) {
+            if (pid == process_id_) {
+                involved_in_comm = true;
                 continue;
+            }
             auto* send_sock = sender_[pid];
             int send_comm_complete_magic = -2;
             zmq_sendmore_int32(send_sock, send_comm_complete_magic);
             zmq_sendmore_int32(send_sock, channel_id);
             zmq_sendmore_int32(send_sock, progress);
-            zmq_send_int32(send_sock, hash_ring->get_num_processes());
+            zmq_send_int32(send_sock, static_cast<int>(global_pids.size()));
         }
-        _recv_comm_complete_handler(channel_id, progress, hash_ring->get_num_processes());
+        if (involved_in_comm)
+            _recv_comm_complete_handler(channel_id, progress, static_cast<int>(global_pids.size()));
         send_comm_complete_counter_.erase(chnl_prgs_pair);
     }
-    delete hash_ring;
 }
 
 void MailboxEventLoop::recv_comm_complete_handler() {
@@ -397,11 +416,13 @@ void EventLoopConnector::generate_out_comm_event(int thread_id, int channel_id, 
     zmq_send_int64(&event_sender_, reinterpret_cast<uint64_t>(bin_stream_ptr));
 }
 
-void EventLoopConnector::generate_out_comm_complete_event(int channel_id, int progress, HashRing* hash_ring) {
+void EventLoopConnector::generate_out_comm_complete_event(int channel_id, int progress, int num_local_sender_threads,
+                                                          std::vector<int>* global_pids_ptr) {
     zmq_sendmore_int32(&event_sender_, MAILBOX_EVENT_SEND_COMM_END);
     zmq_sendmore_int32(&event_sender_, channel_id);
     zmq_sendmore_int32(&event_sender_, progress);
-    zmq_send_int64(&event_sender_, reinterpret_cast<uint64_t>(hash_ring));
+    zmq_sendmore_int32(&event_sender_, num_local_sender_threads);
+    zmq_send_int64(&event_sender_, reinterpret_cast<uint64_t>(global_pids_ptr));
 }
 
 }  // namespace husky

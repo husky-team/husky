@@ -45,6 +45,8 @@ class HashRing {
 
     std::vector<int>& get_global_pids() { return global_pids_vector_; }
 
+    std::vector<int>& get_global_tids() { return global_tids_vector_; }
+
     int get_num_processes() { return global_pids_vector_.size(); }
 
     int get_num_local_threads(int pid) { return num_local_threads_[pid]; }

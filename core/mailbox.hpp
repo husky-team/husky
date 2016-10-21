@@ -46,6 +46,7 @@ class LocalMailbox {
 
     inline int get_thread_id() const { return thread_id_; }
     void set_thread_id(int thread_id);
+    void set_process_id(int process_id);
 
     /// \brief Use thie before receiving incoming incoming communication.
     ///
@@ -95,7 +96,7 @@ class LocalMailbox {
     ///         Otherwise it returns false.
     bool poll_with_timeout(int channel_id, int progress, double timeout);
 
-    /// \brief Send outgoing communication to a specific thread
+    /// \brief Send outgoing communication to a specific thread.
     ///
     /// This method can be used multiple times to send multiple BinStreams. After
     /// that, the `send_complete` method should be used to indicate the end of this
@@ -108,8 +109,26 @@ class LocalMailbox {
     /// @param bin_stream The actual communication in the form of BinStream.
     void send(int thread_id, int channel_id, int progress, BinStream& bin_stream);
 
-    void send_complete(int channel_id, int progress, HashRing* hash_ring);
+    /// \brief Indicate that a round of outgoing communication finishes.
+    ///
+    /// This method must be called after a round of outgoing communication.
+    ///
+    /// @param channel_id Channel of the communication.
+    /// @param progress Progress of the corresponding Channel.
+    /// @param src_hash_ring Group of threads that issue the outgoing communication
+    /// @param src_hash_ring Group of threads that will receive the communication
+    void send_complete(int channel_id, int progress, HashRing* src_hash_ring, HashRing* dst_hash_ring);
 
+    /// \brief Indicate that a round of outgoing communication finishes.
+    ///
+    /// Similar as send_complete(int channel_id, int progress, HashRing* src_hash_ring, HashRing* dst_hash_ring)
+    /// except that the communication happen within the same group of machines.
+    ///
+    /// @param channel_id Channel of the communication.
+    /// @param progress Progress of the corresponding Channel.
+    /// @param src_hash_ring Group of threads that involes in the communication
+    void send_complete(int channel_id, int progress, HashRing* hash_ring);
+ 
     /// \brief Receive incoming communication
     ///
     /// Receive incoming communication in the form of BinStream. It must be called
@@ -125,6 +144,7 @@ class LocalMailbox {
 
    protected:
     int thread_id_;
+    int process_id_ = 0;
     zmq::context_t* zmq_context_;
     std::condition_variable poll_cv_;
     std::mutex notify_lock;
@@ -171,7 +191,8 @@ class MailboxEventLoop {
     void send_comm_handler();
     void _send_comm_handler(int thread_id, int channel_id, int progress, BinStream* send_bin_stream_ptr);
     void send_comm_complete_handler();
-    void _send_comm_complete_handler(int channel_id, int progress, HashRing* hash_ring);
+    void _send_comm_complete_handler(int channel_id, int progress, int num_local_threads,
+                                     const std::vector<int>& global_pids);
     void recv_comm_complete_handler();
     void _recv_comm_complete_handler(int channel_id, int progress);
     void _recv_comm_complete_handler(int channel_id, int progress, int num_global_sync_processes);
@@ -199,7 +220,8 @@ class EventLoopConnector {
     void generate_in_comm_event(int thread_id, int channel_id, int progress, BinStream* bin_stream);
     void generate_in_comm_complete_event(int channel_id, int progress, int num_global_sync_proceses);
     void generate_out_comm_event(int thread_id, int channel_id, int progress, BinStream& bin_stream);
-    void generate_out_comm_complete_event(int channel_id, int progress, HashRing* hash_ring);
+    void generate_out_comm_complete_event(int channel_id, int progress, int num_local_sender_threads,
+                                          std::vector<int>* global_pids_ptr);
 
    protected:
     zmq::socket_t event_sender_;
