@@ -22,30 +22,29 @@
 
 #include "io/input/inputformat_base.hpp"
 
+
 namespace husky {
 namespace io {
 
-class XMLInputFormat final : public InputFormatBase {
+class LineInputFormat final : public InputFormatBase {
    public:
     typedef boost::string_ref RecordT;
 
-    explicit XMLInputFormat(std::string start_pattern, std::string end_pattern);
-    virtual ~XMLInputFormat();
+    LineInputFormat();
+    virtual ~LineInputFormat();
+
     virtual void set_input(const std::string& url);
     virtual bool next(boost::string_ref& ref);
     virtual bool is_setup() const;
 
    protected:
-    bool handle_next_block_start_pattern();
-    void handle_next_block_end_pattern();
+    void handle_next_block();
     bool fetch_new_block();
     void clear_buffer();
 
-    int l = 0, r = 0;
+    int l = 0;
+    int r = 0;
     std::string last_part_;
-    std::string start_pattern_;
-    std::string end_pattern_;
-
     boost::string_ref buffer_;
 };
 

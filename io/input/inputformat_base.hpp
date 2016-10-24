@@ -14,7 +14,19 @@
 
 #pragma once
 
+#include <string>
+
+#include "boost/utility/string_ref.hpp"
+
 #include "core/channel/channel_source.hpp"
+#include "core/utils.hpp"
+
+#ifdef WITH_HDFS
+#include "io/input/hdfs_file_splitter.hpp"
+#endif
+
+#include "io/input/file_splitter_base.hpp"
+#include "io/input/nfs_file_splitter.hpp"
 
 namespace husky {
 namespace io {
@@ -30,9 +42,36 @@ class InputFormatBase : public husky::ChannelSource {
     static RecordT& recast(RecordT& t) {
         return t;
     }
+    /// function for creating different splitters for different urls
+    void set_splitter(const std::string& url) {
+        int prefix = url.find("://");
+        ASSERT_MSG(prefix != std::string::npos, ("Cannot analyze protocol from " + url).c_str());
+        std::string protocol = url.substr(0, prefix);
+        if (protocol == "nfs") {
+            if (splitter_ != nullptr && dynamic_cast<NFSFileSplitter*>(splitter_) == NULL) {
+                delete splitter_;
+                splitter_ = new NFSFileSplitter();
+            } else if (splitter_ == nullptr) {
+                splitter_ = new NFSFileSplitter();
+            } else {}
+        #ifdef WITH_HDFS
+        } else if (protocol == "hdfs") {
+            if (splitter_ != nullptr && dynamic_cast<HDFSFileSplitter*>(splitter_) == NULL) {
+                delete splitter_;
+                splitter_ = new HDFSFileSplitter();
+            } else if (splitter_ == nullptr) {
+                splitter_ =  new HDFSFileSplitter();
+            } else {}
+        #endif
+        } else {
+            ASSERT_MSG(false, ("Unknown protocol given to LineInputFormat: " + protocol).c_str());
+        }
+        splitter_->load(url.substr(prefix + 3)); 
+    }
 
    protected:
     int is_setup_ = 0;
+    FileSplitterBase* splitter_ = nullptr;
 };
 
 }  // namespace io

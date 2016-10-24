@@ -14,39 +14,23 @@
 
 #pragma once
 
-#include <cassert>
 #include <fstream>
 #include <string>
 
 #include "boost/utility/string_ref.hpp"
 
-#include "io/input/inputformat_base.hpp"
-
 namespace husky {
 namespace io {
 
-class XMLInputFormat final : public InputFormatBase {
+class FileSplitterBase {
    public:
-    typedef boost::string_ref RecordT;
-
-    explicit XMLInputFormat(std::string start_pattern, std::string end_pattern);
-    virtual ~XMLInputFormat();
-    virtual void set_input(const std::string& url);
-    virtual bool next(boost::string_ref& ref);
-    virtual bool is_setup() const;
+    virtual ~FileSplitterBase() = default;
+    virtual void load(std::string url) = 0;
+    virtual boost::string_ref fetch_block(bool is_next = false) = 0;
+    virtual size_t get_offset() = 0;
 
    protected:
-    bool handle_next_block_start_pattern();
-    void handle_next_block_end_pattern();
-    bool fetch_new_block();
-    void clear_buffer();
-
-    int l = 0, r = 0;
-    std::string last_part_;
-    std::string start_pattern_;
-    std::string end_pattern_;
-
-    boost::string_ref buffer_;
+    virtual int read_block(const std::string& fn) = 0;
 };
 
 }  // namespace io

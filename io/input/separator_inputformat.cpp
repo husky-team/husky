@@ -18,7 +18,6 @@
 
 #include "boost/utility/string_ref.hpp"
 
-#include "io/input/hdfs_file_splitter.hpp"
 #include "io/input/inputformat_helper.hpp"
 
 namespace husky {
@@ -34,8 +33,20 @@ SeparatorInputFormat::SeparatorInputFormat(std::string pattern) : pattern_(patte
     is_setup_ = SeparatorInputFormatSetUp::NotSetUp;
 }
 
+SeparatorInputFormat::~SeparatorInputFormat() {
+    if (!splitter_)
+        return;
+    delete splitter_;
+    splitter_ = nullptr;
+}
+
 void SeparatorInputFormat::set_input(const std::string& url) {
-    splitter_.load(url);
+    set_splitter(url);
+    // reset input format
+    l = r = 0;
+    last_part_ = "";
+    buffer_.clear();
+    in_between_ = false;
     is_setup_ |= SeparatorInputFormatSetUp::InputSetUp;
 }
 
@@ -54,7 +65,7 @@ bool SeparatorInputFormat::next(boost::string_ref& ref) {
             return false;
     }
     if (r + pattern_.size() == buffer_.size()) {
-        buffer_ = splitter_.fetch_block(true);
+        buffer_ = splitter_->fetch_block(true);
         if (buffer_.empty()) {
             bool success = fetch_new_block();
             if (!success)
@@ -67,7 +78,7 @@ bool SeparatorInputFormat::next(boost::string_ref& ref) {
         }
     }
 
-    if (splitter_.get_offset() == 0 && r == 0) {
+    if (splitter_->get_offset() == 0 && r == 0) {
         // begin of a file, start from index 0
         l = 0;
         // for the case file starting with separator
@@ -88,7 +99,7 @@ bool SeparatorInputFormat::next(boost::string_ref& ref) {
     if (r == boost::string_ref::npos) {
         auto last = buffer_.substr(l);
         last_part_ = std::string(last.data(), last.size());
-        buffer_ = splitter_.fetch_block(true);
+        buffer_ = splitter_->fetch_block(true);
         handle_next_block();
         ref = last_part_;
         return true;
@@ -129,7 +140,7 @@ void SeparatorInputFormat::handle_next_block() {
 }
 
 bool SeparatorInputFormat::fetch_new_block() {
-    buffer_ = splitter_.fetch_block(false);
+    buffer_ = splitter_->fetch_block(false);
     if (buffer_.empty())
         return false;
     l = r = 0;

@@ -18,7 +18,7 @@
 #include "boost/tokenizer.hpp"
 
 #include "core/engine.hpp"
-#include "io/input/hdfs_line_inputformat.hpp"
+#include "io/input/line_inputformat.hpp"
 
 class Word {
    public:
@@ -33,7 +33,7 @@ class Word {
 };
 
 void wc() {
-    husky::io::HDFSLineInputFormat infmt;
+    husky::io::LineInputFormat infmt;
     infmt.set_input(husky::Context::get_param("input"));
 
     auto& word_list = husky::ObjListFactory::create_objlist<Word>();

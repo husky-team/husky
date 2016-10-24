@@ -18,7 +18,6 @@
 
 #include "boost/utility/string_ref.hpp"
 
-#include "io/input/hdfs_file_splitter.hpp"
 #include "io/input/inputformat_helper.hpp"
 
 namespace husky {
@@ -34,8 +33,19 @@ ChunkInputFormat::ChunkInputFormat(int chunk_size) : chunk_size_(chunk_size) {
     is_setup_ = ChunkInputFormatSetUp::NotSetUp;
 }
 
+ChunkInputFormat::~ChunkInputFormat() {
+    if (!splitter_)
+        return;
+    delete splitter_;
+    splitter_ = nullptr;
+}
+
 void ChunkInputFormat::set_input(const std::string& url) {
-    splitter_.load(url);
+    set_splitter(url);
+    // reset input format
+    l = r = 0;
+    last_part_ = "";
+    buffer_.clear();
     is_setup_ |= ChunkInputFormatSetUp::InputSetUp;
 }
 
@@ -54,11 +64,11 @@ bool ChunkInputFormat::next(boost::string_ref& ref) {
         if (!success)
             return false;
     }
-    if (splitter_.get_offset() == 0 && r == 0)
+    if (splitter_->get_offset() == 0 && r == 0)
         l = 0;
     // new block: deduce offset information from offset
     else if (r == 0)
-        l = (chunk_size_ - splitter_.get_offset() % chunk_size_) % chunk_size_;
+        l = (chunk_size_ - splitter_->get_offset() % chunk_size_) % chunk_size_;
     else
         l = r;
 
@@ -68,7 +78,7 @@ bool ChunkInputFormat::next(boost::string_ref& ref) {
         auto last = buffer_.substr(l);
         last_part_ = std::string(last.data(), last.size());
         int remain = r - buffer_.size();
-        buffer_ = splitter_.fetch_block(true);
+        buffer_ = splitter_->fetch_block(true);
         handle_next_block(remain);
         ref = last_part_;
         return true;
@@ -86,7 +96,7 @@ void ChunkInputFormat::handle_next_block(int remain) {
         if (r > buffer_.size()) {
             r -= buffer_.size();
             last_part_ += std::string(buffer_.data(), buffer_.size());
-            buffer_ = splitter_.fetch_block(true);
+            buffer_ = splitter_->fetch_block(true);
             continue;
         } else {
             last_part_ += std::string(buffer_.data(), r);
@@ -97,10 +107,9 @@ void ChunkInputFormat::handle_next_block(int remain) {
 }
 
 bool ChunkInputFormat::fetch_new_block() {
-    buffer_ = splitter_.fetch_block(false);
-    if (buffer_.empty()) {
+    buffer_ = splitter_->fetch_block(false);
+    if (buffer_.empty())
         return false;
-    }
     l = r = 0;
     return true;
 }

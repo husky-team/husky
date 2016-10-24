@@ -18,7 +18,7 @@
 #include "boost/tokenizer.hpp"
 
 #include "core/engine.hpp"
-#include "io/input/hdfs_line_inputformat.hpp"
+#include "io/input/line_inputformat.hpp"
 #include "lib/aggregator_factory.hpp"
 
 class Vertex {
@@ -43,7 +43,7 @@ class Vertex {
 };
 
 void pr_cc() {
-    husky::io::HDFSLineInputFormat infmt;
+    husky::io::LineInputFormat infmt;
     infmt.set_input(husky::Context::get_param("input"));
     // Create vertex object list
     auto& vertex_list = husky::ObjListFactory::create_objlist<Vertex>();

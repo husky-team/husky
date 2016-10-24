@@ -19,10 +19,12 @@
 
 #include "boost/utility/string_ref.hpp"
 
+#include "io/input/file_splitter_base.hpp"
+
 namespace husky {
 namespace io {
 
-class NFSFileSplitter {
+class NFSFileSplitter final : public FileSplitterBase {
    public:
     NFSFileSplitter();
 

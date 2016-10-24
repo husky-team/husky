@@ -21,17 +21,19 @@
 
 #include "hdfs/hdfs.h"
 
+#include "io/input/file_splitter_base.hpp"
+
 namespace husky {
 namespace io {
 
-class HDFSFileSplitter {
+class HDFSFileSplitter final : public FileSplitterBase {
    public:
     HDFSFileSplitter();
-    virtual ~HDFSFileSplitter();
+    ~HDFSFileSplitter();
 
     static void init_blocksize(hdfsFS fs, const std::string& url);
-    virtual void load(std::string url);
-    virtual boost::string_ref fetch_block(bool is_next = false);
+    void load(std::string url);
+    boost::string_ref fetch_block(bool is_next = false);
     size_t get_offset();
 
    protected:

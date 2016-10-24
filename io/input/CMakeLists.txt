@@ -15,13 +15,12 @@
 
 include_directories(${PROJECT_SOURCE_DIR} ${Boost_INCLUDE_DIRS})
 
-set(input_cpps inputformat_helper.cpp nfs_file_splitter.cpp nfs_line_inputformat.cpp nfs_binary_inputformat.cpp binary_inputformat_impl.cpp binary_inputformat.cpp)
+set(input_cpps inputformat_helper.cpp line_inputformat.cpp chunk_inputformat.cpp separator_inputformat.cpp xml_inputformat.cpp nfs_file_splitter.cpp nfs_binary_inputformat.cpp binary_inputformat_impl.cpp binary_inputformat.cpp)
 
 if(LIBHDFS3_FOUND)
     include_directories(${LIBHDFS3_INCLUDE_DIR})
     add_definitions(-DWITH_HDFS)
-    set(input_cpps ${input_cpps} hdfs_file_splitter.cpp hdfs_line_inputformat.cpp
-     chunk_inputformat.cpp separator_inputformat.cpp xml_inputformat.cpp hdfs_binary_inputformat.cpp)
+    set(input_cpps ${input_cpps} hdfs_file_splitter.cpp hdfs_binary_inputformat.cpp)
 endif(LIBHDFS3_FOUND)
 
 if(MONGOCLIENT_FOUND)

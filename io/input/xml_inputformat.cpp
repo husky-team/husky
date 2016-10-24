@@ -18,7 +18,6 @@
 
 #include "boost/utility/string_ref.hpp"
 
-#include "io/input/hdfs_file_splitter.hpp"
 #include "io/input/inputformat_helper.hpp"
 
 namespace husky {
@@ -35,8 +34,19 @@ XMLInputFormat::XMLInputFormat(std::string start_pattern, std::string end_patter
     is_setup_ = XMLInputFormatSetUp::NotSetUp;
 }
 
+XMLInputFormat::~XMLInputFormat() {
+    if (!splitter_)
+        return;
+    delete splitter_;
+    splitter_ = nullptr;
+}
+
 void XMLInputFormat::set_input(const std::string& url) {
-    splitter_.load(url);
+    set_splitter(url);
+    // reset input format
+    l = r = 0;
+    last_part_ = "";
+    buffer_.clear();
     is_setup_ |= XMLInputFormatSetUp::InputSetUp;
 }
 
@@ -64,7 +74,7 @@ bool XMLInputFormat::next(boost::string_ref& ref) {
     if (l == boost::string_ref::npos) {
         // store the last start_pattern_.size() bytes
         last_part_ = buffer_.substr(buffer_.size() - start_pattern_.size()).to_string();
-        buffer_ = splitter_.fetch_block(true);
+        buffer_ = splitter_->fetch_block(true);
         // stores the extracted string directly into last_part_, discarding start and end pattern
         bool found = handle_next_block_start_pattern();
         if (found) {
@@ -79,7 +89,7 @@ bool XMLInputFormat::next(boost::string_ref& ref) {
     if (r == boost::string_ref::npos) {
         // stores the current string and search the next block for end_pattern_
         last_part_ = buffer_.substr(l + start_pattern_.size()).to_string();
-        buffer_ = splitter_.fetch_block(true);
+        buffer_ = splitter_->fetch_block(true);
         // stores the extracted string directly into last_part_, discarding start and end pattern
         handle_next_block_end_pattern();
         ref = last_part_;
@@ -128,10 +138,9 @@ void XMLInputFormat::handle_next_block_end_pattern() {
 }
 
 bool XMLInputFormat::fetch_new_block() {
-    buffer_ = splitter_.fetch_block(false);
-    if (buffer_.empty()) {
+    buffer_ = splitter_->fetch_block(false);
+    if (buffer_.empty())
         return false;
-    }
     l = r = 0;
     return true;
 }

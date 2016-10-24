@@ -20,17 +20,17 @@
 
 #include "boost/utility/string_ref.hpp"
 
-#include "io/input/hdfs_file_splitter.hpp"
 #include "io/input/inputformat_base.hpp"
 
 namespace husky {
 namespace io {
 
-class SeparatorInputFormat : public InputFormatBase {
+class SeparatorInputFormat final : public InputFormatBase {
    public:
     typedef boost::string_ref RecordT;
 
     explicit SeparatorInputFormat(std::string pattern);
+    virtual ~SeparatorInputFormat();
     virtual void set_input(const std::string& url);
     virtual bool next(boost::string_ref& ref);
     virtual bool is_setup() const;
@@ -47,7 +47,6 @@ class SeparatorInputFormat : public InputFormatBase {
     bool in_between_ = false;
     boost::string_ref buffer_;
     std::string in_between_str_;
-    HDFSFileSplitter splitter_;
 };
 
 }  // namespace io
