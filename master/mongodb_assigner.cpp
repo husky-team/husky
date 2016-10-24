@@ -34,7 +34,6 @@ const char kConfigShards[] = "config.shards";
 static MongoSplitAssigner mongo_split_assigner;
 
 MongoSplitAssigner::MongoSplitAssigner() : end_count_(0), split_num_(0) {
-    mongo::client::initialize();
     Master::get_instance().register_main_handler(TYPE_MONGODB_REQ,
                                                  std::bind(&MongoSplitAssigner::master_mongodb_req_handler, this));
     Master::get_instance().register_main_handler(TYPE_MONGODB_END_REQ,
@@ -81,7 +80,9 @@ void MongoSplitAssigner::master_mongodb_req_end_handler() {
     base::log_msg("master => end@" + split.get_ns() + " " + split.get_min() + ":" + split.get_max());
 }
 
-void MongoSplitAssigner::master_setup_handler() {}
+void MongoSplitAssigner::master_setup_handler() {
+    mongo::client::initialize();
+}
 
 MongoSplitAssigner::~MongoSplitAssigner() {
     shards_map_.clear();
