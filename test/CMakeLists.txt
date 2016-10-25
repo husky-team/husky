@@ -58,14 +58,8 @@ target_link_libraries(TestAsync ${husky})
 target_link_libraries(TestAsync ${EXTERNAL_LIB})
 set_property(TARGET TestAsync PROPERTY CXX_STANDARD 14)
 
-# TestNFSFileInputFormat
-add_executable(TestNFSFileInputFormat test-nfs_file_inputformat.cpp)
-target_link_libraries(TestNFSFileInputFormat ${husky})
-target_link_libraries(TestNFSFileInputFormat ${EXTERNAL_LIB})
-set_property(TARGET TestNFSFileInputFormat PROPERTY CXX_STANDARD 14)
-
-# TestHDFSFileInputFormat
-add_executable(TestHDFSFileInputFormat test-hdfs_file_inputformat.cpp)
-target_link_libraries(TestHDFSFileInputFormat ${husky})
-target_link_libraries(TestHDFSFileInputFormat ${EXTERNAL_LIB})
-set_property(TARGET TestHDFSFileInputFormat PROPERTY CXX_STANDARD 14)
+# TestBinaryInputFormat
+add_executable(TestBinaryInputFormat test-binary-inputformat.cpp)
+target_link_libraries(TestBinaryInputFormat ${husky})
+target_link_libraries(TestBinaryInputFormat ${EXTERNAL_LIB})
+set_property(TARGET TestBinaryInputFormat PROPERTY CXX_STANDARD 14)
