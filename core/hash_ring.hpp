@@ -15,6 +15,7 @@
 #pragma once
 
 #include <set>
+#include <vector>
 
 #include "base/serialization.hpp"
 

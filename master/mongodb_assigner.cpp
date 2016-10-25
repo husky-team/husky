@@ -80,9 +80,7 @@ void MongoSplitAssigner::master_mongodb_req_end_handler() {
     base::log_msg("master => end@" + split.get_ns() + " " + split.get_min() + ":" + split.get_max());
 }
 
-void MongoSplitAssigner::master_setup_handler() {
-    mongo::client::initialize();
-}
+void MongoSplitAssigner::master_setup_handler() { mongo::client::initialize(); }
 
 MongoSplitAssigner::~MongoSplitAssigner() {
     shards_map_.clear();

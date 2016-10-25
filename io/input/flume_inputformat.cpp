@@ -166,9 +166,9 @@ bool FlumeInputFormat::is_listening_worker() {
 
 bool FlumeInputFormat::next(boost::string_ref& ref) {
     // In the same machine, workers except first one do nothing
-    if (!is_listening_worker())
+    if (!is_listening_worker()) {
         return false;
-    else {
+    } else {
         ref = flume_handler_->get_next_data();
 
         if (ref.size() == 0)

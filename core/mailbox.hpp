@@ -74,7 +74,7 @@ class LocalMailbox {
     /// \brief Poll without blocking.
     ///
     /// Similar as the poll(int channel_id, int progress) method. However, it
-    /// directly returns false when incoming communication is not available, 
+    /// directly returns false when incoming communication is not available,
     /// even if they are still in-flight.
     ///
     /// @param channel_id ID of the Channel in interest.
@@ -128,7 +128,7 @@ class LocalMailbox {
     /// @param progress Progress of the corresponding Channel.
     /// @param src_hash_ring Group of threads that involes in the communication
     void send_complete(int channel_id, int progress, HashRing* hash_ring);
- 
+
     /// \brief Receive incoming communication
     ///
     /// Receive incoming communication in the form of BinStream. It must be called

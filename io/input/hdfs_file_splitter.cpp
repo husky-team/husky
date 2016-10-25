@@ -99,8 +99,6 @@ boost::string_ref HDFSFileSplitter::fetch_block(bool is_next) {
     return boost::string_ref(data_, nbytes);
 }
 
-size_t HDFSFileSplitter::get_offset() { return offset_; }
-
 int HDFSFileSplitter::read_block(const std::string& fn) {
     file_ = hdfsOpenFile(fs_, fn.c_str(), O_RDONLY, 0, 0, 0);
     assert(file_ != NULL);

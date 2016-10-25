@@ -1,12 +1,11 @@
-#include "core/mailbox.hpp"
-#include "core/hash_ring.hpp"
-
 #include <utility>
 #include <vector>
 
 #include "gtest/gtest.h"
 
 #include "base/serialization.hpp"
+#include "core/hash_ring.hpp"
+#include "core/mailbox.hpp"
 
 namespace husky {
 namespace {

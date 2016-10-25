@@ -324,7 +324,7 @@ void MailboxEventLoop::_send_comm_complete_handler(int channel_id, int progress,
     if (send_comm_complete_counter_.find(chnl_prgs_pair) == send_comm_complete_counter_.end())
         send_comm_complete_counter_[chnl_prgs_pair] = 0;
 
-    // TODO I can actually skip before this event is generated
+    // TODO(Fan): I can actually skip before this event is generated
     send_comm_complete_counter_[chnl_prgs_pair] += 1;
     if (send_comm_complete_counter_[chnl_prgs_pair] == num_local_threads) {
         bool involved_in_comm = false;

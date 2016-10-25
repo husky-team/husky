@@ -42,10 +42,6 @@ bool LineInputFormat::is_setup() const { return !(is_setup_ ^ LineInputFormatSet
 
 void LineInputFormat::set_input(const std::string& url) {
     set_splitter(url);
-    // reset input format
-    l = r = 0;
-    last_part_ = "";
-    buffer_.clear();
     is_setup_ |= LineInputFormatSetUp::InputSetUp;
 }
 
@@ -118,7 +114,6 @@ void LineInputFormat::handle_next_block() {
         }
     }
 }
-
 
 bool LineInputFormat::fetch_new_block() {
     // fetch a new block

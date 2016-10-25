@@ -30,44 +30,42 @@ NFSFileSplitter::NFSFileSplitter() {
     auto blk_size = husky::Context::get_param("nfs_block_size");
     if (!blk_size.empty())
         NFSFileSplitter::nfs_block_size = std::stoi(blk_size);
-    data = new char[nfs_block_size];
+    data_ = new char[nfs_block_size];
 }
 
-NFSFileSplitter::~NFSFileSplitter() { delete[] data; }
+NFSFileSplitter::~NFSFileSplitter() { delete[] data_; }
 
-void NFSFileSplitter::load(std::string url) { this->url = url; }
+void NFSFileSplitter::load(std::string url) { url_ = url; }
 
 boost::string_ref NFSFileSplitter::fetch_block(bool is_next) {
     int nbytes;
     if (is_next) {
-        if (fin.eof())
+        if (fin_.eof())
             return "";
-        nbytes = fin.readsome(data, nfs_block_size);
+        nbytes = fin_.readsome(data_, nfs_block_size);
     } else {
         base::BinStream question;
-        question << url;
+        question << url_;
         base::BinStream answer = husky::Context::get_coordinator().ask_master(question, husky::TYPE_LOCAL_BLK_REQ);
         std::string fn;
         answer >> fn;
-        answer >> offset;
+        answer >> offset_;
         if (fn == "") {
             return "";
         }
         nbytes = read_block(fn);
     }
-    return boost::string_ref(data, nbytes);
+    return boost::string_ref(data_, nbytes);
 }
-
-size_t NFSFileSplitter::get_offset() { return offset; }
 
 int NFSFileSplitter::read_block(std::string const& fn) {
     if (cur_fn != fn) {
-        if (fin.is_open())
-            fin.close();
-        fin.open(fn);
+        if (fin_.is_open())
+            fin_.close();
+        fin_.open(fn);
     }
-    fin.seekg(offset);
-    return fin.readsome(data, nfs_block_size);
+    fin_.seekg(offset_);
+    return fin_.readsome(data_, nfs_block_size);
 }
 
 }  // namespace io

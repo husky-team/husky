@@ -20,13 +20,12 @@
 
 #include "boost/utility/string_ref.hpp"
 
-#include "io/input/inputformat_base.hpp"
-
+#include "io/input/file_inputformat_impl.hpp"
 
 namespace husky {
 namespace io {
 
-class LineInputFormat final : public InputFormatBase {
+class LineInputFormat final : public FileInputFormatImpl {
    public:
     typedef boost::string_ref RecordT;
 

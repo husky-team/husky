@@ -14,12 +14,14 @@
 
 #include "io/input/binary_inputformat.hpp"
 
+#include <string>
+
 #include "core/utils.hpp"
 #include "io/input/binary_inputformat_impl.hpp"
-#include "io/input/nfs_binary_inputformat.hpp"
 #ifdef WITH_HDFS
 #include "io/input/hdfs_binary_inputformat.hpp"
 #endif
+#include "io/input/nfs_binary_inputformat.hpp"
 
 namespace husky {
 namespace io {
@@ -46,9 +48,6 @@ BinaryInputFormat::~BinaryInputFormat() {
     delete infmt_impl_;
     infmt_impl_ = nullptr;
 }
-
-// The input of BinaryInputFormat is already fixed in the construtor
-bool BinaryInputFormat::is_setup() const { return true; }
 
 }  // namespace io
 }  // namespace husky

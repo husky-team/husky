@@ -29,12 +29,12 @@ namespace io {
 class HDFSFileSplitter final : public FileSplitterBase {
    public:
     HDFSFileSplitter();
-    ~HDFSFileSplitter();
+    virtual ~HDFSFileSplitter();
 
     static void init_blocksize(hdfsFS fs, const std::string& url);
     void load(std::string url);
     boost::string_ref fetch_block(bool is_next = false);
-    size_t get_offset();
+    inline size_t get_offset() { return offset_; }
 
    protected:
     int read_block(const std::string& fn);

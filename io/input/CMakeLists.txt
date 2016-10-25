@@ -15,7 +15,15 @@
 
 include_directories(${PROJECT_SOURCE_DIR} ${Boost_INCLUDE_DIRS})
 
-set(input_cpps inputformat_helper.cpp line_inputformat.cpp chunk_inputformat.cpp separator_inputformat.cpp xml_inputformat.cpp nfs_file_splitter.cpp nfs_binary_inputformat.cpp binary_inputformat_impl.cpp binary_inputformat.cpp)
+set(input_cpps inputformat_helper.cpp
+    line_inputformat.cpp
+    chunk_inputformat.cpp
+    separator_inputformat.cpp
+    xml_inputformat.cpp
+    nfs_file_splitter.cpp
+    nfs_binary_inputformat.cpp
+    binary_inputformat_impl.cpp
+    binary_inputformat.cpp)
 
 if(LIBHDFS3_FOUND)
     include_directories(${LIBHDFS3_INCLUDE_DIR})
