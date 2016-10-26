@@ -35,6 +35,8 @@ void HashRing::insert(int tid, int pid, int num_ranges) {
 
 void HashRing::remove(int tid) {
     // TODO(Fan): remove from global_pids_vector_ as well
+    if (std::find(global_tids_vector_.begin(), global_tids_vector_.end(), tid) == global_tids_vector_.end())
+        return;
     global_tids_vector_.erase(std::remove(global_tids_vector_.begin(), global_tids_vector_.end(), tid),
                               global_tids_vector_.end());
     int pid = tid_to_pid_[tid];
