@@ -7,10 +7,10 @@
 namespace husky {
 namespace {
 
-class TestObjListFactoryH3 : public testing::Test {
+class TestObjListFactory : public testing::Test {
    public:
-    TestObjListFactoryH3() {}
-    ~TestObjListFactoryH3() {}
+    TestObjListFactory() {}
+    ~TestObjListFactory() {}
 
    protected:
     void SetUp() {}
@@ -26,7 +26,7 @@ class Obj {
     explicit Obj(const KeyT& k) : key(k) {}
 };
 
-TEST_F(TestObjListFactoryH3, Create) {
+TEST_F(TestObjListFactory, Create) {
     Context::init_global();
     // Normal Create
     ObjList<Obj> obj_list_normal1;

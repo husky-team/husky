@@ -9,10 +9,10 @@
 namespace husky {
 namespace {
 
-class TestChannelFactoryBaseH3 : public testing::Test {
+class TestChannelFactoryBase : public testing::Test {
    public:
-    TestChannelFactoryBaseH3() {}
-    ~TestChannelFactoryBaseH3() {}
+    TestChannelFactoryBase() {}
+    ~TestChannelFactoryBase() {}
 
    protected:
     void SetUp() {}
@@ -28,7 +28,7 @@ class Obj {
     explicit Obj(const KeyT& k) : key(k) {}
 };
 
-TEST_F(TestChannelFactoryBaseH3, CreatePushChannel) {
+TEST_F(TestChannelFactoryBase, CreatePushChannel) {
     ObjList<Obj> src_list;
     ObjList<Obj> dst_list;
 
@@ -51,7 +51,7 @@ TEST_F(TestChannelFactoryBaseH3, CreatePushChannel) {
     EXPECT_EQ(ChannelFactoryBase::size(), 0);
 }
 
-TEST_F(TestChannelFactoryBaseH3, CreatePushCombinedChannel) {
+TEST_F(TestChannelFactoryBase, CreatePushCombinedChannel) {
     ObjList<Obj> src_list;
     ObjList<Obj> dst_list;
 
@@ -74,7 +74,7 @@ TEST_F(TestChannelFactoryBaseH3, CreatePushCombinedChannel) {
     EXPECT_EQ(ChannelFactoryBase::size(), 0);
 }
 
-TEST_F(TestChannelFactoryBaseH3, CreateMigrateChannel) {
+TEST_F(TestChannelFactoryBase, CreateMigrateChannel) {
     ObjList<Obj> src_list;
     ObjList<Obj> dst_list;
 
@@ -97,7 +97,7 @@ TEST_F(TestChannelFactoryBaseH3, CreateMigrateChannel) {
     EXPECT_EQ(ChannelFactoryBase::size(), 0);
 }
 
-TEST_F(TestChannelFactoryBaseH3, CreateBroacastChannel) {
+TEST_F(TestChannelFactoryBase, CreateBroacastChannel) {
     ObjList<Obj> src_list;
     ObjList<Obj> dst_list;
 
