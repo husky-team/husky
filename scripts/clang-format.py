@@ -70,11 +70,11 @@ if __name__ == '__main__':
         files = list_files()
 
     if files is None:
-        print '[Error] Path {} does not exist'.format(args.path)
+        print('[Error] Path {} does not exist'.format(args.path))
         parser.print_help()
 
     if args.o is None:
-        print '[Error] Need input argument for -o'.format(args.path)
+        print('[Error] Need input argument for -o'.format(args.path))
         parser.print_help()
 
     if args.o == 'replace':

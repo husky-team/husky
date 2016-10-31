@@ -99,8 +99,15 @@ Do the following to generate API documentation,
 
     doxygen doxygen.config
 
+Or use the provided script,
+
+    ./scripts/doxygen.py --gen
+
 Then go to html/ for HTML documentation, and latex/ for LaTeX documentation
 
+Start a http server to view the documentation by browser,
+
+    ./scripts/doxygen.py --server
 
 License
 ---------------

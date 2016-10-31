@@ -29,7 +29,7 @@ husky_root = os.getenv('HUSKY_ROOT', '.')
 os.chdir(husky_root)
 
 def usage():
-    print "Run command as: $ lint.py $HUSKY_ROOT or $PATH_OF_DIR"
+    print("Run command as: $ lint.py $HUSKY_ROOT or $PATH_OF_DIR")
 
 def list_files(paths=None):
     dirs = None
@@ -78,7 +78,7 @@ def main(argv=None):
         files = list_files(args)
 
     if files is None:
-        print '[Error] Path {} does not exist'.format(args.path)
+        print('[Error] Path {} does not exist'.format(args.path))
         return 2
 
     cpplint_cmd = [
