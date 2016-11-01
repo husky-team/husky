@@ -20,8 +20,29 @@ class TestAccessor : public testing::Test {
     void TearDown() {}
 };
 
-TEST_F(TestAccessor, Accessor) {
-    const int N = 4, Round = 3, MaxTime = 10;
+TEST_F(TestAccessor, InitAndDelete) {
+    Accessor<int>* accessor = new Accessor<int>();
+    ASSERT_TRUE(accessor != nullptr);
+    delete accessor;
+}
+
+TEST_F(TestAccessor, Functional) {
+    Accessor<int>* accessor = new Accessor<int>();
+    accessor->init(1);
+    ASSERT_EQ(accessor->storage(), 0);
+    accessor->commit();
+    ASSERT_EQ(accessor->access(), 0);
+    accessor->leave();
+    int num = 10;
+    accessor->commit(num);
+    ASSERT_EQ(accessor->access(), num);
+    accessor->leave();
+    ASSERT_EQ(accessor->storage(), num);
+    delete accessor;
+}
+
+TEST_F(TestAccessor, FunctionalInMultiThreads) {
+    const int N = 3, Round = 3, MaxTime = 3;
     std::atomic_int done(0);
     std::vector<Accessor<int>> V(N);
     std::vector<std::thread*> workers(N);

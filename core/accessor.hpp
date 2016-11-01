@@ -60,11 +60,12 @@ class AccessorBase {
    protected:
     explicit AccessorBase(const std::string class_name);
     AccessorBase(AccessorBase&&);
+    virtual ~AccessorBase();
+
     void commit_to_visitors();
     void owner_barrier();
     void visitor_barrier();
     void require_init();
-    ~AccessorBase();
 
     typedef base::CounterBarrier BarrierType;
     // typedef base::FutureCounterBarrier BarrierType;
@@ -79,12 +80,12 @@ class AccessorBase {
     static thread_local std::unordered_set<AccessorBase*> access_states_;
 };
 
-// Accessor is designed for collection accessing management.
-// A collection can be maintained inside Accessor and fetched using `storage()`,
-// or the collection can be passed into Accessor by `commit()`
-// Units can fetch the collection by `access()` once a unit has `commit()` this Accessor
-// Units should `leave()` after they don't use the collection any more.
-// A unit can commit this accessor again only when all the accessing units have left.
+/// Accessor is designed for collection accessing management.
+/// A collection can be maintained inside Accessor and fetched using `storage()`,
+/// or the collection can be passed into Accessor by `commit()`
+/// Units can fetch the collection by `access()` once a unit has `commit()` this Accessor
+/// Units should `leave()` after they don't use the collection any more.
+/// A unit can commit this accessor again only when all the accessing units have left.
 template <typename CollectT>
 class Accessor : public AccessorBase {
    public:
@@ -94,6 +95,11 @@ class Accessor : public AccessorBase {
         : AccessorBase(std::move(a)), need_delete_collection_(a.need_delete_collection_), collection_(a.collection_) {
         a.collection_ = nullptr;
         need_delete_collection_ = a.need_delete_collection_;
+    }
+
+    virtual ~Accessor() {
+        owner_barrier();
+        delete_collection();
     }
 
     CollectT& storage() {
@@ -131,11 +137,6 @@ class Accessor : public AccessorBase {
         visitor_barrier();
         commit_barrier_->lock();
         access_states_.erase(this);
-    }
-
-    virtual ~Accessor() {
-        owner_barrier();
-        delete_collection();
     }
 
    protected:

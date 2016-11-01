@@ -132,8 +132,8 @@ class MultiMachineAggregatorFactory : public AggregatorFactoryBase {
         }
         leaders_.resize(factory_info_.size(), nullptr);
         call_onces_ = new CallOnceEachTime[info_size_.back()];
-        aggregate_queues_ = new ConcurrentQueue<BinStream>[ info_size_.back() ];
-        broadcast_queues_ = new ConcurrentQueue<BinStream>[ info_size_.back() ];
+        aggregate_queues_ = new ConcurrentQueue<BinStream>[info_size_.back()];
+        broadcast_queues_ = new ConcurrentQueue<BinStream>[info_size_.back()];
     }
 
     static void finalize() {
