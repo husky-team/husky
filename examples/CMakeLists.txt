@@ -76,3 +76,9 @@ add_executable(PR_CC pr_cc_attrlist.cpp)
 target_link_libraries(PR_CC ${husky})
 target_link_libraries(PR_CC ${EXTERNAL_LIB})
 set_property(TARGET PR_CC PROPERTY CXX_STANDARD 14)
+
+# Vector
+add_executable(vector vector.cpp)
+target_link_libraries(vector ${husky})
+target_link_libraries(vector ${EXTERNAL_LIB})
+set_property(TARGET vector PROPERTY CXX_STANDARD 14)
