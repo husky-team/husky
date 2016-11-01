@@ -113,7 +113,29 @@ BinStream& operator>>(BinStream& stream, std::map<K, V>& map) {
     for (int i = 0; i < len; i++) {
         std::pair<K, V> elem;
         stream >> elem;
-        map[elem.first] = elem.second;
+        map.insert(elem);
+    }
+    return stream;
+}
+
+template <typename K, typename V>
+BinStream& operator<<(BinStream& stream, const std::unordered_map<K, V>& unordered_map) {
+    size_t len = unordered_map.size();
+    stream << len;
+    for (auto& elem : unordered_map)
+        stream << elem;
+    return stream;
+}
+
+template <typename K, typename V>
+BinStream& operator>>(BinStream& stream, std::unordered_map<K, V>& unordered_map) {
+    size_t len;
+    stream >> len;
+    unordered_map.clear();
+    for (int i = 0; i < len; i++) {
+        std::pair<K, V> elem;
+        stream >> elem;
+        unordered_map.insert(elem);
     }
     return stream;
 }
