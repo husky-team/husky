@@ -33,14 +33,6 @@ class Obj {
     explicit Obj(const KeyT& k) : key(k) {}
 };
 
-class Attr {
-   public:
-    Attr() = default;
-    ~Attr() = default;
-    explicit Attr(std::string&& s) : str(std::move(s)) {}
-    std::string str;
-};
-
 // Create AsyncMigrateChannel without setting, for setup
 template <typename ObjT>
 AsyncMigrateChannel<ObjT> create_async_migrate_channel(ObjList<ObjT>& obj_list) {
@@ -104,11 +96,11 @@ TEST_F(TestAsyncMigrateChannel, MigrateOtherIncProgress) {
     ObjList<Obj> obj_list;
 
     auto& scr_int = obj_list.create_attrlist<int>("int");
-    auto& src_attr = obj_list.create_attrlist<Attr>("attr");
+    auto& src_attr = obj_list.create_attrlist<std::string>("attr");
 
     auto idx = obj_list.add_object(Obj(100));
     scr_int.set(idx, 100);
-    src_attr.set(idx, Attr("100"));
+    src_attr.set(idx, std::string("100"));
 
     // AsyncMigrateChannel
     // Round 1
@@ -130,7 +122,7 @@ TEST_F(TestAsyncMigrateChannel, MigrateOtherIncProgress) {
     EXPECT_EQ(obj.id(), 100);
     EXPECT_EQ(obj_list.get_size(), 1);
     EXPECT_EQ(scr_int.get(obj), 100);
-    EXPECT_STREQ(src_attr.get(obj).str.c_str(), "100");
+    EXPECT_STREQ(src_attr.get(obj).c_str(), "100");
 
     // Round 2
     idx = obj_list.add_object(Obj(18));

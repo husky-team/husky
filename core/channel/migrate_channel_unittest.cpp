@@ -37,8 +37,22 @@ class Attr {
    public:
     Attr() = default;
     ~Attr() = default;
+    Attr(const Attr&) = default;
+    Attr& operator=(const Attr&) = default;
+    Attr(Attr&&) = default;
+    Attr& operator=(Attr&&) = default;
+
     explicit Attr(std::string&& s) : str(std::move(s)) {}
     std::string str;
+
+    friend husky::BinStream& operator<<(husky::BinStream& bin, const Attr& attr) {
+        bin << attr.str;
+        return bin;
+    }
+    friend husky::BinStream& operator>>(husky::BinStream& bin, Attr& attr) {
+        bin >> attr.str;
+        return bin;
+    }
 };
 
 // Create MigrateChannel without setting, for setup

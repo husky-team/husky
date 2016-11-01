@@ -20,10 +20,13 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <type_traits>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
 #include <vector>
+
+#include "base/macros.hpp"
 
 namespace husky {
 namespace base {
@@ -66,12 +69,15 @@ class BinStream {
 
 template <typename InputT>
 BinStream& operator<<(BinStream& stream, const InputT& x) {
+    static_assert(IS_TRIVIALLY_COPYABLE(InputT), "For non trivially copyable type, serialization functions are needed");
     stream.push_back_bytes((char*) &x, sizeof(InputT));
     return stream;
 }
 
 template <typename OutputT>
 BinStream& operator>>(BinStream& stream, OutputT& x) {
+    static_assert(IS_TRIVIALLY_COPYABLE(OutputT),
+                  "For non trivially copyable type, serialization functions are needed");
     x = *(OutputT*) (stream.pop_front_bytes(sizeof(OutputT)));
     return stream;
 }
@@ -137,6 +143,36 @@ BinStream& operator>>(BinStream& stream, std::unordered_map<K, V>& unordered_map
         stream >> elem;
         unordered_map.insert(elem);
     }
+    return stream;
+}
+
+template <typename T>
+BinStream& operator<<(BinStream& stream, const std::shared_ptr<T>& ptr) {
+    stream << *ptr;
+    return stream;
+}
+
+template <typename T>
+BinStream& operator>>(BinStream& stream, std::shared_ptr<T>& ptr) {
+    T tmp;
+    stream >> tmp;
+    ptr.reset(new T);
+    *ptr = tmp;
+    return stream;
+}
+
+template <typename T>
+BinStream& operator<<(BinStream& stream, const std::unique_ptr<T>& ptr) {
+    stream << *ptr;
+    return stream;
+}
+
+template <typename T>
+BinStream& operator>>(BinStream& stream, std::unique_ptr<T>& ptr) {
+    T tmp;
+    stream >> tmp;
+    ptr.reset(new T);
+    *ptr = tmp;
     return stream;
 }
 

@@ -155,6 +155,24 @@ TEST_F(TestSerialization, PairVector) {
         EXPECT_EQ(output[i], input[i]);
 }
 
+TEST_F(TestSerialization, TestSharedPtr) {
+    auto input = std::make_shared<int>(100);
+    std::shared_ptr<int> output(new int);
+    BinStream stream;
+    stream << input;
+    stream >> output;
+    EXPECT_EQ(*input, *output);
+}
+
+TEST_F(TestSerialization, TestUniquePtr) {
+    auto input = std::make_unique<int>(100);
+    std::unique_ptr<int> output(new int);
+    BinStream stream;
+    stream << input;
+    stream >> output;
+    EXPECT_EQ(*input, *output);
+}
+
 TEST_F(TestSerialization, EmptyMap) {
     std::map<int, int> input, output;
     BinStream stream;

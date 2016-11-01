@@ -160,6 +160,7 @@ thread_local int MultiMachineAggregatorFactory::mid;
 class NonEmptyCtor {
    public:
     int some_mem;
+    NonEmptyCtor() = default;
     explicit NonEmptyCtor(int some_int) : some_mem(some_int) {}
 };
 
