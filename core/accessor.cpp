@@ -20,7 +20,6 @@
 #include "core/utils.hpp"
 
 namespace husky {
-namespace core {
 
 thread_local std::unordered_set<AccessorBase*> AccessorBase::access_states_;
 
@@ -75,5 +74,4 @@ void AccessorBase::visitor_barrier() {
     }
 }
 
-}  // namespace core
 }  // namespace husky

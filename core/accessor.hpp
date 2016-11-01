@@ -51,8 +51,6 @@ namespace husky {
 using base::CounterBarrier;
 using base::GenerationLock;
 
-namespace core {
-
 class AccessorBase {
    public:
     void init(size_t num_unit);
@@ -163,5 +161,4 @@ class Accessor : public AccessorBase {
     CollectT* collection_ = nullptr;
 };
 
-}  // namespace core
 }  // namespace husky

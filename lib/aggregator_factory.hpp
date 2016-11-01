@@ -28,9 +28,6 @@ namespace lib {
 
 using base::BinStream;
 using base::KBarrier;
-using core::Accessor;
-using lib::AggregatorFactoryBase;
-using lib::AggregatorState;
 
 class AggregatorFactory : public AggregatorFactoryBase {
    public:

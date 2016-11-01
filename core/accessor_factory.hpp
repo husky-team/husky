@@ -22,8 +22,6 @@
 
 namespace husky {
 
-using core::Accessor;
-
 class AccessorSetBase {
    public:
     virtual ~AccessorSetBase() {}

@@ -19,7 +19,6 @@
 #include "core/accessor.hpp"
 
 namespace husky {
-namespace core {
 
 // TODO(zzxx): delete_collection can be invoked by the last one who leaves the shuffler
 // Shuffler is designed for collection accessing management.
@@ -129,5 +128,4 @@ class ShuffleCombiner {
     int num_units_ = 0;
 };
 
-}  // namespace core
 }  // namespace husky

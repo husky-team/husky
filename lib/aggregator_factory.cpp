@@ -28,9 +28,6 @@ namespace lib {
 
 using base::BinStream;
 using base::CallOnceEachTime;
-using core::Accessor;
-using lib::AggregatorFactory;
-using lib::AggregatorState;
 
 AggregatorChannel& AggregatorFactory::get_channel() { return static_cast<AggregatorFactory&>(get_factory()).channel(); }
 

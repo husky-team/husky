@@ -1,5 +1,4 @@
 #include "lib/aggregator.hpp"
-#include "lib/aggregator_object.hpp"
 
 #include <algorithm>
 #include <functional>
@@ -12,16 +11,41 @@
 #include "base/serialization.hpp"
 #include "base/thread_support.hpp"
 #include "core/accessor.hpp"
+#include "lib/aggregator_object.hpp"
 
 #include "gtest/gtest.h"
 
 namespace husky {
 
+class NonEmptyCtor {
+   public:
+    int some_mem;
+    NonEmptyCtor() = default;
+    explicit NonEmptyCtor(int some_int) : some_mem(some_int) {}
+};
+
+void some_func(bool& a, bool b) { a &= b; }
+
+namespace lib {
+template <>
+void copy_assign<std::shared_ptr<NonEmptyCtor>>(std::shared_ptr<NonEmptyCtor>& a,
+                                                const std::shared_ptr<NonEmptyCtor>& b) {
+    // instead of `a = b;`
+    a = std::make_shared<NonEmptyCtor>(b->some_mem);
+}
+
+template <>
+void to_stream<std::shared_ptr<NonEmptyCtor>>(std::ostream& os, const std::shared_ptr<NonEmptyCtor>& b) {
+    os << b->some_mem;
+}
+}  // namespace lib
+
+namespace {
+
 using base::BinStream;
 using base::ConcurrentQueue;
 using base::CallOnceEachTime;
 using base::KBarrier;
-using core::Accessor;
 using lib::Aggregator;
 using lib::AggregatorFactoryBase;
 using lib::AggregatorState;
@@ -156,29 +180,6 @@ ConcurrentQueue<BinStream>* MultiMachineAggregatorFactory::broadcast_queues_;
 ConcurrentQueue<BinStream>* MultiMachineAggregatorFactory::aggregate_queues_;
 thread_local int MultiMachineAggregatorFactory::fid;
 thread_local int MultiMachineAggregatorFactory::mid;
-
-class NonEmptyCtor {
-   public:
-    int some_mem;
-    NonEmptyCtor() = default;
-    explicit NonEmptyCtor(int some_int) : some_mem(some_int) {}
-};
-
-void some_func(bool& a, bool b) { a &= b; }
-
-namespace lib {
-template <>
-void copy_assign<std::shared_ptr<NonEmptyCtor>>(std::shared_ptr<NonEmptyCtor>& a,
-                                                const std::shared_ptr<NonEmptyCtor>& b) {
-    // instead of `a = b;`
-    a = std::make_shared<NonEmptyCtor>(b->some_mem);
-}
-
-template <>
-void to_stream<std::shared_ptr<NonEmptyCtor>>(std::ostream& os, const std::shared_ptr<NonEmptyCtor>& b) {
-    os << b->some_mem;
-}
-}  // namespace lib
 
 void test_aggregator(int fid, int mid, int num_global_factory) {
     // different blocks are to test removing aggregators
@@ -391,4 +392,5 @@ TEST_F(TestAggregator, MultiMachineMultiThread_any) {
     WorkerNodeFactory({1, 2, 3, 4, 5, 6, 7}).start(test_aggregator).join();
 }
 
+}  // namespace
 }  // namespace husky

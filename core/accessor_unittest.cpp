@@ -8,7 +8,7 @@
 #include "gtest/gtest.h"
 
 namespace husky {
-namespace core {
+namespace {
 
 class TestAccessor : public testing::Test {
    public:
@@ -79,5 +79,5 @@ TEST_F(TestAccessor, FunctionalInMultiThreads) {
     }
 }
 
-}  // namespace core
+}  // namespace
 }  // namespace husky

@@ -9,7 +9,7 @@
 #include "gtest/gtest.h"
 
 namespace husky {
-namespace core {
+namespace {
 
 class TestShuffler : public testing::Test {
    public:
@@ -103,5 +103,5 @@ TEST_F(TestShuffler, ShuffleCombiner) {
     }
 }
 
-}  // namespace core
+}  // namespace
 }  // namespace husky

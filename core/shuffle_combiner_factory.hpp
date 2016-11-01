@@ -23,8 +23,6 @@
 
 namespace husky {
 
-using core::ShuffleCombiner;
-
 class ShuffleCombinerSetBase {
    public:
     virtual ~ShuffleCombinerSetBase() {}
