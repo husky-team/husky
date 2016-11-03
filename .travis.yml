@@ -2,7 +2,7 @@ sudo: required
 
 dist: trusty
 
-language: cpp
+language: python  # workaround for not setting CC/CXX with default value
 
 addons:
   apt:
@@ -14,6 +14,8 @@ addons:
       - cmake
       - gcc-4.9
       - g++-4.9
+      - gcc-6
+      - g++-6
       - clang-format-3.8
 
 before_install:
@@ -38,9 +40,14 @@ before_script:
   - ./scripts/lint.py
   - ./scripts/clang-format.py -o check
 
+matrix:
+  include:
+    - compiler: "gcc-4.9"
+      env: CC=gcc-4.9 CXX=g++-4.9
+    - compiler: "gcc-6"
+      env: CC=gcc-6 CXX=g++-6
+
 script:
-  - export CXX=g++-4.9
-  - export CC=gcc-4.9
   - mkdir release
   - cd release
   - cmake -DCMAKE_BUILD_TYPE=release ..
