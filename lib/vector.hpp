@@ -168,6 +168,11 @@ class Vector<T, false> {
 
     inline const T& operator[](int idx) const { return vec[idx]; }
 
+    inline void resize(int size) {
+        vec.resize(size);
+        feature_num = size;
+    }
+
     inline void set(int idx, const T& val) { vec[idx] = val; }
 
     inline void set(int idx, T&& val) { vec[idx] = std::move(val); }
@@ -345,6 +350,8 @@ class Vector<T, true> {
     inline FeaValIterator end_feaval() { return vec.end(); }
 
     inline ConstFeaValIterator end_feaval() const { return vec.end(); }
+
+    inline void resize(int size) { feature_num = size; }
 
     inline void set(int idx, const T& val) { vec.emplace_back(idx, val); }
 
