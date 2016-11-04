@@ -1,0 +1,211 @@
+// Copyright 2016 Husky Team
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+#pragma once
+
+#include <algorithm>
+#include <cmath>
+#include <functional>
+#include <utility>
+#include <vector>
+
+#include "core/engine.hpp"
+#include "lib/aggregator_factory.hpp"
+#include "lib/ml/feature_label.hpp"
+#include "lib/ml/parameter.hpp"
+#include "lib/ml/sgd.hpp"
+#include "lib/ml/vector_linalg.hpp"
+
+namespace husky {
+namespace lib {
+namespace ml {
+
+using vec_double = std::vector<double>;
+using husky::lib::AggregatorFactory;
+using husky::lib::Aggregator;
+
+// base class for regression
+template <typename ObjT = FeatureLabel, typename ParamT = ParameterBucket<double>>
+class Regression {
+    typedef ObjList<ObjT> ObjL;
+
+   public:
+    bool report_per_round = false;  // whether report error per iteration
+
+    // constructors
+    Regression() = default;
+    explicit Regression(int _num_param) { set_num_param(_num_param); }
+    Regression(  // standard (3 args):
+        std::function<std::vector<std::pair<int, double>>(ObjT&, std::function<double(int)>)>
+            _gradient_func,  // function to calculate gradient
+        std::function<double(ObjT&, ParamT&)>
+            _error_func,  // error function
+        int _num_param    // number of parameters
+        )
+        : gradient_func_(_gradient_func), error_func_(_error_func) {
+        set_num_param(_num_param);
+    }
+
+    // initialize parameter with positive size
+    void set_num_param(int _num_param) {
+        if (_num_param > 0) {
+            param_list_.init(_num_param, 0.0);
+        }
+    }
+
+    // query parameters
+    int get_num_param() { return param_list_.get_num_param(); }  // get parameter size
+    void present_param() {
+        if (this->trained_ == true)
+            param_list_.present();
+    }  // print each parameter to log
+
+    // predict and store in y
+    void set_predict_func(std::function<double(ObjT&, ParamT&)> _predict_func) { this->predict_func_ = _predict_func; }
+    void predict(ObjL& data, std::function<double&(ObjT&)> use_y) {
+        ASSERT_MSG(this->predict_func_ != nullptr, "Predict function is not specified.");
+        list_execute(data, [&, this](ObjT& this_obj) {
+            double& y = use_y(this_obj);
+            y = this->predict_func_(this_obj, this->param_list_);
+        });
+    }
+
+    // calculate average error rate
+    double avg_error(ObjL& data) {
+        Aggregator<int> num_samples_agg(0, [](int& a, const int& b) { a += b; });
+        Aggregator<double> error_agg(0.0, [](double& a, const double& b) { a += b; });
+        auto& ac = AggregatorFactory::get_channel();
+        list_execute(data, {}, {&ac}, [&, this](ObjT& this_obj) {
+            error_agg.update(this->error_func_(this_obj, this->param_list_));
+            num_samples_agg.update(1);
+        });
+        int num_samples = num_samples_agg.get_value();
+        // base::log_msg("Testing set size = " + std::to_string(data.get_size()));
+        double global_error = error_agg.get_value();
+        double mse = global_error / num_samples;
+        return mse;
+    }
+
+    // train model
+    template <typename GD = SGD<FeatureLabel>>
+    void train(ObjL& data, int iters, double learning_rate) {
+        // check conditions
+        ASSERT_MSG(param_list_.get_num_param() > 0, "The number of parameters is 0.");
+        ASSERT_MSG(gradient_func_ != nullptr, "Gradient function is not specified.");
+        ASSERT_MSG(error_func_ != nullptr, "Error function is not specified.");
+
+        // statistics: total number of samples and error
+        Aggregator<int> num_samples_agg(0, [](int& a, const int& b) { a += b; });        // total number of samples
+        Aggregator<double> error_stat(0.0, [](double& a, const double& b) { a += b; });  // sum of error
+        error_stat.to_reset_each_iter();                                                 // reset each round
+
+        // get statistics
+        auto& ac = AggregatorFactory::get_channel();
+        list_execute(data, {}, {&ac}, [&](ObjT& this_obj) { num_samples_agg.update(1); });
+        int num_samples = num_samples_agg.get_value();
+        // report statistics
+        if (Context::get_global_tid() == 0) {
+            husky::base::log_msg("Training set size = " + std::to_string(num_samples));
+        }
+
+        // use gradient descent to calculate step
+        GD gd(gradient_func_, learning_rate);
+
+        for (int round = 0; round < iters; round++) {
+            // delegate update operation to gd
+            gd.update_vec(data, param_list_, num_samples);
+
+            // option to report error rate
+            if (this->report_per_round == true) {
+                // calculate error rate
+                list_execute(data, {}, {&ac}, [&, this](ObjT& this_obj) {
+                    double error = this->error_func_(this_obj, this->param_list_);
+                    error_stat.update(error);
+                });
+                if (Context::get_global_tid() == 0) {
+                    base::log_msg("The error in iteration " + std::to_string(round + 1) + ": " +
+                                  std::to_string(error_stat.get_value() / num_samples));
+                }
+            }
+        }
+        this->trained_ = true;
+    }  // end of train
+
+    // train and test model with early stopping
+    template <typename GD = SGD<FeatureLabel>>
+    void train_test(ObjL& data, ObjL& Test, int iters, double learning_rate) {
+        // check conditions
+        ASSERT_MSG(param_list_.get_num_param() > 0, "The number of parameters is 0.");
+        ASSERT_MSG(gradient_func_ != nullptr, "Gradient function is not specified.");
+        ASSERT_MSG(error_func_ != nullptr, "Error function is not specified.");
+
+        // statistics: total number of samples and error
+        Aggregator<int> num_samples_agg(0, [](int& a, const int& b) { a += b; });        // total number of samples
+        Aggregator<double> error_stat(0.0, [](double& a, const double& b) { a += b; });  // sum of error
+        error_stat.to_reset_each_iter();                                                 // reset each round
+
+        // get statistics
+        auto& ac = AggregatorFactory::get_channel();
+        list_execute(data, {}, {&ac}, [&](ObjT& this_obj) { num_samples_agg.update(1); });
+        int num_samples = num_samples_agg.get_value();
+        // report statistics
+        if (Context::get_global_tid() == 0) {
+            husky::base::log_msg("Training set size = " + std::to_string(num_samples));
+        }
+
+        // use gradient descent to calculate step
+        GD gd(gradient_func_, learning_rate);
+        double pastError = 0.0;
+
+        for (int round = 0; round < iters; round++) {
+            // delegate update operation to gd
+            gd.update_vec(data, param_list_, num_samples);
+
+            double currentError = avg_error(Test);
+            // option to report error rate
+            if (this->report_per_round == true) {
+                if (Context::get_global_tid() == 0) {
+                    base::log_msg("The error in iteration " + std::to_string(round + 1) + ": " +
+                                  // std::to_string(error_stat.get_value() / num_samples));
+                                  std::to_string(currentError));
+                }
+            }
+
+            // TODO(Tatiana): handle fluctuation in test error
+            // validation based early stopping -- naive version
+            if (currentError == 0.0 || (round != 0 && currentError > pastError)) {
+                if (Context::get_global_tid() == 0) {
+                    base::log_msg("Early stopping invoked. Training is completed.");
+                }
+                break;
+            }
+            pastError = currentError;
+        }
+
+        this->trained_ = true;
+    }  // end of train_test
+
+   protected:
+    std::function<std::vector<std::pair<int, double>>(ObjT&, std::function<double(int)>)> gradient_func_ =
+        nullptr;                                                  // gradient function
+    std::function<double(ObjT&, ParamT&)> error_func_ = nullptr;  // error function
+    std::function<double(ObjT&, ParamT&)> predict_func_ = nullptr;
+    ParamT param_list_;     // parameter vector list
+    int num_feature_ = -1;  // number of features (maybe != num_param)
+    bool trained_ = false;  // indicate if model is trained
+};                          // Regression
+
+}  // namespace ml
+}  // namespace lib
+}  // namespace husky

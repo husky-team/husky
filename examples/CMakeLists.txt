@@ -82,3 +82,21 @@ add_executable(vector vector.cpp)
 target_link_libraries(vector ${husky})
 target_link_libraries(vector ${EXTERNAL_LIB})
 set_property(TARGET vector PROPERTY CXX_STANDARD 14)
+
+# Linear Regression
+add_executable(LinearRegression linear_regression.cpp)
+target_link_libraries(LinearRegression ${husky})
+target_link_libraries(LinearRegression ${EXTERNAL_LIB})
+set_property(TARGET LinearRegression PROPERTY CXX_STANDARD 14)
+
+# Logistic Regression
+add_executable(LogisticRegression logistic_regression.cpp)
+target_link_libraries(LogisticRegression ${husky})
+target_link_libraries(LogisticRegression ${EXTERNAL_LIB})
+set_property(TARGET LogisticRegression PROPERTY CXX_STANDARD 14)
+
+# SVM
+add_executable(SVM svm.cpp)
+target_link_libraries(SVM ${husky})
+target_link_libraries(SVM ${EXTERNAL_LIB})
+set_property(TARGET SVM PROPERTY CXX_STANDARD 14)

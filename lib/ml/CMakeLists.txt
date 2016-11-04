@@ -15,18 +15,11 @@
 
 include_directories(${PROJECT_SOURCE_DIR} ${Boost_INCLUDE_DIRS})
 
-add_library(aggregator-objs OBJECT
-    aggregator.cpp
-    aggregator_object.cpp
-    aggregator_factory.cpp)
-set_property(TARGET aggregator-objs PROPERTY CXX_STANDARD 14)
+add_library(gradient-descent-objs OBJECT vector_linalg.cpp)
+set_property(TARGET gradient-descent-objs PROPERTY CXX_STANDARD 14)
 
 # Combine lib-objs
-set(lib-objs $<TARGET_OBJECTS:aggregator-objs>)
+set(ml-objs $<TARGET_OBJECTS:gradient-descent-objs>)
 
 # Visible to parent directory
-set(lib-objs ${lib-objs} PARENT_SCOPE)
-
-add_subdirectory(ml)
-
-add_library(husky-lib STATIC ${lib-objs} ${ml-objs})
+set(ml-objs ${ml-objs} PARENT_SCOPE)
