@@ -19,6 +19,8 @@
 #include <vector>
 
 namespace husky {
+namespace lib {
+namespace ml {
 
 typedef std::vector<double> vec_double;
 typedef std::vector<std::pair<int, double>> vec_sp;
@@ -47,4 +49,6 @@ vec_double operator-(const vec_double&, const vec_double&);
 void operator+=(vec_double&, const vec_sp&);
 void operator/=(vec_sp&, const vec_double&);
 
+}  // namespace ml
+}  // namespace lib
 }  // namespace husky

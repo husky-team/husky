@@ -53,8 +53,10 @@
 
 using husky::lib::Aggregator;
 using husky::lib::AggregatorFactory;
-using namespace husky;
-using namespace husky::lib::ml;
+
+namespace husky {
+namespace lib {
+namespace ml {
 
 typedef SparseFeatureLabel ObjT;
 
@@ -67,7 +69,7 @@ void svm() {
     auto& test_set = husky::ObjListFactory::create_objlist<SparseFeatureLabel>("test_set");
 
     // load data
-    husky::lib::ml::DataLoader<SparseFeatureLabel> data_loader(husky::lib::ml::kLIBSVMFormat);
+    DataLoader<SparseFeatureLabel> data_loader(kLIBSVMFormat);
     data_loader.load_info(husky::Context::get_param("train"), train_set);
     data_loader.load_info(husky::Context::get_param("test"), test_set);
     int num_features = data_loader.get_num_feature();
@@ -87,7 +89,9 @@ void svm() {
     num_samples_agg.update(train_set.get_size());
     AggregatorFactory::sync();
     int num_samples = num_samples_agg.get_value();
-    if (husky::Context::get_global_tid() == 0) { husky::base::log_msg("Training set size = " + std::to_string(num_samples)); }
+    if (husky::Context::get_global_tid() == 0) {
+        husky::base::log_msg("Training set size = " + std::to_string(num_samples));
+    }
 
     // Aggregators for regulator, w square and loss
     Aggregator<double> regulator_agg(0.0, [](double& a, const double& b) { a += b; });
@@ -197,6 +201,10 @@ void svm() {
     }
 }
 
+}  // namespace ml
+}  // namespace lib
+}  // namespace husky
+
 int main(int argc, char** argv) {
     std::vector<std::string> args;
     args.push_back("hdfs_namenode");
@@ -206,7 +214,7 @@ int main(int argc, char** argv) {
     args.push_back("n_iter");
     args.push_back("lambda");
     if (husky::init_with_args(argc, argv, args)) {
-        husky::run_job(svm);
+        husky::run_job(husky::lib::ml::svm);
         return 0;
     }
     return 1;

@@ -136,9 +136,7 @@ DataLoader<SparseFeatureLabel>::DataLoader(int _format)
           husky::io::LineInputFormat infmt;
           infmt.set_input(url);
 
-          husky::lib::Aggregator<int> num_features_agg(0, [](int& a, const int& b) {
-              a = std::max(a, b);
-          });
+          husky::lib::Aggregator<int> num_features_agg(0, [](int& a, const int& b) { a = std::max(a, b); });
           auto& ac = husky::lib::AggregatorFactory::get_channel();
           std::function<void(boost::string_ref)> parser;
           if (this->format_ == kLIBSVMFormat) {

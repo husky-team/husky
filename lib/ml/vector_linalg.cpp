@@ -18,6 +18,8 @@
 #include "lib/ml/vector_linalg.hpp"
 
 namespace husky {
+namespace lib {
+namespace ml {
 
 typedef std::vector<double> vec_double;
 typedef std::vector<std::pair<int, double>> vec_sp;
@@ -115,4 +117,6 @@ void operator/=(vec_sp& va, const vec_double& vb) {
     }
 }
 
+}  // namespace ml
+}  // namespace lib
 }  // namespace husky
