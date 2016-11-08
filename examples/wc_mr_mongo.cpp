@@ -23,7 +23,7 @@
 
 #include "base/serialization.hpp"
 #include "core/engine.hpp"
-#include "io/input/mongodb_inputformat.hpp"
+#include "io/input/inputformat_factory.hpp"
 #include "lib/aggregator_factory.hpp"
 
 class Word {
@@ -43,7 +43,7 @@ bool operator<(const std::pair<int, std::string>& a, const std::pair<int, std::s
 }
 
 void wc() {
-    husky::io::MongoDBInputFormat infmt;
+    auto& infmt = husky::io::InputFormatFactory::create_mongodb_inputformat();
     infmt.set_server(husky::Context::get_param("mongo_server"));
     infmt.set_ns(husky::Context::get_param("mongo_db"), husky::Context::get_param("mongo_collection"));
     infmt.set_query("");

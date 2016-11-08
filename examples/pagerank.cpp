@@ -18,7 +18,7 @@
 #include "boost/tokenizer.hpp"
 
 #include "core/engine.hpp"
-#include "io/input/line_inputformat.hpp"
+#include "io/input/inputformat_factory.hpp"
 
 class Vertex {
    public:
@@ -44,7 +44,7 @@ class Vertex {
 };
 
 void pagerank() {
-    husky::io::LineInputFormat infmt;
+    auto& infmt = husky::io::InputFormatFactory::create_line_inputformat();
     infmt.set_input(husky::Context::get_param("input"));
 
     // Create and globalize vertex objects

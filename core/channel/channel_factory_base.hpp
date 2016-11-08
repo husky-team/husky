@@ -163,6 +163,13 @@ class ChannelFactoryBase {
 
     static size_t size() { return channel_map.size(); }
 
+    static void drop_all_channels() {
+        for (auto& channel_pair : channel_map) {
+            delete channel_pair.second;
+        }
+        channel_map.clear();
+    }
+
    protected:
     static thread_local std::unordered_map<std::string, ChannelBase*> channel_map;
     static thread_local int default_channel_id;

@@ -29,7 +29,7 @@ enum SeparatorInputFormatSetUp {
     AllSetUp = InputSetUp,
 };
 
-SeparatorInputFormat::SeparatorInputFormat(std::string pattern) : pattern_(pattern) {
+SeparatorInputFormat::SeparatorInputFormat(const std::string& pattern) : pattern_(pattern) {
     is_setup_ = SeparatorInputFormatSetUp::NotSetUp;
 }
 

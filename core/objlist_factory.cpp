@@ -17,10 +17,16 @@
 #include <string>
 #include <unordered_map>
 
+#include "base/session_local.hpp"
+
 namespace husky {
 
 thread_local int ObjListFactory::default_objlist_id = 0;
 thread_local std::unordered_map<std::string, ObjListBase*> ObjListFactory::objlist_map;
 const char* ObjListFactory::objlist_name_prefix = "default_objlist_";
+// set finalize_all_objlists priority to Level1, the higher the level, the higher the priority
+static thread_local base::RegSessionThreadFinalizer finalize_all_objlists(base::SessionLocalPriority::Level1, []() {
+    ObjListFactory::drop_all_objlists();
+});
 
 }  // namespace husky

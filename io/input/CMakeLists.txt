@@ -16,6 +16,7 @@
 include_directories(${PROJECT_SOURCE_DIR} ${Boost_INCLUDE_DIRS})
 
 set(input_cpps inputformat_helper.cpp
+    inputformat_factory.cpp
     line_inputformat.cpp
     chunk_inputformat.cpp
     separator_inputformat.cpp

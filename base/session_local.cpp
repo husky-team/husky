@@ -14,7 +14,9 @@
 
 #include "base/session_local.hpp"
 
+#include <algorithm>
 #include <functional>
+#include <utility>
 #include <vector>
 
 namespace husky {
@@ -32,8 +34,8 @@ std::vector<std::function<void()>>& SessionLocal::get_finalizers() {
     return finalizers;
 }
 
-std::vector<std::function<void()>>& SessionLocal::get_thread_finalizers() {
-    static thread_local std::vector<std::function<void()>> thread_finalizers;
+std::vector<std::pair<SessionLocalPriority, std::function<void()>>>& SessionLocal::get_thread_finalizers() {
+    static thread_local std::vector<std::pair<SessionLocalPriority, std::function<void()>>> thread_finalizers;
     return thread_finalizers;
 }
 
@@ -41,7 +43,9 @@ void SessionLocal::register_initializer(std::function<void()> init) { get_initia
 
 void SessionLocal::register_finalizer(std::function<void()> fina) { get_finalizers().push_back(fina); }
 
-void SessionLocal::register_thread_finalizer(std::function<void()> fina) { get_thread_finalizers().push_back(fina); }
+void SessionLocal::register_thread_finalizer(SessionLocalPriority prior, std::function<void()> fina) {
+    get_thread_finalizers().push_back(std::make_pair(prior, fina));
+}
 
 void SessionLocal::initialize() {
     if (session_end_) {
@@ -61,8 +65,10 @@ void SessionLocal::finalize() {
 
 void SessionLocal::thread_finalize() {
     if (!session_end_) {
-        for (auto func : get_thread_finalizers())
-            func();
+        auto& lambda_pair = get_thread_finalizers();
+        std::sort(lambda_pair.begin(), lambda_pair.end(), [](auto& a, auto& b) { return a.first > b.first; });
+        for (auto& elem : lambda_pair)
+            (elem.second)();
     }
 }
 
@@ -72,8 +78,8 @@ RegSessionInitializer::RegSessionInitializer(std::function<void()> init) { Sessi
 
 RegSessionFinalizer::RegSessionFinalizer(std::function<void()> fina) { SessionLocal::register_finalizer(fina); }
 
-RegSessionThreadFinalizer::RegSessionThreadFinalizer(std::function<void()> fina) {
-    SessionLocal::register_thread_finalizer(fina);
+RegSessionThreadFinalizer::RegSessionThreadFinalizer(SessionLocalPriority prior, std::function<void()> fina) {
+    SessionLocal::register_thread_finalizer(prior, fina);
 }
 
 }  // namespace base

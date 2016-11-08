@@ -133,16 +133,25 @@ TEST_F(TestSessionLocal, MultiSessions) {
 
 TEST_F(TestSessionLocal, ThreadFinalizer) {
     bool* some_bool = nullptr;
+    int* some_int = nullptr;
     EXPECT_EQ(SessionLocal::get_thread_finalizers().empty(), true);
-    SessionLocal::register_thread_finalizer([&]() {
+    // Level 1 is registered first so that it appears at the front of the vector
+    SessionLocal::register_thread_finalizer(base::SessionLocalPriority::Level1, [&]() {
         EXPECT_NE(some_bool, nullptr);
         EXPECT_EQ(*some_bool, false);
+        EXPECT_EQ(*some_int, 2);
         delete some_bool;
+        delete some_int;
         some_bool = nullptr;
     });
-    EXPECT_EQ(SessionLocal::get_thread_finalizers().size(), 1);
+    SessionLocal::register_thread_finalizer(base::SessionLocalPriority::Level2, [&]() {
+        EXPECT_EQ(*some_int, 0);
+        *some_int = 2;
+    });
+    EXPECT_EQ(SessionLocal::get_thread_finalizers().size(), 2);
     EXPECT_EQ(some_bool, nullptr);
     some_bool = new bool(false);
+    some_int = new int(0);
     SessionLocal::thread_finalize();
     EXPECT_NE(some_bool, nullptr);  // expect only takes effect in a session
 

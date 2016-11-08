@@ -58,6 +58,13 @@ class ObjListFactory {
 
     static size_t size() { return objlist_map.size(); }
 
+    static void drop_all_objlists() {
+        for (auto& objlist_pair : objlist_map) {
+            delete objlist_pair.second;
+        }
+        objlist_map.clear();
+    }
+
    protected:
     static thread_local std::unordered_map<std::string, ObjListBase*> objlist_map;
     static thread_local int default_objlist_id;

@@ -27,7 +27,7 @@ class SeparatorInputFormat final : public FileInputFormatImpl {
    public:
     typedef boost::string_ref RecordT;
 
-    explicit SeparatorInputFormat(std::string pattern);
+    explicit SeparatorInputFormat(const std::string& pattern);
     virtual ~SeparatorInputFormat();
 
     void set_input(const std::string& url);

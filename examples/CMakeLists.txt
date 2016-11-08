@@ -25,6 +25,11 @@ if(MONGOCLIENT_FOUND)
     add_definitions(-DWITH_MONGODB)
 endif(MONGOCLIENT_FOUND)
 
+if(THRIFT_FOUND)
+    include_directories(${THRIFT_INCLUDE_DIR})
+    add_definitions(-DWITH_THRIFT)
+endif(THRIFT_FOUND)
+
 set(husky husky-lib husky-io husky-core husky-base) 
 
 ### Applications

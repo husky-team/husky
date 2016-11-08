@@ -17,10 +17,16 @@
 #include <string>
 #include <unordered_map>
 
+#include "base/session_local.hpp"
+
 namespace husky {
 
 thread_local int ChannelFactoryBase::default_channel_id = 0;
 thread_local std::unordered_map<std::string, ChannelBase*> ChannelFactoryBase::channel_map;
 const char* ChannelFactoryBase::channel_name_prefix = "default_channel_";
+// set finalize_all_channels priority to Level2, the higher the level, the higher the priority
+static thread_local base::RegSessionThreadFinalizer finalize_all_channels(base::SessionLocalPriority::Level2, []() {
+    ChannelFactoryBase::drop_all_channels();
+});
 
 }  // namespace husky

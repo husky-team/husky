@@ -19,7 +19,7 @@
 
 #include "base/log.hpp"
 #include "core/engine.hpp"
-#include "io/input/flume_inputformat.hpp"
+#include "io/input/inputformat_factory.hpp"
 
 class Word {
    public:
@@ -36,7 +36,7 @@ class Word {
 void test_load() {
     std::string hostname = husky::Context::get_param("hostname");
     std::string port = husky::Context::get_param("port");
-    husky::io::FlumeInputFormat infmt(hostname, std::stoi(port));
+    auto& infmt = husky::io::InputFormatFactory::create_flume_inputformat(hostname, std::stoi(port));
 
     infmt.start_listen();
 

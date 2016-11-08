@@ -29,7 +29,7 @@ enum XMLInputFormatSetUp {
     AllSetUp = InputSetUp,
 };
 
-XMLInputFormat::XMLInputFormat(std::string start_pattern, std::string end_pattern)
+XMLInputFormat::XMLInputFormat(const std::string& start_pattern, const std::string& end_pattern)
     : start_pattern_(start_pattern), end_pattern_(end_pattern) {
     is_setup_ = XMLInputFormatSetUp::NotSetUp;
 }

@@ -18,7 +18,7 @@
 #include "boost/tokenizer.hpp"
 
 #include "core/engine.hpp"
-#include "io/input/line_inputformat.hpp"
+#include "io/input/inputformat_factory.hpp"
 
 class Word {
    public:
@@ -33,9 +33,8 @@ class Word {
 };
 
 void wc() {
-    husky::io::LineInputFormat infmt;
+    auto& infmt = husky::io::InputFormatFactory::create_line_inputformat();
     infmt.set_input(husky::Context::get_param("input"));
-
     auto& word_list = husky::ObjListFactory::create_objlist<Word>();
     auto& ch = husky::ChannelFactory::create_push_combined_channel<int, husky::SumCombiner<int>>(infmt, word_list);
 

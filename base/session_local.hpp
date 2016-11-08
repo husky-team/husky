@@ -15,19 +15,23 @@
 #pragma once
 
 #include <functional>
+#include <utility>
 #include <vector>
 
 namespace husky {
 namespace base {
 
+// SessionLocalPriority class, the higher the value, the higher the priority
+enum class SessionLocalPriority { Level1, Level2 };
+
 class SessionLocal {
    public:
     static std::vector<std::function<void()>>& get_initializers();
     static std::vector<std::function<void()>>& get_finalizers();
-    static std::vector<std::function<void()>>& get_thread_finalizers();
+    static std::vector<std::pair<SessionLocalPriority, std::function<void()>>>& get_thread_finalizers();
     static void register_initializer(std::function<void()> init);
     static void register_finalizer(std::function<void()> fina);
-    static void register_thread_finalizer(std::function<void()> fina);
+    static void register_thread_finalizer(SessionLocalPriority prior, std::function<void()> fina);
     static void initialize();
     static void finalize();
     static void thread_finalize();
@@ -49,7 +53,7 @@ class RegSessionFinalizer {
 
 class RegSessionThreadFinalizer {
    public:
-    explicit RegSessionThreadFinalizer(std::function<void()> fina);
+    explicit RegSessionThreadFinalizer(SessionLocalPriority prior, std::function<void()> fina);
 };
 
 }  // namespace base
