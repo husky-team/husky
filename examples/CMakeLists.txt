@@ -100,3 +100,9 @@ add_executable(SVM svm.cpp)
 target_link_libraries(SVM ${husky})
 target_link_libraries(SVM ${EXTERNAL_LIB})
 set_property(TARGET SVM PROPERTY CXX_STANDARD 14)
+
+# tf-idf
+add_executable(TF-IDF tfidf.cpp)
+target_link_libraries(TF-IDF ${husky})
+target_link_libraries(TF-IDF ${EXTERNAL_LIB})
+set_property(TARGET Aggregator PROPERTY CXX_STANDARD 14)
