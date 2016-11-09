@@ -85,7 +85,7 @@ void list_execute_async(ObjList<ObjT>& obj_list, ExecT execute, int async_time, 
         }
 
         // 2. iterate over the list
-        for (size_t i = 0; i < obj_list.get_size(); ++i) {
+        for (size_t i = 0; i < obj_list.get_vector_size(); ++i) {
             if (obj_list.get_del(i))
                 continue;
             execute(obj_list.get(i));
@@ -105,7 +105,7 @@ void list_execute(ObjList<ObjT>& obj_list, ExecT execute) {
     ChannelManager in_manager(obj_list.get_inchannels());
     in_manager.poll_and_distribute();
 
-    for (size_t i = 0; i < obj_list.get_size(); ++i) {
+    for (size_t i = 0; i < obj_list.get_vector_size(); ++i) {
         if (obj_list.get_del(i))
             continue;
         execute(obj_list.get(i));
@@ -123,7 +123,7 @@ void list_execute(ObjList<ObjT>& obj_list, const std::vector<ChannelBase*>& in_c
     ChannelManager in_manager(in_channel);
     in_manager.poll_and_distribute();
 
-    for (size_t i = 0; i < obj_list.get_size(); ++i) {
+    for (size_t i = 0; i < obj_list.get_vector_size(); ++i) {
         if (obj_list.get_del(i))
             continue;
         execute(obj_list.get(i));
