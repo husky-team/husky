@@ -23,6 +23,7 @@
 
 #include "zmq.hpp"
 
+#include "base/exception.hpp"
 #include "base/log.hpp"
 #include "base/serialization.hpp"
 #include "core/config.hpp"
@@ -69,7 +70,7 @@ void Master::handle_message(uint32_t message, const std::string& id) {
     if (external_main_handlers.find(message) != external_main_handlers.end()) {
         external_main_handlers[message]();
     } else {
-        throw std::runtime_error("Unknown message type.");
+        throw base::HuskyException("Unknown message type!");
     }
 }
 

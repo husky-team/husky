@@ -16,6 +16,7 @@
 
 #include <string>
 
+#include "base/exception.hpp"
 #include "base/thread_support.hpp"
 #include "core/constants.hpp"
 #include "core/context.hpp"
@@ -46,7 +47,7 @@ void HDFSFileSplitter::init_blocksize(hdfsFS fs_, const std::string& url) {
         }
         continue;
     }
-    throw std::runtime_error("Block size init error. (File NOT exist or EMPTY directory)");
+    throw base::HuskyException("Block size init error. (File NOT exist or EMPTY directory)");
 }
 
 void HDFSFileSplitter::load(std::string url) {
@@ -70,7 +71,7 @@ boost::string_ref HDFSFileSplitter::fetch_block(bool is_next) {
         if (nbytes == 0)
             return "";
         if (nbytes == -1) {
-            throw std::runtime_error("read next block error");
+            throw base::HuskyException("read next block error!");
         }
     } else {
         // Ask the master for a new block

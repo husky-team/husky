@@ -18,6 +18,7 @@
 
 #include "zmq.hpp"
 
+#include "base/exception.hpp"
 #include "base/serialization.hpp"
 #include "core/utils.hpp"
 
@@ -45,7 +46,7 @@ inline void zmq_send_common(zmq::socket_t* socket, const void* data, const size_
             case EINTR:
                 continue;
             default:
-                throw;
+                throw base::HuskyException("Invalid type of zmq::error!");
             }
         }
 }
@@ -94,7 +95,7 @@ inline void zmq_recv_common(zmq::socket_t* socket, zmq::message_t* msg, int flag
         } catch (zmq::error_t e) {
             if (e.num() == EINTR)
                 continue;
-            throw;
+            throw base::HuskyException("Invalid type of zmq::error!");
         }
 }
 

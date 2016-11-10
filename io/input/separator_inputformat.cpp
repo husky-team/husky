@@ -18,6 +18,7 @@
 
 #include "boost/utility/string_ref.hpp"
 
+#include "base/exception.hpp"
 #include "io/input/inputformat_helper.hpp"
 
 namespace husky {
@@ -88,7 +89,7 @@ bool SeparatorInputFormat::next(boost::string_ref& ref) {
         l = helper::find_next(buffer_, 0, pattern_);
         // can not find first pattern
         if (l == boost::string_ref::npos) {
-            throw std::runtime_error("data format error, separatorinputformat.hpp : cannot find the first pattern_");
+            throw base::HuskyException("data format error!");
         }
         l += pattern_.size();
     } else {
@@ -118,7 +119,7 @@ void SeparatorInputFormat::handle_next_block() {
     r = helper::find_next(last_part_, 0, pattern_);
     // can not find pattern in the new block
     if (r == boost::string_ref::npos) {
-        throw std::runtime_error("data format error, separatorinputformat.hpp : handle_next_block_pattern_ 1");
+        throw base::HuskyException("data format error!");
     }
     if (r < pre_last_part_size) {
         int save_r = r;
@@ -126,7 +127,7 @@ void SeparatorInputFormat::handle_next_block() {
         r = helper::find_next(last_part_, l, pattern_);
         // can not find pattern after in between pattern in the new block
         if (r == boost::string_ref::npos) {
-            throw std::runtime_error("data format error, separatorinputformat.hpp : handle_next_block_pattern_ 2");
+            throw base::HuskyException("data format error!");
         }
         in_between_ = true;
         in_between_str_ = last_part_.substr(l, r - l);

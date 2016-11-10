@@ -18,6 +18,7 @@
 
 #include "boost/utility/string_ref.hpp"
 
+#include "base/exception.hpp"
 #include "io/input/inputformat_helper.hpp"
 
 namespace husky {
@@ -111,7 +112,7 @@ bool XMLInputFormat::handle_next_block_start_pattern() {
     if (l != boost::string_ref::npos) {
         r = helper::find_next(buffer_, l + start_pattern_.size() - pre_last_part_size, end_pattern_);
         if (r == boost::string_ref::npos) {
-            throw std::runtime_error("data format error, xmlinputformat.hpp: handle_next_block_start_pattern");
+            throw base::HuskyException("data format error!");
         } else {
             last_part_ = last_part_.substr(l, pre_last_part_size - l) + buffer_.substr(0, r).to_string();
             last_part_ = last_part_.substr(start_pattern_.size());
@@ -124,12 +125,12 @@ bool XMLInputFormat::handle_next_block_start_pattern() {
 
 void XMLInputFormat::handle_next_block_end_pattern() {
     if (buffer_.empty()) {
-        throw std::runtime_error("data format error, xmlinputformat.hpp: handle_next_block_end_pattern_1");
+        throw base::HuskyException("data format error!");
     }
     last_part_ += buffer_.to_string();
     r = helper::find_next(last_part_, 0, end_pattern_);
     if (r == boost::string_ref::npos) {
-        throw std::runtime_error("data format error, xmlinputformat.hpp: handle_next_block_end_pattern_2");
+        throw base::HuskyException("data format error!");
     } else {
         last_part_ = last_part_.substr(0, r);
         clear_buffer();
