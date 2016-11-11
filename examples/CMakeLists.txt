@@ -88,6 +88,12 @@ target_link_libraries(vector ${husky})
 target_link_libraries(vector ${EXTERNAL_LIB})
 set_property(TARGET vector PROPERTY CXX_STANDARD 14)
 
+# LabeledPoint
+add_executable(labeled_point labeled_point.cpp)
+target_link_libraries(labeled_point ${husky})
+target_link_libraries(labeled_point ${EXTERNAL_LIB})
+set_property(TARGET labeled_point PROPERTY CXX_STANDARD 14)
+
 # Linear Regression
 add_executable(LinearRegression linear_regression.cpp)
 target_link_libraries(LinearRegression ${husky})

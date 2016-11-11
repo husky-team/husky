@@ -423,18 +423,21 @@ inline SparseVector<T> operator*(T c, const SparseVector<T>& a) {
     return a * c;
 }
 
-template <typename T, typename U, bool is_sparse>
-struct DataPoint {
-    explicit DataPoint(int feature_num) : x(feature_num) {}
-    Vector<T, is_sparse> x;
+template <typename T, typename U>
+struct LabeledPoint {
+    LabeledPoint() = default;
+    LabeledPoint(T& x, U& y) : x(x), y(y) {}
+    LabeledPoint(T&& x, U&& y) : x(std::move(x)), y(std::move(y)) {}
+
+    T x;
     U y;
 
-    friend husky::BinStream& operator<<(husky::BinStream& stream, const DataPoint<T, U, is_sparse>& b) {
+    friend husky::BinStream& operator<<(husky::BinStream& stream, const LabeledPoint<T, U>& b) {
         stream << b.x << b.y;
         return stream;
     }
 
-    friend husky::BinStream& operator>>(husky::BinStream& stream, DataPoint<T, U, is_sparse>& b) {
+    friend husky::BinStream& operator>>(husky::BinStream& stream, LabeledPoint<T, U>& b) {
         stream >> b.x >> b.y;
         return stream;
     }
