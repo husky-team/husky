@@ -20,7 +20,6 @@
 #include "base/session_local.hpp"
 
 namespace husky {
-
 namespace io {
 
 thread_local int InputFormatFactory::default_inputformat_id = 0;
@@ -46,8 +45,7 @@ LineInputFormat& InputFormatFactory::get_line_inputformat(const std::string& nam
     ASSERT_MSG(inputformat_map.find(name) != inputformat_map.end(),
                "InputFormatFactory::get_inputformat: Inputformat name doesn't exist");
     auto* ret = dynamic_cast<LineInputFormat*>(inputformat_map[name]);
-    ASSERT_MSG(ret != nullptr,
-               "InputFormatFactory::get_line_inputformat: given name is not of type LineInputFormat");
+    ASSERT_MSG(ret != nullptr, "InputFormatFactory::get_line_inputformat: given name is not of type LineInputFormat");
     return *ret;
 }
 
@@ -65,8 +63,7 @@ ChunkInputFormat& InputFormatFactory::get_chunk_inputformat(const std::string& n
     ASSERT_MSG(inputformat_map.find(name) != inputformat_map.end(),
                "InputFormatFactory::get_inputformat: Inputformat name doesn't exist");
     auto* ret = dynamic_cast<ChunkInputFormat*>(inputformat_map[name]);
-    ASSERT_MSG(ret != nullptr,
-               "InputFormatFactory::get_chunk_inputformat: given name is not of type ChunkInputFormat");
+    ASSERT_MSG(ret != nullptr, "InputFormatFactory::get_chunk_inputformat: given name is not of type ChunkInputFormat");
     return *ret;
 }
 
@@ -105,13 +102,12 @@ XMLInputFormat& InputFormatFactory::get_xml_inputformat(const std::string& name)
     ASSERT_MSG(inputformat_map.find(name) != inputformat_map.end(),
                "InputFormatFactory::get_inputformat: Inputformat name doesn't exist");
     auto* ret = dynamic_cast<XMLInputFormat*>(inputformat_map[name]);
-    ASSERT_MSG(ret != nullptr,
-               "InputFormatFactory::get_xml_inputformat: given name is not of type XMLInputFormat");
+    ASSERT_MSG(ret != nullptr, "InputFormatFactory::get_xml_inputformat: given name is not of type XMLInputFormat");
     return *ret;
 }
 
-BinaryInputFormat& InputFormatFactory::create_binary_inputformat(const std::string& url,
-                                                                 const std::string& filter, const std::string& name) {
+BinaryInputFormat& InputFormatFactory::create_binary_inputformat(const std::string& url, const std::string& filter,
+                                                                 const std::string& name) {
     std::string inputformat_name =
         name.empty() ? inputformat_name_prefix + std::to_string(default_inputformat_id++) : name;
     ASSERT_MSG(inputformat_map.find(inputformat_name) == inputformat_map.end(),
@@ -146,8 +142,7 @@ FlumeInputFormat& InputFormatFactory::get_flume_inputformat(const std::string& n
     ASSERT_MSG(inputformat_map.find(name) != inputformat_map.end(),
                "InputFormatFactory::get_inputformat: Inputformat name doesn't exist");
     auto* ret = dynamic_cast<FlumeInputFormat*>(inputformat_map[name]);
-    ASSERT_MSG(ret != nullptr,
-               "InputFormatFactory::get_flume_inputformat: given name is not of type FlumeInputFormat");
+    ASSERT_MSG(ret != nullptr, "InputFormatFactory::get_flume_inputformat: given name is not of type FlumeInputFormat");
     return *ret;
 }
 #endif
@@ -192,5 +187,4 @@ bool InputFormatFactory::has_inputformat(const std::string& name) {
 }
 
 }  // namespace io
-
 }  // namespace husky

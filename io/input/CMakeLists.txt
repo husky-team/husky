@@ -16,7 +16,6 @@
 include_directories(${PROJECT_SOURCE_DIR} ${Boost_INCLUDE_DIRS})
 
 set(input_cpps inputformat_helper.cpp
-    inputformat_factory.cpp
     line_inputformat.cpp
     chunk_inputformat.cpp
     separator_inputformat.cpp
@@ -44,6 +43,8 @@ if(THRIFT_FOUND)
     add_subdirectory(flume_connector)
     set(input_cpps ${input_cpps} flume_connector/flume_types.cpp flume_connector/flume_constants.cpp flume_connector/ThriftSourceProtocol.cpp flume_inputformat.cpp)
 endif(THRIFT_FOUND)
+
+set(input_cpps ${input_cpps} inputformat_factory.cpp)
 
 add_library(input-objs OBJECT ${input_cpps})
 set_property(TARGET input-objs PROPERTY CXX_STANDARD 14)

@@ -23,7 +23,7 @@ ignored_dirs = [
     'io/input/flume_connector',
 ]
 
-cpp_suffix = '*.[ch]pp'
+cpp_suffix = '*.[cht]pp'
 
 husky_root = os.getenv('HUSKY_ROOT', '.')
 os.chdir(husky_root)

@@ -6,7 +6,7 @@ import subprocess
 import sys
 
 
-cpp_suffix = '*.[ch]pp'
+cpp_suffix = '*.[cht]pp'
 default_dirs = [
     'base',
     'core',
@@ -14,6 +14,10 @@ default_dirs = [
     'lib',
     'master',
 ]
+ignored_dirs = [
+    'io/input/flume_connector',
+]
+
 husky_root = os.getenv('HUSKY_ROOT', '.')
 os.chdir(husky_root)
 clang_format = os.getenv('CLANG_FORMAT', 'clang-format')
@@ -29,11 +33,18 @@ def list_files(path=None):
             return [path]
 
     if dirs is None:
-        files = []
-        for d in default_dirs:
-            cmd = 'find {} -name {}'.format(d, cpp_suffix)
+        dirs, files = default_dirs, []
+        for d in dirs:
+            cmd = 'find {} -name "{}"'.format(d, cpp_suffix)
             res = subprocess.check_output(cmd, shell=True).rstrip()
             files += res.split('\n')
+        removes = []
+        for f in files:
+            for d in ignored_dirs:
+                if f.find(d) != -1:
+                    removes.append(f)
+        for r in removes:
+            files.remove(r)
         return files
 
     cmd = 'find {} -name {}'.format(dirs, cpp_suffix)

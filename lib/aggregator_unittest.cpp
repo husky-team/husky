@@ -7,13 +7,13 @@
 #include <thread>
 #include <vector>
 
+#include "gtest/gtest.h"
+
 #include "base/concurrent_queue.hpp"
 #include "base/serialization.hpp"
 #include "base/thread_support.hpp"
 #include "core/accessor.hpp"
 #include "lib/aggregator_object.hpp"
-
-#include "gtest/gtest.h"
 
 namespace husky {
 
@@ -156,8 +156,8 @@ class MultiMachineAggregatorFactory : public AggregatorFactoryBase {
         }
         leaders_.resize(factory_info_.size(), nullptr);
         call_onces_ = new CallOnceEachTime[info_size_.back()];
-        aggregate_queues_ = new ConcurrentQueue<BinStream>[info_size_.back()];
-        broadcast_queues_ = new ConcurrentQueue<BinStream>[info_size_.back()];
+        aggregate_queues_ = new ConcurrentQueue<BinStream>[ info_size_.back() ];
+        broadcast_queues_ = new ConcurrentQueue<BinStream>[ info_size_.back() ];
     }
 
     static void finalize() {

@@ -30,59 +30,48 @@
 #include "io/input/xml_inputformat.hpp"
 
 namespace husky {
-
 namespace io {
 
 class InputFormatFactory {
    public:
     // Create LineInputFormat
     static LineInputFormat& create_line_inputformat(const std::string& name = "");
-
     static LineInputFormat& get_line_inputformat(const std::string& name = "");
 
     // Create ChunkInputFormat
     static ChunkInputFormat& create_chunk_inputformat(const int& chunk_size, const std::string& name = "");
-
     static ChunkInputFormat& get_chunk_inputformat(const std::string& name = "");
 
     // Create SeparatorInputFormat
     static SeparatorInputFormat& create_separator_inputformat(const std::string& pattern, const std::string& name);
-
     static SeparatorInputFormat& get_separator_inputformat(const std::string& name = "");
 
     // Create XMLInputFormat
     static XMLInputFormat& create_xml_inputformat(const std::string& start_pattern, const std::string& end_pattern,
                                                   const std::string& name = "");
-
     static XMLInputFormat& get_xml_inputformat(const std::string& name = "");
 
     // Create BinaryInputFormat
     static BinaryInputFormat& create_binary_inputformat(const std::string& url, const std::string& filter = "",
                                                         const std::string& name = "");
-
     static BinaryInputFormat& get_binary_inputformat(const std::string& name = "");
 
 #ifdef WITH_THRIFT
     // Create FlumeInputFormat
-    static FlumeInputFormat& create_flume_inputformat(std::string rcv_host = "localhost",
-                                                      int rcv_port = 2016, const std::string& name = "");
-
+    static FlumeInputFormat& create_flume_inputformat(std::string rcv_host = "localhost", int rcv_port = 2016,
+                                                      const std::string& name = "");
     static FlumeInputFormat& get_flume_inputformat(const std::string& name = "");
 #endif
 
 #ifdef WITH_MONGODB
     // Create MongoDBInputFormat
     static MongoDBInputFormat& create_mongodb_inputformat(const std::string& name = "");
-
     static MongoDBInputFormat& get_mongodb_inputformat(const std::string& name = "");
 #endif
 
     static void drop_inputformat(const std::string& name);
-
     static void drop_all_inputformats();
-
     static bool has_inputformat(const std::string& name);
-
     static inline size_t size() { return inputformat_map.size(); }
 
    protected:
