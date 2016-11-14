@@ -199,11 +199,11 @@ class ObjList : public ObjListBase {
 
     // Create AttrList
     template <typename AttrT>
-    AttrList<ObjT, AttrT>& create_attrlist(const std::string& attr_name) {
+    AttrList<ObjT, AttrT>& create_attrlist(const std::string& attr_name, const AttrT& default_attr = {}) {
         if (attrlist_map.find(attr_name) != attrlist_map.end()) {
             throw base::HuskyException("ObjList<T>::create_attrlist error: name already exists");
         }
-        auto* attrlist = new AttrList<ObjT, AttrT>(&objlist_data_);
+        auto* attrlist = new AttrList<ObjT, AttrT>(&objlist_data_, default_attr);
         attrlist_map.insert({attr_name, attrlist});
         return (*attrlist);
     }

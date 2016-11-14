@@ -69,6 +69,26 @@ TEST_F(TestAttrList, InitAndDelete) {
     EXPECT_EQ(obj_list.del_attrlist("int"), 0);
 }
 
+TEST_F(TestAttrList, InitWithDefault) {
+    ObjList<Obj> obj_list;
+    for (int i = 0; i < 10; ++i) {
+        obj_list.add_object(Obj(i));
+    }
+    auto& intlist_default = obj_list.create_attrlist<int>("default");
+    auto& intlist = obj_list.create_attrlist<int>("int", 11);
+    auto& attr_list = obj_list.create_attrlist<AttrDb>("attr", AttrDb(1.1));
+    for (int i = 0; i < 10; ++i) {
+        EXPECT_EQ(intlist_default[i], 0);
+        EXPECT_EQ(intlist[i], 11);
+        EXPECT_DOUBLE_EQ(attr_list[i].val, 1.1);
+    }
+
+    size_t idx = obj_list.add_object(Obj(0));
+    EXPECT_EQ(intlist_default[idx], 0);
+    EXPECT_EQ(intlist[idx], 11);
+    EXPECT_DOUBLE_EQ(attr_list[idx].val, 1.1);
+}
+
 TEST_F(TestAttrList, SetAttrAndGet) {
     ObjList<Obj> obj_list;
     auto& intlist = obj_list.create_attrlist<int>("int");
