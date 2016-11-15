@@ -18,6 +18,7 @@
 #include <iostream>
 #include <vector>
 
+#include "base/exception.hpp"
 #include "base/log.hpp"
 #include "core/channel/channel_base.hpp"
 #include "core/channel/channel_factory.hpp"
@@ -54,17 +55,11 @@ void globalize(ObjList<ObjT>& obj_list) {
 template <typename ObjT, typename ExecT>
 void list_execute_async(ObjList<ObjT>& obj_list, ExecT execute, int async_time, double timeout = 0.0) {
     std::vector<ChannelBase*> channels = obj_list.get_inchannels();
-    ChannelBase* channel;
-    int flag = false;
-    for (auto* ch : channels) {
-        if (!flag && ch->get_channel_type() == ChannelBase::ChannelType::Async) {
-            flag = true;
-            channel = ch;
-        } else if (ch->get_channel_type() == ChannelBase::ChannelType::Async) {
-            base::log_msg("Async list execution only support exactly one async channel.");
-            return;
-        }
-    }
+    if (channels.size() != 1)
+        throw base::HuskyException("list_execute_async currently only supports exactly one channel.");
+    ChannelBase* channel = channels[0];
+    if (channel->get_channel_type() != ChannelBase::ChannelType::Async)
+        throw base::HuskyException("list_execute_async currently only supports one asynchronous channel.");
 
     auto start = std::chrono::steady_clock::now();
     auto duration = std::chrono::seconds(async_time);
@@ -94,8 +89,13 @@ void list_execute_async(ObjList<ObjT>& obj_list, ExecT execute, int async_time, 
         // 3. flush
         channel->out();
     }
-    channel->inc_progress();
     mailbox->send_complete(channel->get_channel_id(), channel->get_progress(), Context::get_hashring());
+    channel->prepare();
+    while (mailbox->poll(channel->get_channel_id(), channel->get_progress())) {
+        auto bin = mailbox->recv(channel->get_channel_id(), channel->get_progress());
+        channel->in(bin);
+    }
+    channel->inc_progress();
 }
 
 template <typename ObjT, typename ExecT>

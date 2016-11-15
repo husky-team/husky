@@ -96,6 +96,8 @@ class MigrateChannel : public ObjList2ObjListChannel<ObjT, ObjT> {
             auto idx = this->dst_ptr_->add_object(std::move(obj));
             this->dst_ptr_->process_attribute(bin_push, idx);
         }
+        if (this->dst_ptr_->get_num_del() * 2 > this->dst_ptr_->get_vector_size())
+            this->dst_ptr_->deletion_finalize();
     }
 
     std::vector<BinStream> migrate_buffer_;
