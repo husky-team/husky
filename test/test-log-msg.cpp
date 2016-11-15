@@ -12,27 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
-
 #include <string>
 
-namespace husky {
-namespace base {
+#include "base/log.hpp"
 
-enum class LOG_TYPE {
-    LOG_INFO = 1,
-    LOG_DEBUG = 1 << 1,
-    LOG_ERROR = 1 << 2,
-    LOG_WARNING = 1 << 3,
-};
-
-void log_msg(const std::string& msg, LOG_TYPE type = LOG_TYPE::LOG_INFO);
-void log_msg_to_file(const std::string& msg, LOG_TYPE type, const std::string& file_name);
-
-void log_info(const std::string& msg);
-void log_debug(const std::string& msg);
-void log_error(const std::string& msg);
-void log_warning(const std::string& msg);
-
-}  // namespace base
-}  // namespace husky
+int main(int argc, char** argv) {
+    husky::base::log_info("Info Log");
+    husky::base::log_debug("Debug Log");
+    husky::base::log_error("Error Log");
+    husky::base::log_warning("Warning Log");
+    return 0;
+}

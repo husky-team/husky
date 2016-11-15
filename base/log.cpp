@@ -35,8 +35,8 @@ void log_msg(const std::string& msg, LOG_TYPE type) {
         prefix = "\033[1;30m[DEBUG] \033[0m";
         break;
     }
-    case LOG_TYPE::LOG_WARN: {
-        prefix = "\033[1;34m[WARN] \033[0m";
+    case LOG_TYPE::LOG_WARNING: {
+        prefix = "\033[1;34m[WARNING] \033[0m";
         break;
     }
     case LOG_TYPE::LOG_ERROR: {
@@ -51,7 +51,7 @@ void log_msg(const std::string& msg, LOG_TYPE type) {
     gPrintLock.unlock();
 }
 
-void log_msg(const std::string& msg, LOG_TYPE type, const std::string& file_name) {
+void log_msg_to_file(const std::string& msg, LOG_TYPE type, const std::string& file_name) {
     std::string prefix;
     switch (type) {
     case LOG_TYPE::LOG_INFO: {
@@ -62,8 +62,8 @@ void log_msg(const std::string& msg, LOG_TYPE type, const std::string& file_name
         prefix = "[DEBUG] ";
         break;
     }
-    case LOG_TYPE::LOG_WARN: {
-        prefix = "[WARN] ";
+    case LOG_TYPE::LOG_WARNING: {
+        prefix = "[WARNING] ";
         break;
     }
     case LOG_TYPE::LOG_ERROR: {
@@ -79,6 +79,14 @@ void log_msg(const std::string& msg, LOG_TYPE type, const std::string& file_name
     log_file.close();
     gPrintLock.unlock();
 }
+
+void log_info(const std::string& msg) { log_msg(msg, LOG_TYPE::LOG_INFO); }
+
+void log_debug(const std::string& msg) { log_msg(msg, LOG_TYPE::LOG_DEBUG); }
+
+void log_error(const std::string& msg) { log_msg(msg, LOG_TYPE::LOG_ERROR); }
+
+void log_warning(const std::string& msg) { log_msg(msg, LOG_TYPE::LOG_WARNING); }
 
 }  // namespace base
 }  // namespace husky

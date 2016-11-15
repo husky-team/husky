@@ -73,3 +73,9 @@ add_executable(TestBinaryInputFormat test-binary-inputformat.cpp)
 target_link_libraries(TestBinaryInputFormat ${husky})
 target_link_libraries(TestBinaryInputFormat ${EXTERNAL_LIB})
 set_property(TARGET TestBinaryInputFormat PROPERTY CXX_STANDARD 14)
+
+# TestLogMsg
+add_executable(TestLogMsg test-log-msg.cpp)
+target_link_libraries(TestLogMsg ${husky})
+target_link_libraries(TestLogMsg ${EXTERNAL_LIB})
+set_property(TARGET TestLogMsg PROPERTY CXX_STANDARD 14)
