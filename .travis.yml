@@ -30,6 +30,7 @@ install:
   - cd tmp
   - git clone https://github.com/zeromq/cppzmq
   - cd cppzmq
+  - git reset --hard 4648ebc9643119cff2a433dff4609f1a5cb640ec  # Since only libzmq3-dev can be installed. The new zmq.hpp requires version above 4.
   - sudo cp zmq.hpp /usr/local/include
   - cd ../..
   - rm -rf tmp
