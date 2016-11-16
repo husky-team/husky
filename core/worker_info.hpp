@@ -30,6 +30,8 @@ class WorkerInfo {
 
     inline int get_num_local_workers() const { return local_to_global_[proc_id_].size(); }
 
+    inline const std::vector<int>& get_tids_by_pid(int pid) const { return local_to_global_[pid]; }
+
     inline const std::string& get_host(int proc_id) const { return host_[proc_id]; }
 
     inline int local_to_global_id(int proc_id, int local_worker_id) const {
