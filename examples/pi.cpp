@@ -44,7 +44,7 @@ void pi() {
     }
 
     // Aggregate statistics to object 0
-    husky::ObjList<PIObject> pi_list;
+    auto& pi_list = husky::ObjListFactory::create_objlist<PIObject>();
     auto& ch =
         husky::ChannelFactory::create_push_combined_channel<int, husky::SumCombiner<int>>(pi_list, pi_list);
     ch.push(cnt, 0);
