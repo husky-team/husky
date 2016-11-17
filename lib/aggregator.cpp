@@ -38,9 +38,12 @@ AggregatorInfo::~AggregatorInfo() {
 AggregatorFactoryBase* AggregatorFactoryBase::create_factory() {
     // use registered factory constructor to create a factory
     auto& ctor = get_factory_constructor();
+    static std::mutex mutex;
+    mutex.lock();
     if (ctor == nullptr) {
         ctor = []() { return new AggregatorFactory(); };
     }
+    mutex.unlock();
     return ctor();
 }
 
