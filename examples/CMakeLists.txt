@@ -64,6 +64,12 @@ target_link_libraries(CC ${husky})
 target_link_libraries(CC ${EXTERNAL_LIB})
 set_property(TARGET CC PROPERTY CXX_STANDARD 14)
 
+# PIC
+add_executable(PIC pic.cpp)
+target_link_libraries(PIC ${husky})
+target_link_libraries(PIC ${EXTERNAL_LIB})
+set_property(TARGET PIC PROPERTY CXX_STANDARD 14)
+
 # PageRank
 add_executable(PageRank pagerank.cpp)
 target_link_libraries(PageRank ${husky})
@@ -117,3 +123,9 @@ add_executable(TF-IDF tfidf.cpp)
 target_link_libraries(TF-IDF ${husky})
 target_link_libraries(TF-IDF ${EXTERNAL_LIB})
 set_property(TARGET Aggregator PROPERTY CXX_STANDARD 14)
+
+# Affinity matrix
+add_executable(AMAT affinity.cpp)
+target_link_libraries(AMAT ${husky})
+target_link_libraries(AMAT ${EXTERNAL_LIB})
+set_property(TARGET AMAT PROPERTY CXX_STANDARD 14)
