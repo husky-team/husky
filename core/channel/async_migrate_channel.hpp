@@ -48,6 +48,8 @@ class AsyncMigrateChannel : public MigrateChannel<ObjT> {
         int start = this->global_id_;
         for (int i = 0; i < this->migrate_buffer_.size(); ++i) {
             int dst = (start + i) % this->migrate_buffer_.size();
+            if (this->migrate_buffer_[dst].size() == 0)
+                continue;
             this->mailbox_->send(dst, this->channel_id_, this->progress_, this->migrate_buffer_[dst]);
             this->migrate_buffer_[dst].purge();
         }

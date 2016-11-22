@@ -107,6 +107,8 @@ class BroadcastChannel : public ChannelBase {
         int start = global_id_;
         for (int i = 0; i < broadcast_buffer_.size(); ++i) {
             int dst = (start + i) % broadcast_buffer_.size();
+            if (broadcast_buffer_[dst].size() == 0)
+                continue;
             mailbox_->send(dst, channel_id_, progress_, broadcast_buffer_[dst]);
             broadcast_buffer_[dst].purge();
         }

@@ -75,6 +75,8 @@ class PushChannel : public Source2ObjListChannel<DstObjT> {
         int start = this->global_id_;
         for (int i = 0; i < send_buffer_.size(); ++i) {
             int dst = (start + i) % send_buffer_.size();
+            if (send_buffer_[dst].size() == 0)
+                continue;
             this->mailbox_->send(dst, this->channel_id_, this->progress_, send_buffer_[dst]);
             send_buffer_[dst].purge();
         }

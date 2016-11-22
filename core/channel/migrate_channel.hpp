@@ -67,6 +67,8 @@ class MigrateChannel : public ObjList2ObjListChannel<ObjT, ObjT> {
         int start = this->global_id_;
         for (int i = 0; i < migrate_buffer_.size(); ++i) {
             int dst = (start + i) % migrate_buffer_.size();
+            if (migrate_buffer_[dst].size() == 0)
+                continue;
             this->mailbox_->send(dst, this->channel_id_, this->progress_, migrate_buffer_[dst]);
             migrate_buffer_[dst].purge();
         }
