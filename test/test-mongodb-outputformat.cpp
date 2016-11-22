@@ -21,7 +21,7 @@
 #include "mongo/client/dbclient.h"
 
 #include "core/engine.hpp"
-#include "io/input/inputformat_factory.hpp"
+#include "io/input/inputformat_store.hpp"
 #include "io/output/mongodb_outputformat.hpp"
 
 void test() {
@@ -31,7 +31,7 @@ void test() {
     // std::string user = husky::Context::get_param("mongo_user");
     // std::string pwd = husky::Context::get_param("mongo_pwd");
 
-    auto& inputformat = husky::io::InputFormatFactory::create_mongodb_inputformat();
+    auto& inputformat = husky::io::InputFormatStore::create_mongodb_inputformat();
     inputformat.set_server(server);
     inputformat.set_ns(db, collection);
     // inputformat.set_auth(user, pwd);
