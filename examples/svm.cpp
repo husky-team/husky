@@ -65,8 +65,8 @@ double get_y_(ObjT& this_obj) { return this_obj.get_label(); }
 std::vector<std::pair<int, double>> get_X_(ObjT& this_obj) { return this_obj.get_feature(); }
 
 void svm() {
-    auto& train_set = husky::ObjListFactory::create_objlist<SparseFeatureLabel>("train_set");
-    auto& test_set = husky::ObjListFactory::create_objlist<SparseFeatureLabel>("test_set");
+    auto& train_set = husky::ObjListStore::create_objlist<SparseFeatureLabel>("train_set");
+    auto& test_set = husky::ObjListStore::create_objlist<SparseFeatureLabel>("test_set");
 
     // load data
     DataLoader<SparseFeatureLabel> data_loader(kLIBSVMFormat);

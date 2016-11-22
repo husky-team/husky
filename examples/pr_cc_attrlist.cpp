@@ -18,7 +18,7 @@
 #include "boost/tokenizer.hpp"
 
 #include "core/engine.hpp"
-#include "io/input/inputformat_factory.hpp"
+#include "io/input/inputformat_store.hpp"
 #include "lib/aggregator_factory.hpp"
 
 class Vertex {
@@ -43,10 +43,10 @@ class Vertex {
 };
 
 void pr_cc() {
-    auto& infmt = husky::io::InputFormatFactory::create_line_inputformat();
+    auto& infmt = husky::io::InputFormatStore::create_line_inputformat();
     infmt.set_input(husky::Context::get_param("input"));
     // Create vertex object list
-    auto& vertex_list = husky::ObjListFactory::create_objlist<Vertex>();
+    auto& vertex_list = husky::ObjListStore::create_objlist<Vertex>();
     // Create attribute lists for PageRank and ConnectedComponent
     auto& pr_list = vertex_list.create_attrlist<float>("pr");
     auto& cid_list = vertex_list.create_attrlist<int>("cid");
@@ -75,7 +75,7 @@ void pr_cc() {
 
     // Iterative PageRank computation
     auto& prch =
-        husky::ChannelFactory::create_push_combined_channel<float, husky::SumCombiner<float>>(vertex_list, vertex_list);
+        husky::ChannelStore::create_push_combined_channel<float, husky::SumCombiner<float>>(vertex_list, vertex_list);
     int numIters = stoi(husky::Context::get_param("iters"));
     for (int iter = 0; iter < numIters; ++iter) {
         husky::list_execute(vertex_list, [&prch, &pr_list, iter](Vertex& v) {
@@ -101,7 +101,7 @@ void pr_cc() {
 
     auto& agg_ch = husky::lib::AggregatorFactory::get_channel();
     auto& cidch =
-        husky::ChannelFactory::create_push_combined_channel<int, husky::MinCombiner<int>>(vertex_list, vertex_list);
+        husky::ChannelStore::create_push_combined_channel<int, husky::MinCombiner<int>>(vertex_list, vertex_list);
     // Initilization
     husky::list_execute(vertex_list, {}, {&cidch, &agg_ch}, [&cidch, &cid_list, &not_finished](Vertex& v) {
         int& cid = cid_list[v];

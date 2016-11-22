@@ -12,21 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "channel_factory_base.hpp"
-
-#include <string>
-#include <unordered_map>
-
-#include "base/session_local.hpp"
+#include "shuffle_combiner_store.hpp"
 
 namespace husky {
 
-thread_local int ChannelFactoryBase::default_channel_id = 0;
-thread_local std::unordered_map<std::string, ChannelBase*> ChannelFactoryBase::channel_map;
-const char* ChannelFactoryBase::channel_name_prefix = "default_channel_";
-// set finalize_all_channels priority to Level2, the higher the level, the higher the priority
-static thread_local base::RegSessionThreadFinalizer finalize_all_channels(base::SessionLocalPriority::Level2, []() {
-    ChannelFactoryBase::drop_all_channels();
-});
+std::unordered_map<size_t, ShuffleCombinerSetBase*> ShuffleCombinerStore::shuffle_combiners_map;
+std::unordered_map<size_t, size_t> ShuffleCombinerStore::num_local_threads;
+std::mutex ShuffleCombinerStore::shuffle_combiners_map_mutex;
 
 }  // namespace husky

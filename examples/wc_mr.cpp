@@ -18,7 +18,7 @@
 #include "boost/tokenizer.hpp"
 
 #include "core/engine.hpp"
-#include "io/input/inputformat_factory.hpp"
+#include "io/input/inputformat_store.hpp"
 
 class Word {
    public:
@@ -33,10 +33,10 @@ class Word {
 };
 
 void wc() {
-    auto& infmt = husky::io::InputFormatFactory::create_line_inputformat();
+    auto& infmt = husky::io::InputFormatStore::create_line_inputformat();
     infmt.set_input(husky::Context::get_param("input"));
-    auto& word_list = husky::ObjListFactory::create_objlist<Word>();
-    auto& ch = husky::ChannelFactory::create_push_combined_channel<int, husky::SumCombiner<int>>(infmt, word_list);
+    auto& word_list = husky::ObjListStore::create_objlist<Word>();
+    auto& ch = husky::ChannelStore::create_push_combined_channel<int, husky::SumCombiner<int>>(infmt, word_list);
 
     auto parse_wc = [&](boost::string_ref& chunk) {
         if (chunk.size() == 0)

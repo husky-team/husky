@@ -18,7 +18,7 @@
 #include "boost/tokenizer.hpp"
 
 #include "core/engine.hpp"
-#include "io/input/inputformat_factory.hpp"
+#include "io/input/inputformat_store.hpp"
 
 class Vertex {
    public:
@@ -44,11 +44,11 @@ class Vertex {
 };
 
 void pagerank() {
-    auto& infmt = husky::io::InputFormatFactory::create_line_inputformat();
+    auto& infmt = husky::io::InputFormatStore::create_line_inputformat();
     infmt.set_input(husky::Context::get_param("input"));
 
     // Create and globalize vertex objects
-    auto& vertex_list = husky::ObjListFactory::create_objlist<Vertex>();
+    auto& vertex_list = husky::ObjListStore::create_objlist<Vertex>();
     auto parse_wc = [&vertex_list](boost::string_ref& chunk) {
         if (chunk.size() == 0)
             return;
@@ -68,7 +68,7 @@ void pagerank() {
 
     // Iterative PageRank computation
     auto& prch =
-        husky::ChannelFactory::create_push_combined_channel<float, husky::SumCombiner<float>>(vertex_list, vertex_list);
+        husky::ChannelStore::create_push_combined_channel<float, husky::SumCombiner<float>>(vertex_list, vertex_list);
     int numIters = stoi(husky::Context::get_param("iters"));
     for (int iter = 0; iter < numIters; ++iter) {
         husky::list_execute(vertex_list, [&prch, iter](Vertex& u) {

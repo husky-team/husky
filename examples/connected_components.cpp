@@ -18,7 +18,7 @@
 #include "boost/tokenizer.hpp"
 
 #include "core/engine.hpp"
-#include "io/input/inputformat_factory.hpp"
+#include "io/input/inputformat_store.hpp"
 #include "lib/aggregator_factory.hpp"
 
 class Vertex {
@@ -45,11 +45,11 @@ class Vertex {
 };
 
 void cc() {
-    auto& infmt = husky::io::InputFormatFactory::create_line_inputformat();
+    auto& infmt = husky::io::InputFormatStore::create_line_inputformat();
     infmt.set_input(husky::Context::get_param("input"));
 
     // Create and globalize vertex objects
-    auto& vertex_list = husky::ObjListFactory::create_objlist<Vertex>();
+    auto& vertex_list = husky::ObjListStore::create_objlist<Vertex>();
     auto parse_wc = [&vertex_list](boost::string_ref& chunk) {
         if (chunk.size() == 0)
             return;
@@ -68,7 +68,7 @@ void cc() {
     husky::globalize(vertex_list);
 
     auto& ch =
-        husky::ChannelFactory::create_push_combined_channel<int, husky::MinCombiner<int>>(vertex_list, vertex_list);
+        husky::ChannelStore::create_push_combined_channel<int, husky::MinCombiner<int>>(vertex_list, vertex_list);
     // Aggregator to check how many vertexes updating
     husky::lib::Aggregator<int> not_finished(0, [](int& a, const int& b) { a += b; });
     not_finished.to_reset_each_iter();

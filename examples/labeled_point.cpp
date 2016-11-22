@@ -29,11 +29,11 @@ public:
 };
 
 void labeled_point_example() {
-    auto& obj_list = husky::ObjListFactory::create_objlist<Obj>();
+    auto& obj_list = husky::ObjListStore::create_objlist<Obj>();
     obj_list.add_object(Obj(husky::Context::get_global_tid()));
     husky::globalize(obj_list);
 
-    auto& channel = husky::ChannelFactory::create_push_channel<
+    auto& channel = husky::ChannelStore::create_push_channel<
             husky::lib::LabeledPoint<husky::lib::DenseVector<double>, double>>(obj_list, obj_list);
     husky::lib::LabeledPoint<husky::lib::DenseVector<double>, double> pt(husky::lib::DenseVector<double>(5, husky::Context::get_global_tid()), husky::Context::get_global_tid());
 

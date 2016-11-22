@@ -19,6 +19,6 @@ add_library(channel-objs OBJECT
     aggregator_channel.cpp
     channel_base.cpp
     channel_destination.cpp
-    channel_factory_base.cpp
+    channel_store_base.cpp
     channel_source.cpp)
 set_property(TARGET channel-objs PROPERTY CXX_STANDARD 14)

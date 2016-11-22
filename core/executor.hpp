@@ -21,8 +21,8 @@
 #include "base/exception.hpp"
 #include "base/log.hpp"
 #include "core/channel/channel_base.hpp"
-#include "core/channel/channel_factory.hpp"
 #include "core/channel/channel_manager.hpp"
+#include "core/channel/channel_store.hpp"
 #include "core/context.hpp"
 #include "core/objlist.hpp"
 
@@ -31,7 +31,7 @@ namespace husky {
 template <typename ObjT>
 void globalize(ObjList<ObjT>& obj_list) {
     // create a migrate channel for globalize
-    auto& migrate_channel = ChannelFactory::create_migrate_channel(obj_list, obj_list, "tmp_globalize");
+    auto& migrate_channel = ChannelStore::create_migrate_channel(obj_list, obj_list, "tmp_globalize");
 
     for (auto& obj : obj_list.get_data()) {
         int dst_thread_id = obj_list.get_hash_ring().hash_lookup(obj.id());
@@ -44,7 +44,7 @@ void globalize(ObjList<ObjT>& obj_list) {
     migrate_channel.prepare_immigrants();
     obj_list.sort();
 
-    ChannelFactory::drop_channel("tmp_globalize");
+    ChannelStore::drop_channel("tmp_globalize");
     // TODO(all): Maybe we can skip using unordered_map to index obj since in the end we need to sort them
 }
 

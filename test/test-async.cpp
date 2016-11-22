@@ -32,8 +32,8 @@ class Obj {
 
 void test_async_push() {
     constexpr int num_obj = 30;
-    auto& async_list = ObjListFactory::create_objlist<Obj>();
-    auto& async_ch = ChannelFactory::create_async_push_channel<int>(async_list);
+    auto& async_list = ObjListStore::create_objlist<Obj>();
+    auto& async_ch = ChannelStore::create_async_push_channel<int>(async_list);
     if (Context::get_global_tid() == 0) {
         for (int i = 0; i < num_obj; ++i) {
             async_list.add_object(Obj(i));
@@ -59,8 +59,8 @@ void test_async_push() {
 
 void test_async_mig() {
     constexpr int num_obj = 30;
-    auto& async_list = ObjListFactory::create_objlist<Obj>();
-    auto& async_ch = ChannelFactory::create_async_migrate_channel<Obj>(async_list);
+    auto& async_list = ObjListStore::create_objlist<Obj>();
+    auto& async_ch = ChannelStore::create_async_migrate_channel<Obj>(async_list);
     if (Context::get_global_tid() == 0) {
         for (int i = 0; i < num_obj; ++i) {
             async_list.add_object(Obj(i));

@@ -53,8 +53,8 @@ using husky::lib::ml::ParameterBucket;
 
 void report(std::string msg) { if (husky::Context::get_global_tid() == 0) husky::base::log_msg(msg); }
 void linear_regression() {
-    auto & train_set = husky::ObjListFactory::create_objlist<SparseFeatureLabel>("train_set");
-    auto & test_set = husky::ObjListFactory::create_objlist<SparseFeatureLabel>("test_set");
+    auto & train_set = husky::ObjListStore::create_objlist<SparseFeatureLabel>("train_set");
+    auto & test_set = husky::ObjListStore::create_objlist<SparseFeatureLabel>("test_set");
 
     // load data
     husky::lib::ml::DataLoader<SparseFeatureLabel> data_loader(husky::lib::ml::kTSVFormat);

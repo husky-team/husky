@@ -72,7 +72,7 @@ void affinity() {
     auto& ac = husky::lib::AggregatorFactory::get_channel();
 
     // 1. Create and globalize ndpoint objects
-    auto& ndpoint_list = husky::ObjListFactory::create_objlist<NDpoint>();
+    auto& ndpoint_list = husky::ObjListStore::create_objlist<NDpoint>();
     ndvec coordsSq(dimension);
     auto parse_ndpoint = [&](boost::string_ref& chunk) {
         if (chunk.size() == 0)
@@ -97,7 +97,7 @@ void affinity() {
     husky::base::log_msg("No. of rows in input " + std::to_string(totPts));
     husky::base::log_msg("No. of rows in local " + std::to_string(ndpoint_list.get_size()));
 
-    auto& allPtsCh = husky::ChannelFactory::create_broadcast_channel<int, NDpoint>(ndpoint_list);
+    auto& allPtsCh = husky::ChannelStore::create_broadcast_channel<int, NDpoint>(ndpoint_list);
     list_execute(ndpoint_list, [&](NDpoint& p) { allPtsCh.broadcast(p.id(), p); });
 
     // 2. calculate the variance used in similarity function

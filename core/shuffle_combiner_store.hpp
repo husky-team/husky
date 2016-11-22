@@ -34,7 +34,7 @@ class ShuffleCombinerSet : public ShuffleCombinerSetBase {
     std::vector<ShuffleCombiner<std::pair<KeyT, MsgT>>> data;
 };
 
-class ShuffleCombinerFactory {
+class ShuffleCombinerStore {
    public:
     template <typename KeyT, typename MsgT>
     static std::vector<ShuffleCombiner<std::pair<KeyT, MsgT>>>* create_shuffle_combiner(size_t channel_id,
@@ -50,7 +50,7 @@ class ShuffleCombinerFactory {
                 for (auto& s : shuffle_combiner_set->data) {
                     s.init(num_global_threads);
                 }
-                ShuffleCombinerFactory::num_local_threads.insert(std::make_pair(channel_id, num_local_threads));
+                ShuffleCombinerStore::num_local_threads.insert(std::make_pair(channel_id, num_local_threads));
                 shuffle_combiners_map.insert(std::make_pair(channel_id, shuffle_combiner_set));
             }
         }

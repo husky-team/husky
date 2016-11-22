@@ -50,8 +50,8 @@
 using husky::lib::ml::SparseFeatureLabel;
 using husky::lib::ml::ParameterBucket;
 void logistic_regression() {
-    auto & train_set = husky::ObjListFactory::create_objlist<SparseFeatureLabel>("train_set");
-    auto & test_set = husky::ObjListFactory::create_objlist<SparseFeatureLabel>("test_set");
+    auto & train_set = husky::ObjListStore::create_objlist<SparseFeatureLabel>("train_set");
+    auto & test_set = husky::ObjListStore::create_objlist<SparseFeatureLabel>("test_set");
 
     // load data
     husky::lib::ml::DataLoader<SparseFeatureLabel> data_loader(husky::lib::ml::kLIBSVMFormat);

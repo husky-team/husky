@@ -23,7 +23,7 @@ endif(DEP_FOUND)
 
 add_library(core-objs OBJECT
     accessor.cpp
-    accessor_factory.cpp
+    accessor_store.cpp
     combiner.cpp
     config.cpp
     context.cpp
@@ -32,8 +32,8 @@ add_library(core-objs OBJECT
     job_runner.cpp
     mailbox.cpp
     network.cpp
-    objlist_factory.cpp
-    shuffle_combiner_factory.cpp
+    objlist_store.cpp
+    shuffle_combiner_store.cpp
     worker_info.cpp)
 set_property(TARGET core-objs PROPERTY CXX_STANDARD 14)
 

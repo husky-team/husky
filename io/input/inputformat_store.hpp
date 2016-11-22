@@ -32,7 +32,7 @@
 namespace husky {
 namespace io {
 
-class InputFormatFactory {
+class InputFormatStore {
    public:
     // Create LineInputFormat
     static LineInputFormat& create_line_inputformat(const std::string& name = "");

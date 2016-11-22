@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "core/accessor_factory.hpp"
+#include "core/accessor_store.hpp"
 
 namespace husky {
 
-std::unordered_map<size_t, AccessorSetBase*> AccessorFactory::accessors_map;
-std::mutex AccessorFactory::accessors_map_mutex;
-std::unordered_map<size_t, size_t> AccessorFactory::num_local_threads;
+std::unordered_map<size_t, AccessorSetBase*> AccessorStore::accessors_map;
+std::mutex AccessorStore::accessors_map_mutex;
+std::unordered_map<size_t, size_t> AccessorStore::num_local_threads;
 
 }  // namespace husky

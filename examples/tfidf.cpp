@@ -100,7 +100,7 @@ class Term {
 };
 
 void tfidf() {
-    auto& document_list = husky::ObjListFactory::create_objlist<Document>();
+    auto& document_list = husky::ObjListStore::create_objlist<Document>();
     auto parse = [&](std::string& chunk) {
         mongo::BSONObj o = mongo::fromjson(chunk);
         Document doc(o.getStringField(husky::Context::get_param("doc_id")));
@@ -141,13 +141,13 @@ void tfidf() {
     inputformat.set_auth(husky::Context::get_param("mongo_user"), husky::Context::get_param("mongo_pwd"));
     load(inputformat, parse);
 
-    auto& term_list = husky::ObjListFactory::create_objlist<Term>();
+    auto& term_list = husky::ObjListStore::create_objlist<Term>();
     husky::lib::Aggregator<int> num_total_doc;
     auto& ac = husky::lib::AggregatorFactory::get_channel();
     auto& num_term =
-        husky::ChannelFactory::create_push_combined_channel<int, husky::SumCombiner<int>>(document_list, term_list);
+        husky::ChannelStore::create_push_combined_channel<int, husky::SumCombiner<int>>(document_list, term_list);
     auto& location_term =
-        husky::ChannelFactory::create_push_channel<std::pair<std::string, int>>(document_list, term_list);
+        husky::ChannelStore::create_push_channel<std::pair<std::string, int>>(document_list, term_list);
 
     husky::globalize(document_list);
     list_execute(document_list, {}, {&num_term, &location_term, &ac}, [&](Document& doc) {
@@ -158,7 +158,7 @@ void tfidf() {
         num_total_doc.update(1);
     });
     auto& location_term_and_idf =
-        husky::ChannelFactory::create_push_channel<std::pair<int, float>>(term_list, document_list);
+        husky::ChannelStore::create_push_channel<std::pair<int, float>>(term_list, document_list);
     list_execute(term_list, {&num_term}, {},
                  [&](Term& t) { t.idf = log(static_cast<double>(num_total_doc.get_value()) / num_term.get(t)); });
 

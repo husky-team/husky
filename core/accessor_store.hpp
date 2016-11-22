@@ -33,7 +33,7 @@ class AccessorSet : public AccessorSetBase {
     std::vector<Accessor<CollectT>> data;
 };
 
-class AccessorFactory {
+class AccessorStore {
    public:
     template <typename CollectT>
     static std::vector<Accessor<CollectT>>* create_accessor(size_t channel_id, size_t local_id,
@@ -47,7 +47,7 @@ class AccessorFactory {
                 for (auto& i : accessor_set->data) {
                     i.init(num_local_threads);
                 }
-                AccessorFactory::num_local_threads.insert(std::make_pair(channel_id, num_local_threads));
+                AccessorStore::num_local_threads.insert(std::make_pair(channel_id, num_local_threads));
                 accessors_map.insert(std::make_pair(channel_id, accessor_set));
             }
         }

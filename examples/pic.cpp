@@ -81,7 +81,7 @@ void pic() {
     auto& ac = husky::lib::AggregatorFactory::get_channel();
 
     // 1. Create and globalize node objects
-    auto& node_list = husky::ObjListFactory::create_objlist<Node>();
+    auto& node_list = husky::ObjListStore::create_objlist<Node>();
     auto parse_affMatRow = [&](boost::string_ref& chunk) {
         if (chunk.size() == 0)
             return;
@@ -124,7 +124,7 @@ void pic() {
     });
     husky::lib::Aggregator<float> normFacAgg(0.);
     auto& nodeTonodeCh =
-        husky::ChannelFactory::create_push_combined_channel<float, husky::SumCombiner<float>>(node_list, node_list);
+        husky::ChannelStore::create_push_combined_channel<float, husky::SumCombiner<float>>(node_list, node_list);
 
     int maxIter = std::stoi(husky::Context::get_param("maxIter"));
     float epsilon = std::stod(husky::Context::get_param("stopThres"));

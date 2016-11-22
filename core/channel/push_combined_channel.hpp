@@ -27,7 +27,7 @@
 #include "core/hash_ring.hpp"
 #include "core/mailbox.hpp"
 #include "core/objlist.hpp"
-#include "core/shuffle_combiner_factory.hpp"
+#include "core/shuffle_combiner_store.hpp"
 #include "core/worker_info.hpp"
 
 namespace husky {
@@ -43,7 +43,7 @@ class PushCombinedChannel : public Source2ObjListChannel<DstObjT> {
     }
 
     ~PushCombinedChannel() override {
-        ShuffleCombinerFactory::remove_shuffle_combiner(this->channel_id_);
+        ShuffleCombinerStore::remove_shuffle_combiner(this->channel_id_);
 
         this->src_ptr_->deregister_outchannel(this->channel_id_);
         this->dst_ptr_->deregister_inchannel(this->channel_id_);
@@ -60,7 +60,7 @@ class PushCombinedChannel : public Source2ObjListChannel<DstObjT> {
         send_buffer_.resize(this->worker_info_->get_num_workers());
         // Create shuffle_combiner_
         // TODO(yuzhen): Only support sortcombine, hashcombine can be added using enableif
-        shuffle_combiner_ = ShuffleCombinerFactory::create_shuffle_combiner<typename DstObjT::KeyT, MsgT>(
+        shuffle_combiner_ = ShuffleCombinerStore::create_shuffle_combiner<typename DstObjT::KeyT, MsgT>(
             this->channel_id_, this->local_id_, this->worker_info_->get_num_local_workers(),
             this->worker_info_->get_num_workers());
     }

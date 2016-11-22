@@ -23,7 +23,7 @@
 
 #include "base/serialization.hpp"
 #include "core/engine.hpp"
-#include "io/input/inputformat_factory.hpp"
+#include "io/input/inputformat_store.hpp"
 #include "lib/aggregator_factory.hpp"
 
 class Word {
@@ -43,13 +43,13 @@ bool operator<(const std::pair<int, std::string>& a, const std::pair<int, std::s
 }
 
 void wc() {
-    auto& infmt = husky::io::InputFormatFactory::create_mongodb_inputformat();
+    auto& infmt = husky::io::InputFormatStore::create_mongodb_inputformat();
     infmt.set_server(husky::Context::get_param("mongo_server"));
     infmt.set_ns(husky::Context::get_param("mongo_db"), husky::Context::get_param("mongo_collection"));
     infmt.set_query("");
 
-    auto& word_list = husky::ObjListFactory::create_objlist<Word>();
-    auto& ch = husky::ChannelFactory::create_push_combined_channel<int, husky::SumCombiner<int>>(infmt, word_list);
+    auto& word_list = husky::ObjListStore::create_objlist<Word>();
+    auto& ch = husky::ChannelStore::create_push_combined_channel<int, husky::SumCombiner<int>>(infmt, word_list);
 
     auto parse_wc = [&](std::string& chunk) {
         mongo::BSONObj o = mongo::fromjson(chunk);

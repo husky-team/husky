@@ -29,11 +29,11 @@ public:
 };
 
 void vector_example() {
-    auto& obj_list = husky::ObjListFactory::create_objlist<Obj>();
+    auto& obj_list = husky::ObjListStore::create_objlist<Obj>();
     obj_list.add_object(Obj(husky::Context::get_global_tid()));
     husky::globalize(obj_list);
 
-    auto& channel = husky::ChannelFactory::create_push_combined_channel<
+    auto& channel = husky::ChannelStore::create_push_combined_channel<
             husky::lib::DenseVector<double>, husky::SumCombiner<husky::lib::DenseVector<double>>>(obj_list, obj_list);
     husky::lib::DenseVector<double> vec1(5, husky::Context::get_global_tid());
 

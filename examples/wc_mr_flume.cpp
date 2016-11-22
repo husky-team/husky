@@ -19,7 +19,7 @@
 
 #include "base/log.hpp"
 #include "core/engine.hpp"
-#include "io/input/inputformat_factory.hpp"
+#include "io/input/inputformat_store.hpp"
 
 class Word {
    public:
@@ -36,12 +36,12 @@ class Word {
 void test_load() {
     std::string hostname = husky::Context::get_param("hostname");
     std::string port = husky::Context::get_param("port");
-    auto& infmt = husky::io::InputFormatFactory::create_flume_inputformat(hostname, std::stoi(port));
+    auto& infmt = husky::io::InputFormatStore::create_flume_inputformat(hostname, std::stoi(port));
 
     infmt.start_listen();
 
-    auto& word_list = husky::ObjListFactory::create_objlist<Word>();
-    auto& ch = husky::ChannelFactory::create_push_combined_channel<int, husky::SumCombiner<int>>(infmt, word_list);
+    auto& word_list = husky::ObjListStore::create_objlist<Word>();
+    auto& ch = husky::ChannelStore::create_push_combined_channel<int, husky::SumCombiner<int>>(infmt, word_list);
 
     auto parse_wc = [&](boost::string_ref& chunk) {
         if (chunk.size() == 0)

@@ -18,7 +18,7 @@
 #include <vector>
 
 #include "base/serialization.hpp"
-#include "core/accessor_factory.hpp"
+#include "core/accessor_store.hpp"
 #include "core/channel/channel_base.hpp"
 #include "core/channel/channel_source.hpp"
 #include "core/combiner.hpp"
@@ -43,7 +43,7 @@ class BroadcastChannel : public ChannelBase {
         // Make sure to invoke inc_progress_ before destructor
         if (need_leave_accessor_)
             leave_accessor();
-        AccessorFactory::remove_accessor(channel_id_);
+        AccessorStore::remove_accessor(channel_id_);
         src_ptr_->deregister_outchannel(channel_id_);
     }
 
@@ -55,7 +55,7 @@ class BroadcastChannel : public ChannelBase {
 
     void customized_setup() override {
         broadcast_buffer_.resize(worker_info_->get_num_workers());
-        accessor_ = AccessorFactory::create_accessor<std::unordered_map<KeyT, ValueT>>(
+        accessor_ = AccessorStore::create_accessor<std::unordered_map<KeyT, ValueT>>(
             channel_id_, local_id_, worker_info_->get_num_local_workers());
     }
 
