@@ -19,6 +19,7 @@
 #include "mongo/bson/bson.h"
 #include "mongo/client/dbclient.h"
 
+#include "base/exception.hpp"
 #include "base/log.hpp"
 
 namespace husky {
@@ -27,7 +28,15 @@ namespace io {
 using base::log_msg;
 using base::LOG_TYPE;
 
-const int kMaxNumberOfRecord = 1000;
+const int kMaxNumberOfRecord = 1024;
+
+enum MongoDBOutputFormatSetUp {
+    NotSetUp = 0,
+    NSSetUp = 1 << 1,
+    ServerSetUp = 1 << 2,
+    AuthSetUp = 1 << 2,
+    AllSetUp = NSSetUp | ServerSetUp | AuthSetUp,
+};
 
 MongoDBOutputFormat::MongoDBOutputFormat() {
     mongo::client::initialize();
@@ -40,17 +49,27 @@ void MongoDBOutputFormat::set_ns(const std::string& database, const std::string&
     database_ = database;
     collection_ = collection;
     ns_ = database_ + "." + collection_;
+    is_setup_ |= MongoDBOutputFormatSetUp::NSSetUp;
 }
 
-void MongoDBOutputFormat::set_server(std::string server) { server_ = server; }
+void MongoDBOutputFormat::set_server(std::string server) {
+    server_ = server;
+    is_setup_ |= MongoDBOutputFormatSetUp::ServerSetUp;
+}
 
 void MongoDBOutputFormat::set_auth(const std::string& username, const std::string& password) {
     username_ = username;
     password_ = password;
     need_auth_ = true;
+    is_setup_ |= MongoDBOutputFormatSetUp::AuthSetUp;
 }
 
+bool MongoDBOutputFormat::is_setup() const { return !(is_setup_ ^ MongoDBOutputFormatSetUp::AllSetUp); }
+
 bool MongoDBOutputFormat::commit(const std::string& doc) {
+    if (!is_setup())
+        return false;
+
     if (doc.empty())
         return false;
 
@@ -64,6 +83,9 @@ bool MongoDBOutputFormat::commit(const std::string& doc) {
 }
 
 void MongoDBOutputFormat::flush_all() {
+    if (!is_setup())
+        throw husky::base::HuskyException("MongoDBOutputFormat not setup correctly!");
+
     if (records_vector_.empty())
         return;
 

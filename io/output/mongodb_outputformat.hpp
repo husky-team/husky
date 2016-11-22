@@ -31,6 +31,7 @@ class MongoDBOutputFormat final : public OutputFormatBase {
     void set_auth(const std::string& username, const std::string& password);
     void set_ns(const std::string& database, const std::string& collection);
     void set_server(std::string server);
+    virtual bool is_setup() const;
 
     bool commit(const std::string& doc);
     void flush_all();

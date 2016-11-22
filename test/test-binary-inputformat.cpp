@@ -18,11 +18,11 @@
 #include "base/log.hpp"
 #include "base/serialization.hpp"
 #include "core/engine.hpp"
-#include "io/input/binary_inputformat.hpp"
+#include "io/input/inputformat_factory.hpp"
 
 void read_bin_file(const std::string& path) {
     // path can be `nfs:///path/to/file` or `hdfs:///path/to/file`.
-    husky::io::BinaryInputFormat infmt(path);
+    auto& infmt = husky::io::InputFormatFactory::create_binary_inputformat(path, "");
 
     size_t read_sz = 0;
     husky::load(infmt, [&read_sz](husky::base::BinStream& bin) {

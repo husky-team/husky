@@ -62,6 +62,8 @@ target_link_libraries(HuskyUnitTest ${GTEST_LIBRARIES})
 target_link_libraries(HuskyUnitTest ${GMOCK_LIBRARIES})
 set_property(TARGET HuskyUnitTest PROPERTY CXX_STANDARD 14)
 
+# Functional Test
+
 # TestAsync 
 add_executable(TestAsync test-async.cpp)
 target_link_libraries(TestAsync ${husky})
@@ -79,3 +81,9 @@ add_executable(TestLogMsg test-log-msg.cpp)
 target_link_libraries(TestLogMsg ${husky})
 target_link_libraries(TestLogMsg ${EXTERNAL_LIB})
 set_property(TARGET TestLogMsg PROPERTY CXX_STANDARD 14)
+
+# TestMongoDBOutputFormat
+add_executable(TestMongoDBOutputFormat test-mongodb-outputformat.cpp)
+target_link_libraries(TestMongoDBOutputFormat ${husky})
+target_link_libraries(TestMongoDBOutputFormat ${EXTERNAL_LIB})
+set_property(TARGET TestMongoDBOutputFormat PROPERTY CXX_STANDARD 14)
