@@ -37,14 +37,14 @@ We assume the root directory of Husky is `$HUSKY_ROOT`. Go to `$HUSKY_ROOT` and 
     mkdir release
     cd release
     cmake -DCMAKE_BUILD_TYPE=Release ..
-    make help           # List all build target
-    make -j8 Master    # Build the Husky master
-    make $ApplicationName # Build the Husky application
+    make help               # List all build target
+    make -j8 Master         # Build the Husky master
+    make $ApplicationName   # Build the Husky application
 
-Config
+Configuration
 -------------
 
-Husky is supposed to run on any platform. Configurations can be stored in a configure file(INI format) or can be the command arguments when running Husky. An example file for configuration is like the following:
+Husky is supposed to run on any platform. Configurations can be stored in a configure file (INI format) or can be the command arguments when running Husky. An example file for configuration is like the following:
 
     # Required
     master_host=xxx.xxx.xxx.xxx
@@ -87,7 +87,7 @@ In the single-machine environment, use the following,
 Run Husky Unit Test
 --------------------
 
-Husky contains the unit tests(basic on [gtest 1.7.0](https://github.com/google/googletest) in the core components. Run it with:
+Husky provides a set unit tests (based on [gtest 1.7.0](https://github.com/google/googletest)) in `core/`. Run it with:
 
     make HuskyUnitTest
     ./HuskyUnitTest
@@ -103,7 +103,7 @@ Or use the provided script,
 
     ./scripts/doxygen.py --gen
 
-Then go to html/ for HTML documentation, and latex/ for LaTeX documentation
+Then go to `html/` for HTML documentation, and `latex/` for LaTeX documentation
 
 Start a http server to view the documentation by browser,
 
