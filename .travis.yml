@@ -55,4 +55,4 @@ script:
   - make -j4 Master
   - make -j4 PI
   - make -j4 HuskyUnitTest
-  - ./HuskyUnitTest
+  - ./HuskyUnitTest --gtest_shuffle  # To check if the order causes some time-out failures.
