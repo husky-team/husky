@@ -14,52 +14,43 @@
 
 #pragma once
 
-#include <cmath>
 #include <functional>
-#include <utility>
-#include <vector>
 
-#include "core/engine.hpp"
+#include "core/objlist.hpp"
 #include "lib/ml/feature_label.hpp"
 #include "lib/ml/parameter.hpp"
-#include "lib/ml/vector_linalg.hpp"
+#include "lib/vector.hpp"
 
 namespace husky {
 namespace lib {
 namespace ml {
 
-using lib::AggregatorFactory;
-using vec_double = std::vector<double>;
-using vec_sp = std::vector<std::pair<int, double>>;
-
 // base class for gradient descent
-template <typename ObjT = FeatureLabel, typename ParamT = ParameterBucket<double>>
+template <typename FeatureT, typename LabelT, bool is_sparse>
 class GradientDescentBase {
    private:
+    using ObjT = LabeledPointHObj<FeatureT, LabelT, is_sparse>;
     using ObjL = ObjList<ObjT>;
+    using VecT = Vector<FeatureT, is_sparse>;
 
    public:
     // constructors
     GradientDescentBase() = default;
-    GradientDescentBase(  // standard constructor accepting 3 arguments:
-        std::function<vec_sp(ObjT&, std::function<double(int)>)> _gradient_func,  // function to calculate gradient
-        double _learning_rate                                                     // learning rate
+    GradientDescentBase(  // standard constructor accepting 2 arguments:
+        std::function<VecT(ObjT&, Vector<FeatureT, false>&)> _gradient_func,  // gradient function
+        double _learning_rate                                                 // learning rate
         )
         : gradient_func_(_gradient_func), learning_rate_(_learning_rate) {}
 
-    // get update vector for parameters
-    virtual void update_vec(ObjL& data, ParamT param_list, int num_global_samples) = 0;
-
     // manipulate gradient function and learning rate
-    void set_gradient_func(std::function<vec_sp(ObjT&, std::function<double(int)>)> _gradient_func) {
+    inline void set_gradient_func(std::function<VecT(ObjT&, Vector<FeatureT, false>&)> _gradient_func) {
         this->gradient_func_ = _gradient_func;
     }
-    void set_learning_rate(double _learning_rate) { this->learning_rate_ = _learning_rate; }
+    inline void set_learning_rate(FeatureT _learning_rate) { this->learning_rate_ = _learning_rate; }
 
    protected:
-    std::function<vec_sp(ObjT&, std::function<double(int)>)> gradient_func_ =
-        nullptr;  // function to calculate gradient
-    double learning_rate_;
+    std::function<VecT(ObjT&, Vector<FeatureT, false>&)> gradient_func_ = nullptr;
+    FeatureT learning_rate_;
 };  // GradientDescentBase
 
 }  // namespace ml

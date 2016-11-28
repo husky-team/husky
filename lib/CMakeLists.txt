@@ -27,6 +27,4 @@ set(lib-objs $<TARGET_OBJECTS:aggregator-objs>)
 # Visible to parent directory
 set(lib-objs ${lib-objs} PARENT_SCOPE)
 
-add_subdirectory(ml)
-
 add_library(husky-lib STATIC ${lib-objs} ${ml-objs})

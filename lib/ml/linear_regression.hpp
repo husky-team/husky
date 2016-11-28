@@ -15,70 +15,65 @@
 #pragma once
 
 #include <functional>
-#include <utility>
-#include <vector>
 
-#include "core/engine.hpp"
+#include "core/executor.hpp"
+#include "core/objlist.hpp"
 #include "lib/aggregator_factory.hpp"
 #include "lib/ml/feature_label.hpp"
-#include "lib/ml/gradient_descent.hpp"
 #include "lib/ml/parameter.hpp"
 #include "lib/ml/regression.hpp"
-#include "lib/ml/vector_linalg.hpp"
 
 namespace husky {
 namespace lib {
 namespace ml {
 
-using vec_double = std::vector<double>;
-using husky::lib::AggregatorFactory;
-using husky::lib::Aggregator;
-
-template <typename ObjT = FeatureLabel, typename ParamT = ParameterBucket<double>>
-class LinearRegression : public Regression<ObjT, ParamT> {
+template <typename FeatureT, typename LabelT, bool is_sparse, typename ParamT>
+class LinearRegression : public Regression<FeatureT, LabelT, is_sparse, ParamT> {
+   public:
+    using ObjT = LabeledPointHObj<FeatureT, LabelT, is_sparse>;
     using ObjL = ObjList<ObjT>;
 
-   public:
     // constructors
-    LinearRegression() : Regression<ObjT, ParamT>() {}
-    explicit LinearRegression(int _num_feature) : Regression<ObjT, ParamT>(_num_feature + 1) {}
-    LinearRegression(                                                     // standard constructor accepting 3 arguments:
-        std::function<std::vector<std::pair<int, double>>(ObjT&)> _getX,  // get feature vector (idx,val)
-        std::function<double(ObjT&)> _gety,                               // get label
-        int _num_feature                                                  // number of features
-        )
-        : Regression<ObjT, ParamT>(_num_feature + 1) {  // add intercept parameter
-        // gradient function: X * (true_y - innerproduct(xv, pv))
-        this->gradient_func_ = [this](ObjT& this_obj, std::function<double(int)> param_at) {
-            std::vector<std::pair<int, double>> vec_X = this->get_X_(this_obj);
-            vec_X.push_back(std::make_pair(0, 1.0));
-            double pred_y = 0;
-            for (auto& x : vec_X) {
-                pred_y += param_at(x.first) * x.second;
-            }
-            double delta = this->get_y_(this_obj) - pred_y;
-            for (auto& w : vec_X) {
-                w.second *= delta;
-            }
+    LinearRegression() : Regression<FeatureT, LabelT, is_sparse, ParamT>() {}
+    explicit LinearRegression(int _num_feature) : Regression<FeatureT, LabelT, is_sparse, ParamT>(_num_feature + 1) {
+        this->num_feature_ = _num_feature;
 
-            return vec_X;  // gradient vector
+        // gradient function: X * (true_y - innerproduct(xv, pv))
+        this->gradient_func_ = [](ObjT& this_obj, Vector<FeatureT, false>& param) {
+            auto vec_X = this_obj.x;
+            auto pred_y = param.dot_with_intcpt(vec_X);
+            auto delta = static_cast<FeatureT>(this_obj.y) - pred_y;
+            vec_X *= delta;
+            int num_param = param.get_feature_num();
+            vec_X.resize(num_param);
+            vec_X.set(num_param - 1, delta);  // intercept factor
+            return vec_X;                     // gradient vector
         };
 
         // error function: (true_y - pred_y)^2
-        this->error_func_ = [this](ObjT& this_obj, ParamT& param_list) {
-            std::vector<std::pair<int, double>> vec_X = this->get_X_(this_obj);
-            vec_X.push_back(std::make_pair(0, 1.0));
-            double pred_y = 0;
-            for (auto& x : vec_X) {
-                pred_y += param_list.param_at(x.first) * x.second;
+        this->error_func_ = [](ObjT& this_obj, ParamT& param_list) {
+            const auto& vec_X = this_obj.x;
+            FeatureT pred_y = 0;
+            for (auto it = vec_X.begin_feaval(); it != vec_X.end_feaval(); ++it) {
+                const auto& x = *it;
+                pred_y += param_list.param_at(x.fea) * x.val;
             }
-            double delta = this->get_y_(this_obj) - pred_y;
+            pred_y += param_list.param_at(param_list.get_num_param() - 1);  // intercept factor
+            auto delta = static_cast<FeatureT>(this_obj.y) - pred_y;
             return delta * delta;
         };
 
-        this->num_feature_ = _num_feature;
-        this->get_X_ = _getX;
-        this->get_y_ = _gety;
+        // predict function
+        this->predict_func_ = [](ObjT& this_obj, ParamT& param_list) -> LabelT {
+            auto vec_X = this_obj.x;
+            this_obj.y = 0;
+            for (auto it = vec_X.begin_feaval(); it != vec_X.end_feaval(); it++) {
+                const auto& x = *it;
+                this_obj.y += param_list.param_at(x.fea) * x.val;
+            }
+            this_obj.y += param_list.param_at(param_list.get_num_param() - 1);  // intercept factor
+            return this_obj.y;
+        };
     }
 
     void set_num_feature(int _num_feature) {
@@ -98,17 +93,17 @@ class LinearRegression : public Regression<ObjT, ParamT> {
         Aggregator<double> sum_var_agg(0.0, sum_double);
 
         auto& ch = AggregatorFactory::get_channel();
-        list_execute(data, {}, {&ch}, [&, this](ObjT& this_obj) {
-            num_samples_agg.update(1);                 // number of records
-            sum_y_agg.update(this->get_y_(this_obj));  // sum of y
+        list_execute(data, {}, {&ch}, [&](ObjT& this_obj) {
+            num_samples_agg.update(1);                          // number of records
+            sum_y_agg.update(static_cast<double>(this_obj.y));  // sum of y
         });
         double y_mean = sum_y_agg.get_value() / num_samples_agg.get_value();  // y mean
 
         list_execute(data, {}, {&ch}, [&, this](ObjT& this_obj) {
-            double y_true = this->get_y_(this_obj);
-            double y_pred = this->predict_y(this_obj);
-            double error = y_true - y_pred;
-            double variance = y_true - y_mean;
+            auto y_true = this_obj.y;
+            auto y_pred = this->predict_y(this_obj);
+            double error = static_cast<double>(y_true - y_pred);
+            double variance = static_cast<double>(y_true - y_mean);
             sum_error_agg.update(error * error);
             sum_var_agg.update(variance * variance);
         });
@@ -117,26 +112,19 @@ class LinearRegression : public Regression<ObjT, ParamT> {
     }
 
    protected:
-    std::function<std::vector<std::pair<int, double>>(ObjT&)> get_X_ = nullptr;  // get feature vector (idx,val)
-    std::function<double(ObjT&)> get_y_ = nullptr;                               // get label
-
-    double predict_y(ObjT& this_obj) {
-        std::vector<std::pair<int, double>> vec_X = get_X_(this_obj);
-        double pred_y = 0;
-        for (auto& x : vec_X) {
-            pred_y += this->param_list_.param_at(x.first) * x.second;
+    LabelT predict_y(ObjT& this_obj) {
+        auto vec_X = this_obj.x;
+        LabelT pred_y = 0;
+        for (auto it = vec_X.begin_feaval(); it != vec_X.end_feaval(); it++) {
+            const auto& x = *it;
+            pred_y += this->param_list_.param_at(x.fea) * x.val;
         }
         pred_y += this->param_list_.param_at(this->num_feature_);  // intercept factor
         return pred_y;
     }
 
-    double delta_func(ObjT& this_obj) { return this->get_y_(this_obj) - predict_y(this_obj); }
+    LabelT delta_func(ObjT& this_obj) { return this_obj.y - predict_y(this_obj); }
 };
-
-template <>
-LinearRegression<SparseFeatureLabel, ParameterBucket<double>>::LinearRegression(int _num_feature)
-    : LinearRegression([](SparseFeatureLabel& this_obj) { return this_obj.get_feature(); },
-                       [](SparseFeatureLabel& this_obj) { return this_obj.get_label(); }, _num_feature) {}
 
 }  // namespace ml
 }  // namespace lib

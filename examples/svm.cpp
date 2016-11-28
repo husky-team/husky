@@ -21,21 +21,31 @@
 //
 // train
 // type: string
-// info: the path of training data in hadoop
+// info: the path of training data in hadoop, in LibSVM format
 //
 // test
 // type: string
-// info: the path of testing data in hadoop
+// info: the path of testing data in hadoop, in LibSVM format
 //
 // n_iter
 // type: int
 // info: number of epochs the entire training data will be went through
 //
+// is_sparse
+// type: string
+// info: whether the data is dense or sparse
+//
+// format
+// type: string
+// info: the data format of input file: libsvm/tsv
+//
 // configuration example:
-// train:/datasets/classification/a9
-// test:/datasets/classification/a9t
-// n_iter:50
-// lambda:0.01
+// train=hdfs:///datasets/classification/a9
+// test=hdfs:///datasets/classification/a9t
+// is_sparse=true
+// format=libsvm
+// n_iter=50
+// lambda=0.01
 
 #include <algorithm>
 #include <cmath>
@@ -49,41 +59,39 @@
 #include "lib/ml/data_loader.hpp"
 #include "lib/ml/feature_label.hpp"
 #include "lib/ml/parameter.hpp"
-#include "lib/ml/vector_linalg.hpp"
 
 using husky::lib::Aggregator;
 using husky::lib::AggregatorFactory;
 
-namespace husky {
-namespace lib {
-namespace ml {
-
-typedef SparseFeatureLabel ObjT;
-
-// how to get label and feature from data object
-double get_y_(ObjT& this_obj) { return this_obj.get_label(); }
-std::vector<std::pair<int, double>> get_X_(ObjT& this_obj) { return this_obj.get_feature(); }
-
+template<bool is_sparse>
 void svm() {
-    auto& train_set = husky::ObjListStore::create_objlist<SparseFeatureLabel>("train_set");
-    auto& test_set = husky::ObjListStore::create_objlist<SparseFeatureLabel>("test_set");
+    using ObjT = husky::lib::ml::LabeledPointHObj<double, double, is_sparse>;
+    auto& train_set = husky::ObjListStore::create_objlist<ObjT>("train_set");
+    auto& test_set = husky::ObjListStore::create_objlist<ObjT>("test_set");
+
+    auto format_str = husky::Context::get_param("format");
+    husky::lib::ml::DataFormat format;
+    if (format_str == "libsvm") {
+        format = husky::lib::ml::kLIBSVMFormat;
+    } else if (format_str == "tsv") {
+        format = husky::lib::ml::kTSVFormat;
+    }
 
     // load data
-    DataLoader<SparseFeatureLabel> data_loader(kLIBSVMFormat);
-    data_loader.load_info(husky::Context::get_param("train"), train_set);
-    data_loader.load_info(husky::Context::get_param("test"), test_set);
-    int num_features = data_loader.get_num_feature();
+    int num_features = husky::lib::ml::load_data(husky::Context::get_param("train"), train_set, format);
+    husky::lib::ml::load_data(husky::Context::get_param("test"), test_set, format);
 
     // get model config parameters
     double lambda = std::stod(husky::Context::get_param("lambda"));
     int num_iter = std::stoi(husky::Context::get_param("n_iter"));
 
     // initialize parameters
-    ParameterBucket<double> param_list(num_features + 1);  // scalar b and vector w
+    husky::lib::ml::ParameterBucket<double> param_list(num_features + 1);  // scalar b and vector w
 
     if (husky::Context::get_global_tid() == 0) {
         husky::base::log_msg("num of params: " + std::to_string(param_list.get_num_param()));
     }
+
     // get the number of global records
     Aggregator<int> num_samples_agg(0, [](int& a, const int& b) { a += b; });
     num_samples_agg.update(train_set.get_size());
@@ -107,13 +115,13 @@ void svm() {
         double regulator = 0.0;  // prevent overfitting
 
         // calculate w square
-        for (int idx = 1; idx <= num_features; idx++) {
+        for (int idx = 0; idx < num_features; idx++) {
             double w = param_list.param_at(idx);
             sqr_w += w * w;
         }
 
         // get local copy of parameters
-        std::vector<double> bweight = param_list.get_all_param();
+        auto bweight = param_list.get_all_param();
 
         // calculate regulator
         regulator = (sqr_w == 0) ? 1.0 : std::min(1.0, 1.0 / sqrt(sqr_w * lambda));
@@ -126,7 +134,7 @@ void svm() {
 
         // regularize w in param_list
         if (husky::Context::get_global_tid() == 0) {
-            for (int idx = 1; idx < bweight.size(); idx++) {
+            for (int idx = 0; idx < num_features; idx++) {
                 double w = bweight[idx];
                 param_list.update(idx, (w - w / regulator - eta * w));
             }
@@ -136,21 +144,22 @@ void svm() {
         // calculate gradient
         list_execute(train_set, {}, {&ac}, [&](ObjT& this_obj) {
            double prod = 0;  // prod = WX * y
-           double y = get_y_(this_obj);
-           std::vector<std::pair<int, double>> X = get_X_(this_obj);
-           for (auto& x : X)
-               prod += bweight[x.first] * x.second;
+           double y = this_obj.y;
+           auto X = this_obj.x;
+           for (auto it = X.begin_feaval(); it != X.end_feaval(); ++it)
+               prod += bweight[(*it).fea] * (*it).val;
            // bias
-           prod += bweight[0];
+           prod += bweight[num_features];
            prod *= y;
 
            if (prod < 1) {  // the data point falls within the margin
-               for (auto& x : X) {
-                   x.second *= y;  // calculate the gradient for each parameter
-                   param_list.update(x.first, eta * x.second / num_samples / lambda);
+               for (auto it = X.begin_feaval(); it != X.end_feaval(); ++it) {
+                   auto x = *it;
+                   x.val *= y;  // calculate the gradient for each parameter
+                   param_list.update(x.fea, eta * x.val / num_samples / lambda);
                }
                // update bias
-               param_list.update(0, eta * y / num_samples);
+               param_list.update(num_features, eta * y / num_samples);
                loss_agg.update(1 - prod);
            }
            sqr_w_agg.update(sqr_w);
@@ -172,8 +181,7 @@ void svm() {
     // Show result
     if (husky::Context::get_global_tid() == 0) {
         param_list.present();
-        husky::base::log_msg(
-            "Time per iter: " +
+        husky::base::log_msg("Time per iter: " +
             std::to_string(std::chrono::duration_cast<std::chrono::duration<float>>(end - start).count() / num_iter));
     }
 
@@ -184,12 +192,12 @@ void svm() {
     auto bweight = param_list.get_all_param();
     list_execute(test_set, {}, {&ac}, [&](ObjT& this_obj) {
        double indicator = 0;
-       double y = get_y_(this_obj);
-       std::vector<std::pair<int, double>> X = get_X_(this_obj);
-       for (auto& x : X)
-           indicator += bweight[x.first] * x.second;
+       auto y = this_obj.y;
+       auto X = this_obj.x;
+       for (auto it = X.begin_feaval(); it != X.end_feaval(); it++)
+           indicator += bweight[(*it).fea] * (*it).val;
        // bias
-       indicator += bweight[0];
+       indicator += bweight[num_features];
        indicator *= y;  // right prediction if positive (Wx+b and y have the same sign)
        if (indicator < 0) error_agg.update(1);
        num_test_agg.update(1);
@@ -201,20 +209,20 @@ void svm() {
     }
 }
 
-}  // namespace ml
-}  // namespace lib
-}  // namespace husky
+void init() {
+    if (husky::Context::get_param("is_sparse") == "true") {
+        svm<true>();
+    } else {
+        svm<false>();
+    }
+}
 
 int main(int argc, char** argv) {
-    std::vector<std::string> args;
-    args.push_back("hdfs_namenode");
-    args.push_back("hdfs_namenode_port");
-    args.push_back("train");
-    args.push_back("test");
-    args.push_back("n_iter");
-    args.push_back("lambda");
+    std::vector<std::string> args({
+        "hdfs_namenode", "hdfs_namenode_port", "train", "test", "n_iter", "lambda", "format", "is_sparse"
+    });
     if (husky::init_with_args(argc, argv, args)) {
-        husky::run_job(husky::lib::ml::svm);
+        husky::run_job(init);
         return 0;
     }
     return 1;

@@ -15,186 +15,172 @@
 #pragma once
 
 #include <algorithm>
-#include <cassert>
 #include <cmath>
 #include <string>
-#include <utility>
-#include <vector>
 
 #include "boost/tokenizer.hpp"
-#include "core/engine.hpp"
-#include "io/input/line_inputformat.hpp"
+
+#include "core/executor.hpp"
+#include "core/objlist.hpp"
+#include "core/utils.hpp"
+#include "io/input/inputformat_store.hpp"
 #include "lib/aggregator_factory.hpp"
 #include "lib/ml/feature_label.hpp"
+#include "lib/vector.hpp"
 
 namespace husky {
 namespace lib {
 namespace ml {
-typedef std::vector<double> vec_double;
-typedef std::vector<std::pair<int, double>> vec_sp;
 
 // indicate format
-const int kLIBSVMFormat = 0;
-const int kTSVFormat = 1;
+enum DataFormat { kLIBSVMFormat, kTSVFormat };
 
-template <typename ObjT = FeatureLabel>
-class DataLoader {
-    typedef ObjList<ObjT> ObjL;
+// load data without knowing the number of features
+template <typename FeatureT, typename LabelT, bool is_sparse>
+int load_data(std::string url, ObjList<LabeledPointHObj<FeatureT, LabelT, is_sparse>>& data, DataFormat format) {
+    using DataObj = LabeledPointHObj<FeatureT, LabelT, is_sparse>;
 
-   public:
-    DataLoader() {}
-    explicit DataLoader(int _format) { this->format_ = _format; }
-    explicit DataLoader(std::function<void(std::string, ObjL&)> _load_func) { load_func_ = _load_func; }
+    auto& infmt = husky::io::InputFormatStore::create_line_inputformat();
+    infmt.set_input(url);
 
-    void load_info(std::string url, ObjL& data) {
-        ASSERT_MSG(load_func_ != nullptr, "Load function is not specified.");
-        load_func_(url, data);
+    husky::lib::Aggregator<int> num_features_agg(0, [](int& a, const int& b) { a = std::max(a, b); });
+    auto& ac = AggregatorFactory::get_channel();
+
+    std::function<void(boost::string_ref)> parser;
+    if (format == kLIBSVMFormat) {
+        parser = [&](boost::string_ref chunk) {
+            if (chunk.empty())
+                return;
+            boost::char_separator<char> sep(" \t");
+            boost::tokenizer<boost::char_separator<char>> tok(chunk, sep);
+
+            // get the largest index of features for this record
+            int sz = 0;
+            if (!is_sparse) {
+                auto last_colon = chunk.find_last_of(':');
+                if (last_colon != -1) {
+                    auto last_space = chunk.substr(0, last_colon).find_last_of(' ');
+                    sz = std::stoi(chunk.substr(last_space + 1, last_colon).data());
+                }
+                ASSERT_MSG(sz > 0, "The input file does not conform to LibSVM format.");
+            }
+            DataObj this_obj(sz);  // create a data object
+
+            bool is_y = true;
+            for (auto& w : tok) {
+                if (!is_y) {
+                    boost::char_separator<char> sep2(":");
+                    boost::tokenizer<boost::char_separator<char>> tok2(w, sep2);
+                    auto it = tok2.begin();
+                    int idx = std::stoi(*it++);
+                    double val = std::stod(*it++);
+                    num_features_agg.update(idx);
+                    this_obj.x.set(idx - 1, val);
+                } else {
+                    this_obj.y = std::stod(w);
+                    is_y = false;
+                }
+            }
+            data.add_object(this_obj);
+        };
+    } else if (format == kTSVFormat) {
+        parser = [&](boost::string_ref chunk) {
+            if (chunk.empty())
+                return;
+
+            boost::char_separator<char> sep(" \t");
+            boost::tokenizer<boost::char_separator<char>> tok(chunk, sep);
+            boost::tokenizer<boost::char_separator<char>> tok1(chunk, sep);
+
+            // get the number of features
+            int i = 0, num_features = -1;
+            for (auto& w : tok) {
+                num_features++;
+            }
+
+            DataObj this_obj(num_features);  // create a data object
+            for (auto& w : tok1) {
+                if (i < num_features) {
+                    this_obj.x.set(i++, std::stod(w));
+                } else {
+                    this_obj.y = std::stod(w);
+                }
+            }
+            data.add_object(this_obj);
+            num_features_agg.update(num_features);
+        };
+    } else {
+        ASSERT_MSG(false, "Unsupported data format");
     }
+    husky::load(infmt, {&ac}, parser);
 
-    inline int get_num_feature() const { return this->num_feature_; }
-
-   protected:
-    int num_feature_ = -1;
-    int format_;
-    std::function<void(std::string, ObjL&)> load_func_ = nullptr;
-};
-
-template <>
-DataLoader<FeatureLabel>::DataLoader(int _format)
-    : DataLoader([this](std::string url, DataLoader<FeatureLabel>::ObjL& data) {
-
-          husky::io::LineInputFormat infmt;
-          infmt.set_input(url);
-
-          husky::lib::Aggregator<int> num_features_agg(0, [](int& a, const int& b) { a = b; });
-          auto& ac = husky::lib::AggregatorFactory::get_channel();
-
-          std::function<void(boost::string_ref)> parser;
-          if (this->format_ == kLIBSVMFormat) {
-              // LIBSVM format -- [label] [featureIndex]:[featureValue] [featureIndex]:[featureValue]
-              parser = [&](boost::string_ref chunk) {
-                  if (chunk.empty())
-                      return;
-                  boost::char_separator<char> sep(" \t");
-                  boost::tokenizer<boost::char_separator<char>> tok(chunk, sep);
-
-                  FeatureLabel this_obj;
-                  double& label = this_obj.use_label();
-                  vec_double& feature = this_obj.use_feature();
-
-                  int i = 0;
-                  for (auto& w : tok) {
-                      if (i++) {
-                          boost::char_separator<char> sep2(":");
-                          boost::tokenizer<boost::char_separator<char>> tok2(w, sep2);
-                          auto it = tok2.begin();
-                          int idx = std::stoi(*it++);
-                          double val = std::stod(*it++);
-                          num_features_agg.update(idx);
-                          feature.push_back(val);
-                      } else {
-                          label = std::stod(w);
-                      }
-                  }
-                  data.add_object(this_obj);
-              };
-          } else if (this->format_ == kTSVFormat) {
-              // TSV format -- [feature]\t[feature]\t[label]
-              parser = [&](boost::string_ref chunk) {
-                  if (chunk.empty())
-                      return;
-                  boost::char_separator<char> sep(" \t");
-                  boost::tokenizer<boost::char_separator<char>> tok(chunk, sep);
-
-                  FeatureLabel this_obj;
-                  double& label = this_obj.use_label();
-                  vec_double& feature = this_obj.use_feature();
-
-                  int i = 0;
-                  for (auto& w : tok) {
-                      feature.push_back(std::stod(w));
-                  }
-                  label = feature.back();
-                  feature.pop_back();
-                  data.add_object(this_obj);
-                  num_features_agg.update(feature.size());
-              };
-          } else {
-              ASSERT_MSG(false, "Unsupported data format");
-              // parser = [&](boost::string_ref chunk) {};
-          }
-          husky::load(infmt, {&ac}, parser);
-          this->num_feature_ = std::max(this->num_feature_, num_features_agg.get_value());
-          // husky::globalize(data);
-      }) {
-    this->format_ = _format;
+    int num_features = num_features_agg.get_value();
+    list_execute(data, [&](DataObj& this_obj) {
+        if (this_obj.x.get_feature_num() != num_features) {
+            this_obj.x.resize(num_features);
+        }
+    });
+    return num_features;
 }
 
-template <>
-DataLoader<SparseFeatureLabel>::DataLoader(int _format)
-    : DataLoader([this](std::string url, DataLoader<SparseFeatureLabel>::ObjL& data) {
-          husky::io::LineInputFormat infmt;
-          infmt.set_input(url);
+template <typename FeatureT, typename LabelT, bool is_sparse>
+void load_data(std::string url, ObjList<LabeledPointHObj<FeatureT, LabelT, is_sparse>>& data, DataFormat format,
+               int num_features) {
+    ASSERT_MSG(num_features > 0, "the number of features is non-positive.");
+    using DataObj = LabeledPointHObj<FeatureT, LabelT, is_sparse>;
 
-          husky::lib::Aggregator<int> num_features_agg(0, [](int& a, const int& b) { a = std::max(a, b); });
-          auto& ac = husky::lib::AggregatorFactory::get_channel();
-          std::function<void(boost::string_ref)> parser;
-          if (this->format_ == kLIBSVMFormat) {
-              parser = [&](boost::string_ref chunk) {
-                  if (chunk.empty())
-                      return;
-                  boost::char_separator<char> sep(" \t");
-                  boost::tokenizer<boost::char_separator<char>> tok(chunk, sep);
+    husky::io::LineInputFormat infmt;
+    infmt.set_input(url);
 
-                  SparseFeatureLabel this_obj;
-                  double& label = this_obj.use_label();
-                  vec_sp& feature = this_obj.use_feature();
+    std::function<void(boost::string_ref)> parser;
+    if (format == kLIBSVMFormat) {
+        parser = [&](boost::string_ref chunk) {
+            if (chunk.empty())
+                return;
+            boost::char_separator<char> sep(" \t");
+            boost::tokenizer<boost::char_separator<char>> tok(chunk, sep);
 
-                  int i = 0;
-                  for (auto& w : tok) {
-                      if (i++) {
-                          boost::char_separator<char> sep2(":");
-                          boost::tokenizer<boost::char_separator<char>> tok2(w, sep2);
-                          auto it = tok2.begin();
-                          int idx = std::stoi(*it++);
-                          double val = std::stod(*it++);
-                          num_features_agg.update(idx);
-                          feature.push_back(std::make_pair(idx, val));
-                      } else {
-                          label = std::stod(w);
-                      }
-                  }
-                  data.add_object(this_obj);
-              };
-          } else if (this->format_ == kTSVFormat) {
-              parser = [&](boost::string_ref chunk) {
-                  if (chunk.empty())
-                      return;
-                  boost::char_separator<char> sep(" \t");
-                  boost::tokenizer<boost::char_separator<char>> tok(chunk, sep);
+            DataObj this_obj(num_features);
 
-                  SparseFeatureLabel this_obj;
-                  double& label = this_obj.use_label();
-                  vec_sp& feature = this_obj.use_feature();
+            bool is_y = true;
+            for (auto& w : tok) {
+                if (!is_y) {
+                    boost::char_separator<char> sep2(":");
+                    boost::tokenizer<boost::char_separator<char>> tok2(w, sep2);
+                    auto it = tok2.begin();
+                    int idx = std::stoi(*it++) - 1;
+                    double val = std::stod(*it++);
+                    this_obj.x.set(idx, val);
+                } else {
+                    this_obj.y = std::stod(w);
+                    is_y = false;
+                }
+            }
+            data.add_object(this_obj);
+        };
+    } else if (format == kTSVFormat) {
+        parser = [&](boost::string_ref chunk) {
+            if (chunk.empty())
+                return;
+            boost::char_separator<char> sep(" \t");
+            boost::tokenizer<boost::char_separator<char>> tok(chunk, sep);
 
-                  int i = 0;
-                  for (auto& w : tok) {
-                      i++;
-                      feature.push_back(std::make_pair(i, std::stod(w)));
-                  }
-                  label = feature.back().second;
-                  feature.pop_back();
-                  data.add_object(this_obj);
-                  num_features_agg.update(feature.size());
-              };
-          } else {
-              ASSERT_MSG(false, "Unsupported data format");
-              // parser = [&](boost::string_ref chunk) {};
-          }
-          husky::load(infmt, {&ac}, parser);
-          this->num_feature_ = std::max(this->num_feature_, num_features_agg.get_value());
-      }) {
-    this->format_ = _format;
+            DataObj this_obj(num_features);
+
+            int i = 0;
+            for (auto& w : tok) {
+                if (i < num_features) {
+                    this_obj.x.set(i++, std::stod(w));
+                } else {
+                    this_obj.y = std::stod(w);
+                }
+            }
+            data.add_object(this_obj);
+        };
+    } else {
+        ASSERT_MSG(false, "Unsupported data format");
+    }
+    husky::load(infmt, parser);
 }
 
 }  // namespace ml

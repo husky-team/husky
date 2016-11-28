@@ -14,13 +14,14 @@
 
 #pragma once
 
-#include <cmath>
 #include <functional>
 #include <string>
 #include <vector>
 
-#include "core/engine.hpp"
+#include "core/utils.hpp"
+#include "lib/aggregator.hpp"
 #include "lib/aggregator_factory.hpp"
+#include "lib/vector.hpp"
 
 namespace husky {
 namespace lib {
@@ -31,55 +32,24 @@ class ParameterBase {
    public:
     // constructors
     ParameterBase() = default;
-    ParameterBase(std::function<std::vector<T>()> _get_all_param_func, std::function<T(int)> _param_at_func,
-                  std::function<void(int, T)> _update_func, int _num_param)
-        : get_all_param_func(_get_all_param_func),
-          param_at_func(_param_at_func),
-          update_func(_update_func),
-          num_param_(_num_param) {}
+    explicit ParameterBase(int _num_param) : num_param_(_num_param) {}
 
     // get all parameters
-    std::vector<T> get_all_param() {
-        assert(this->get_all_param_func != nullptr);
-        return get_all_param_func();
-    }
+    virtual Vector<T, false> get_all_param() = 0;
 
     // get one parameter by index
-    T param_at(int idx) {
-        assert(param_at_func != nullptr);
-        return param_at_func(idx);
-    }
+    virtual T param_at(int idx) = 0;
 
     // update parameter
-    void update(int idx, T val) {
-        assert(update_func != nullptr);
-        update_func(idx, val);
-    }
+    virtual void update(int idx, T val) = 0;
 
     // regularize parameter
-    void regularize(double regulator) {
-        ASSERT_MSG(regularize_func_ != nullptr, "regularize function not specified");
-        regularize_func_(regulator);
-    }
-
-    // set get_all_param_func
-    void set_get_all_param(std::function<std::vector<T>()> _get_all_param_func) {
-        this->get_all_param_func = _get_all_param_func;
-    }
-
-    // set param_at_func
-    void set_param_at(std::function<T(int)> _param_at_func) { this->param_at_func = _param_at_func; }
-
-    // set update_func
-    void set_update(std::function<void(int, T)> _update_func) { this->update_func = _update_func; }
-
-    // set regularize function
-    void set_regularize(std::function<void(double)> _regularize_func) { this->regularize_func_ = _regularize_func; }
+    // TODO(Tatiana): implement as needed
+    virtual void regularize(double regulator) {}
 
     // present parameter
     void present() {
-        assert(this->get_all_param_func != nullptr);
-        std::vector<T> param = get_all_param_func();
+        Vector<T, false> param = get_all_param();
         int idx = 0;
         for (T val : param) {
             base::log_msg("Parameter " + std::to_string(++idx) + ": " + std::to_string(val));
@@ -89,50 +59,47 @@ class ParameterBase {
     int get_num_param() { return num_param_; }
 
    protected:
-    std::function<std::vector<T>()> get_all_param_func = nullptr;
-    std::function<T(int)> param_at_func = nullptr;
-    std::function<void(int, T)> update_func = nullptr;
-    std::function<void(double)> regularize_func_ = nullptr;
     int num_param_ = -1;
 };
 
 template <typename T = double>
 class ParameterBucket : public ParameterBase<T> {
-    using VecT = std::vector<T>;
+    using VecT = Vector<T, false>;
 
    public:
     // constructors
-    ParameterBucket() : ParameterBase<T>() {
-        auto& ac = husky::lib::AggregatorFactory::get_channel();
-        this->get_all_param_func = [this]() {
-            assert(!this->vector_agg.empty());
-            VecT param_vec;
-            int count = 0;
-            for (auto& bucket_agg : this->vector_agg) {
-                const VecT& bucket = bucket_agg.get_value();
-                for (int i = 0; i < bucket.size() && count < this->num_param_; i++, count++) {
-                    param_vec.push_back(bucket[i]);
-                }
-            }
-            return param_vec;
-        };
-        this->param_at_func = [this](int idx) {
-            ASSERT_MSG(this->block_size > 0, "Parameter block size is 0.");
-            ASSERT_MSG(!this->vector_agg.empty(), "Parameter is not initialized.");
-            double result = this->vector_agg[idx / this->block_size].get_value()[idx % this->block_size];
-            return this->vector_agg[idx / this->block_size].get_value()[idx % this->block_size];
-        };
-
-        // the default update function
-        this->update_func = [this](int idx, T val) {
-            ASSERT_MSG(this->block_size > 0, "Parameter block size is 0.");
-            ASSERT_MSG(!this->vector_agg.empty(), "Parameter is not initialized.");
-            this->vector_agg[idx / this->block_size].update_any([&](VecT& a) { a[idx % this->block_size] += val; });
-        };
-    }
+    ParameterBucket() : ParameterBase<T>() {}
     explicit ParameterBucket(int _num_param) : ParameterBucket() { init(_num_param); }
 
+    Vector<T, false> get_all_param() override {
+        assert(!this->vector_agg.empty());
+        VecT param_vec(this->num_param_);
+        int count = 0;
+        for (auto& bucket_agg : this->vector_agg) {
+            const VecT& bucket = bucket_agg.get_value();
+            for (int i = 0; i < bucket.get_feature_num() && count < this->num_param_; i++, count++) {
+                param_vec[count] = bucket[i];
+            }
+        }
+        return param_vec;
+    }
+
+    T param_at(int idx) override {
+        ASSERT_MSG(this->block_size > 0, "Parameter block size is 0.");
+        ASSERT_MSG(!this->vector_agg.empty(), "Parameter is not initialized.");
+        double result = this->vector_agg[idx / this->block_size].get_value()[idx % this->block_size];
+        return this->vector_agg[idx / this->block_size].get_value()[idx % this->block_size];
+    }
+
+    // the default update function
+    void update(int idx, T val) override {
+        ASSERT_MSG(this->block_size > 0, "Parameter block size is 0.");
+        ASSERT_MSG(!this->vector_agg.empty(), "Parameter is not initialized.");
+        this->vector_agg[idx / this->block_size].update_any([&](VecT& a) { a[idx % this->block_size] += val; });
+    }
+
     // initialize aggregators
+    // TODO(Tatiana): implement random number initialization?
     void init(int _num_param, double initial_val = 0.0) {
         this->num_param_ = _num_param;
         // split aggregation of parameters
@@ -144,10 +111,7 @@ class ParameterBucket : public ParameterBase<T> {
         for (int i = 0; i < num_worker; i++) {
             if (i * block_size < _num_param) {
                 vector_agg.push_back(lib::Aggregator<VecT>(VecT(block_size, initial_val),
-                                                           [](VecT& a, const VecT& b) {
-                                                               for (int j = 0; j < a.size(); j++)
-                                                                   a[j] += b[j];
-                                                           },
+                                                           [](VecT& a, const VecT& b) { a += b; },
                                                            [this](VecT& a) { a = VecT(this->block_size, (T) 0.0); }));
             }
         }

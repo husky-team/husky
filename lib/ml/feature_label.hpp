@@ -14,55 +14,29 @@
 
 #pragma once
 
-#include <cassert>
-#include <cmath>
-#include <string>
-#include <utility>
-#include <vector>
-
-#include "boost/tokenizer.hpp"
-#include "core/engine.hpp"
+#include "lib/vector.hpp"
 
 namespace husky {
 namespace lib {
 namespace ml {
-using vec_double = std::vector<double>;
 
-template <typename FT, typename LT>
-class FeatureLabelBase {
+// extends LabeledPoint, using Vector to represent features
+template <typename FeatureT, typename LabelT, bool is_sparse>
+class LabeledPointHObj : public LabeledPoint<Vector<FeatureT, is_sparse>, LabelT> {
    public:
+    using FeatureV = Vector<FeatureT, is_sparse>;
     // Object key
     using KeyT = int;
     KeyT key;
     const KeyT& id() const { return key; }
 
     // constructors
-    FeatureLabelBase() = default;
-    explicit FeatureLabelBase(FT& _feature, LT& _label, const KeyT& k) : feature_(_feature), label_(_label), key(k) {}
+    LabeledPointHObj() : LabeledPoint<FeatureV, LabelT>() {}
+    explicit LabeledPointHObj(int feature_num) : LabeledPoint<FeatureV, LabelT>() { this->x = FeatureV(feature_num); }
+    LabeledPointHObj(FeatureV& x, LabelT& y) : LabeledPoint<FeatureV, LabelT>(x, y) {}
+    LabeledPointHObj(FeatureV&& x, LabelT&& y) : LabeledPoint<FeatureV, LabelT>(x, y) {}
+};  // LabeledPointHObj
 
-    // get feature and label by reference
-    inline FT& use_feature() { return this->feature_; }
-    inline LT& use_label() { return this->label_; }
-
-    // get feature and label by value
-    inline FT get_feature() const { return this->feature_; }
-    inline LT get_label() const { return this->label_; }
-
-    // serialization
-    friend BinStream& operator<<(BinStream& stream, const FeatureLabelBase& this_obj) {
-        return stream << this_obj.key << this_obj.feature_ << this_obj.label_;
-    }
-    friend BinStream& operator>>(BinStream& stream, FeatureLabelBase& this_obj) {
-        return stream >> this_obj.key >> this_obj.feature_ >> this_obj.label_;
-    }
-
-   protected:
-    FT feature_;
-    LT label_;
-};  // FeatureLabelBase
-
-typedef FeatureLabelBase<std::vector<double>, double> FeatureLabel;
-typedef FeatureLabelBase<std::vector<std::pair<int, double>>, double> SparseFeatureLabel;
 }  // namespace ml
 }  // namespace lib
 }  // namespace husky

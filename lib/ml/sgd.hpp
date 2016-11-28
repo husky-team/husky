@@ -14,55 +14,50 @@
 
 #pragma once
 
-#include <cmath>
 #include <functional>
-#include <utility>
-#include <vector>
 
-#include "core/engine.hpp"
+#include "core/executor.hpp"
+#include "core/objlist.hpp"
+#include "core/utils.hpp"
 #include "lib/ml/feature_label.hpp"
 #include "lib/ml/gradient_descent.hpp"
 #include "lib/ml/parameter.hpp"
-#include "lib/ml/vector_linalg.hpp"
+#include "lib/vector.hpp"
 
 namespace husky {
 namespace lib {
 namespace ml {
 
-using lib::AggregatorFactory;
-using vec_double = std::vector<double>;
-using vec_sp = std::vector<std::pair<int, double>>;
-
 // base class for stochastic gradient descent, extends GradientDescentBase
-template <typename ObjT = FeatureLabel, typename ParamT = ParameterBucket<double>>
-class SGD : public GradientDescentBase<ObjT> {
+template <typename FeatureT, typename LabelT, bool is_sparse>
+class SGD : public GradientDescentBase<FeatureT, LabelT, is_sparse> {
    private:
+    using ObjT = LabeledPointHObj<FeatureT, LabelT, is_sparse>;
     using ObjL = ObjList<ObjT>;
+    using VecT = Vector<FeatureT, is_sparse>;
 
    public:
     // constructors
-    SGD() : GradientDescentBase<ObjT>() {}
-    explicit SGD(std::function<vec_sp(ObjT&, std::function<double(int)>)> _gradient_func, double _learning_rate)
-        : GradientDescentBase<ObjT>(_gradient_func, _learning_rate) {}
+    SGD() : GradientDescentBase<FeatureT, LabelT, is_sparse>() {}
+    SGD(std::function<VecT(ObjT&, Vector<FeatureT, false>&)> _gradient_func, double _learning_rate)
+        : GradientDescentBase<FeatureT, LabelT, is_sparse>(_gradient_func, _learning_rate) {}
 
-    void update_vec(ObjL& data, ParamT param_list, int num_global_samples) override {
+    template <typename ParamT>
+    void update_vec(ObjL& data, ParamT& param_list, int num_global_samples) {
         ASSERT_MSG(this->learning_rate_ != 0, "Learning rate is set to 0.");
         ASSERT_MSG(this->gradient_func_ != nullptr, "Gradient function is not specified.");
 
-        int num_local_samples = data.get_size();              // number of local samples
-        vec_double current_vec = param_list.get_all_param();  // local copy of parameter
+        int num_local_samples = data.get_size();        // number of local samples
+        auto current_vec = param_list.get_all_param();  // local copy of parameter
         auto& ac = AggregatorFactory::get_channel();
 
-        list_execute(data, {}, {&ac}, [&grad_func = this->gradient_func_, &rate = this->learning_rate_,
-                            &current_vec, &param_list, &num_local_samples, &num_global_samples](ObjT& this_obj) {
-            vec_sp grad = grad_func(this_obj, [&current_vec](int idx){
-                return current_vec[idx];
-            });  // calculate gradient
-
-            for (auto& w : grad){
-                double delta = w.second * rate;
-                current_vec[w.first] += delta;
-                param_list.update(w.first, delta * num_local_samples / num_global_samples);
+        list_execute(data, {}, {&ac}, [&, this](ObjT& this_obj) {
+            auto grad = this->gradient_func_(this_obj, current_vec);  // calculate gradient
+            for (auto it = grad.begin_feaval(); it != grad.end_feaval(); ++it) {
+                const auto& w = *it;
+                auto delta = w.val * this->learning_rate_;
+                current_vec[w.fea] += delta;
+                param_list.update(w.fea, delta * num_local_samples / num_global_samples);
             }
         });
     }
