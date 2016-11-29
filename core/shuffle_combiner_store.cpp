@@ -19,5 +19,6 @@ namespace husky {
 std::unordered_map<size_t, ShuffleCombinerSetBase*> ShuffleCombinerStore::shuffle_combiners_map;
 std::unordered_map<size_t, size_t> ShuffleCombinerStore::num_local_threads;
 std::mutex ShuffleCombinerStore::shuffle_combiners_map_mutex;
+zmq::context_t* ShuffleCombinerStore::shuffle_combiners_zmq_context_ptr = nullptr;
 
 }  // namespace husky

@@ -43,7 +43,7 @@ class PushCombinedChannel : public Source2ObjListChannel<DstObjT> {
     }
 
     ~PushCombinedChannel() override {
-        ShuffleCombinerStore::remove_shuffle_combiner(this->channel_id_);
+        ShuffleCombinerStore::remove_shuffle_combiner<typename DstObjT::KeyT, MsgT>(this->channel_id_);
 
         this->src_ptr_->deregister_outchannel(this->channel_id_);
         this->dst_ptr_->deregister_inchannel(this->channel_id_);
@@ -160,44 +160,34 @@ class PushCombinedChannel : public Source2ObjListChannel<DstObjT> {
 
     void shuffle_combine() {
         // step 1: shuffle combine
-        for (int i = 0; i < this->worker_info_->get_num_workers(); i++)
-            (*shuffle_combiner_)[this->local_id_].commit(i);
-
-        for (int i = 0; i < this->worker_info_->get_num_workers(); i++) {
-            if (i % this->worker_info_->get_num_local_workers() != this->local_id_)
-                continue;
-
-            // assume I'm now combining the i-th buffer
-            auto& self_buffer = (*shuffle_combiner_)[this->local_id_].access(i);
-
-            // Collect messages (of the i-th buffer) from all machines
-            unsigned int seed = time(NULL);
-            int base = rand_r(&seed);
-            for (int j = 0; j < this->worker_info_->get_num_local_workers(); j++) {
-                if (j == this->local_id_)
-                    continue;
-
-                auto& peer_buffer = (*shuffle_combiner_)[j].access(i);
+        auto& self_shuffle_combiner = (*shuffle_combiner_)[this->local_id_];
+        self_shuffle_combiner.send_shuffler_buffer();
+        for (int iter = 0; iter < this->worker_info_->get_num_local_workers() - 1; iter++) {
+            int next_worker = self_shuffle_combiner.access_next();
+            auto& peer_shuffle_combiner = (*shuffle_combiner_)[next_worker];
+            for (int i = this->local_id_; i < this->worker_info_->get_num_workers();
+                 i += this->worker_info_->get_num_local_workers()) {
+                // combining the i-th buffer
+                auto& self_buffer = self_shuffle_combiner.storage(i);
+                auto& peer_buffer = peer_shuffle_combiner.storage(i);
                 self_buffer.insert(self_buffer.end(), peer_buffer.begin(), peer_buffer.end());
                 peer_buffer.clear();
-                (*shuffle_combiner_)[j].leave(i);
             }
-
+        }
+        for (int i = this->local_id_; i < this->worker_info_->get_num_workers();
+             i += this->worker_info_->get_num_local_workers()) {
+            auto& self_buffer = self_shuffle_combiner.storage(i);
             combine_single<CombineT>(self_buffer);
         }
-
         // step 2: serialize combine buffer
-        for (int i = 0; i < this->worker_info_->get_num_workers(); i++) {
-            if (i % this->worker_info_->get_num_local_workers() != this->local_id_)
-                continue;
-
-            auto& combine_buffer = (*shuffle_combiner_)[this->local_id_].access(i);
+        for (int i = this->local_id_; i < this->worker_info_->get_num_workers();
+             i += this->worker_info_->get_num_local_workers()) {
+            auto& combine_buffer = self_shuffle_combiner.storage(i);
             for (int k = 0; k < combine_buffer.size(); k++) {
                 send_buffer_[i] << combine_buffer[k].first;
                 send_buffer_[i] << combine_buffer[k].second;
             }
             combine_buffer.clear();
-            (*shuffle_combiner_)[this->local_id_].leave(i);
         }
     }
 
