@@ -14,25 +14,22 @@
 
 #include "core/network.hpp"
 
-#ifdef _WIN32
-#error "The networking support for Windows is not ready yet."
-#endif
-
-#include <arpa/inet.h>
-#include <ifaddrs.h>
-#include <netdb.h>
-#include <netinet/in.h>
-#include <sys/param.h>
-
 #include <cstring>
 #include <set>
 #include <string>
 
 #ifdef __linux__
+#include <arpa/inet.h>
+#include <ifaddrs.h>
+#include <netdb.h>
+#include <netinet/in.h>
+#include <sys/param.h>
 #include <unistd.h>
 #endif
 #ifdef _WIN32
 #include <Winsock2.h>
+#include <winsock2.h>
+#include <ws2tcpip.h>
 #endif
 
 #include "core/utils.hpp"
@@ -48,10 +45,7 @@ std::string get_hostname() {
 #endif
 
 #ifdef _WIN32
-    WSADATA wsaData;
-    WSAStartup(MAKEWORD(2, 2), &wsaData);
     gethostname(hostname, 1024);
-    WSACleanup();
 #endif
 
     return std::string(hostname);
@@ -62,12 +56,14 @@ std::string ns_lookup(const std::string& name) {
     ASSERT_MSG(record != NULL, (name + " cannot be resolved").c_str());
     in_addr* address = reinterpret_cast<in_addr*>(record->h_addr);
     std::string ip_address = inet_ntoa(*address);
+
     return ip_address;
 }
 
 std::set<std::string> get_self_ips() {
     std::set<std::string> ips;
 
+#ifdef __linux__
     struct ifaddrs* ifap;
     getifaddrs(&ifap);
 
@@ -83,6 +79,17 @@ std::set<std::string> get_self_ips() {
     }
 
     freeifaddrs(ifap);
+#endif
+
+#ifdef _WIN32
+    struct hostent* phe = gethostbyname(get_hostname().c_str());
+
+    for (int i = 0; phe->h_addr_list[i] != 0; ++i) {
+        struct in_addr addr;
+        memcpy(&addr, phe->h_addr_list[i], sizeof(struct in_addr));
+        ips.insert(inet_ntoa(addr));
+    }
+#endif
     return ips;
 }
 

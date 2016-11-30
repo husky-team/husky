@@ -121,7 +121,10 @@ void sort_buffer_by_key(std::vector<std::pair<KeyT, MsgT>>& combine_buffer) {
               [](const std::pair<KeyT, MsgT>& a, const std::pair<KeyT, MsgT>& b) { return a.first < b.first; });
 }
 
+// For some reason MSVC does not deal with SFINAE very well
+#ifdef __linux__
 void sort_buffer_by_key_msg(std::vector<std::pair<int, int>>& combine_buffer);
+#endif
 
 template <typename MsgT>
 void sort_buffer_by_key(std::vector<std::pair<int, MsgT>>& combine_buffer) {

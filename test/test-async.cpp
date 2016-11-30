@@ -43,7 +43,7 @@ void test_async_push() {
     globalize(async_list);
     list_execute_async(
         async_list,
-        [&async_ch](Obj& obj) {
+        [&](Obj& obj) {
             auto& msgs = async_ch.get(obj);
             if (obj.id() == 0) {
                 if (msgs.size() > 0)

@@ -13,7 +13,7 @@
 # limitations under the License.
 
 
-include_directories(${PROJECT_SOURCE_DIR} ${Boost_INCLUDE_DIRS})
+include_directories(${PROJECT_SOURCE_DIR} ${Boost_INCLUDE_DIRS} ${ZMQ_INCLUDE_DIR})
 
 set(master_plugins mongodb_assigner.cpp nfs_assigner.cpp progress_tracker.cpp nfs_binary_assigner.cpp)
 
@@ -34,4 +34,7 @@ set(husky husky-lib husky-io husky-core husky-base)
 add_executable(Master master.cpp ${master_plugins})
 target_link_libraries(Master ${husky})
 target_link_libraries(Master ${EXTERNAL_LIB})
+if(WIN32)
+    set_target_properties(Master PROPERTIES COMPILER_FLAGS "/EHsc")
+endif()
 set_property(TARGET Master PROPERTY CXX_STANDARD 14)

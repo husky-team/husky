@@ -141,6 +141,8 @@ class ObjList : public ObjListBase {
     // @Return a pointer to obj
     ObjT* find(const typename ObjT::KeyT& key) {
         auto& working_list = objlist_data_.data_;
+        if (working_list.size() == 0)
+            return nullptr;
         ObjT* start_addr = &working_list[0];
         int r = this->sorted_size - 1;
         int l = 0;

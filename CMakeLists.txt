@@ -17,16 +17,18 @@ cmake_minimum_required(VERSION 3.0.2)
 
 set(CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_FLAGS "-Wno-deprecated-declarations")
-set(CMAKE_CXX_FLAGS_DEBUG "-g")
-set(CMAKE_CXX_FLAGS_RELEASE "-O3 -w")
+if(CMAKE_COMPILER_IS_GNUCXX)
+    set(CMAKE_CXX_FLAGS_DEBUG "-g")
+    set(CMAKE_CXX_FLAGS_RELEASE "-O3 -w")
+    set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-Wno-deprecated-declarations")
+endif()
 
 set(dep_DIR ${PROJECT_SOURCE_DIR})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
 
 find_package(dep)
 find_package(Threads)
-find_package(Boost 1.58.0 COMPONENTS system filesystem regex thread program_options)
+find_package(Boost 1.58.0 COMPONENTS system filesystem regex thread program_options date_time chrono)
 
 # External Libraries
 set(EXTERNAL_LIB ${ZMQ_LIBRARY} ${TCMALLOC_LIBRARY} ${CMAKE_THREAD_LIBS_INIT} ${Boost_LIBRARIES})
@@ -45,6 +47,10 @@ endif(MONGOCLIENT_FOUND)
 if(THRIFT_FOUND)
     set(EXTERNAL_LIB ${EXTERNAL_LIB} ${THRIFT_LIBRARY})
 endif(THRIFT_FOUND)
+
+if(WIN32)
+    set(EXTERNAL_LIB ${EXTERNAL_LIB} wsock32 ws2_32)
+endif()
 
 add_subdirectory(base)
 add_subdirectory(core)

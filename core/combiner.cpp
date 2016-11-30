@@ -23,6 +23,7 @@ void sort_buffer_by_key(std::vector<int>& combine_buffer) {
     boost::sort::spreadsort::spreadsort(combine_buffer.begin(), combine_buffer.end());
 }
 
+#ifdef __linux__
 void sort_buffer_by_key_msg(std::vector<std::pair<int, int>>& combine_buffer) {
     auto get_char = [](int x, size_t offset) {
         const int bit_shift = 8 * (sizeof(int) - offset - 1);
@@ -41,5 +42,6 @@ void sort_buffer_by_key_msg(std::vector<std::pair<int, int>>& combine_buffer) {
     auto lessthan = [](const std::pair<int, int>& x, const std::pair<int, int>& y) { return x < y; };
     boost::sort::spreadsort::string_sort(combine_buffer.begin(), combine_buffer.end(), bracket, getsize, lessthan);
 }
+#endif
 
 }  // namespace husky

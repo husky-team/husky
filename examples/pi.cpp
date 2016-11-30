@@ -30,7 +30,7 @@ class PIObject {
 
 void pi() {
     // Each thread generates 1000 points
-    int num_pts_per_thread = 1000;
+    int num_pts_per_thread = 1000000;
     std::random_device rd;
     std::mt19937 generator(rd());
     std::uniform_real_distribution<double> distribution(-1.0, 1.0);

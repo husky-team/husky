@@ -50,15 +50,15 @@ TEST_F(TestAccessor, FunctionalInMultiThreads) {
         i.init(N);
     for (int i = 0; i < N; i++) {
         workers[i] = new std::thread([&V, i, N, Round, MaxTime, &done]() {
-            unsigned int seed = time(NULL);
+            srand(time(NULL));
             Accessor<int>& v = V[i];
             for (int round = 1, sum = 0; round <= Round; round++, sum = 0) {
                 v.storage() += i * round;
-                std::this_thread::sleep_for(std::chrono::milliseconds(rand_r(&seed) % MaxTime));
+                std::this_thread::sleep_for(std::chrono::milliseconds(rand() % MaxTime));
                 v.commit();
                 for (int j = 0; j < N; j++) {
                     sum += V[j].access();
-                    std::this_thread::sleep_for(std::chrono::milliseconds(rand_r(&seed) % MaxTime));
+                    std::this_thread::sleep_for(std::chrono::milliseconds(rand() % MaxTime));
                     V[j].leave();
                 }
                 EXPECT_EQ(sum << 2, N * (N - 1) * round * (round + 1));

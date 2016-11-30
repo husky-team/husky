@@ -13,7 +13,7 @@
 # limitations under the License.
 
 
-include_directories(${PROJECT_SOURCE_DIR})
+include_directories(${PROJECT_SOURCE_DIR} ${Boost_INCLUDE_DIRS} ${ZMQ_INCLUDE_DIR})
 
 if(LIBHDFS3_FOUND)
     include_directories(${LIBHDFS3_INCLUDE_DIR})
@@ -43,6 +43,15 @@ ExternalProject_Add(
 set(GTEST_INCLUDE "${PROJECT_BINARY_DIR}/include")
 include_directories(${GTEST_INCLUDE})
 
+if(WIN32)
+set(GTEST_LIBRARIES
+    "${PROJECT_BINARY_DIR}/lib/gtest.lib"
+    "${PROJECT_BINARY_DIR}/lib/gtest_main.lib")
+
+set(GMOCK_LIBRARIES
+    "${PROJECT_BINARY_DIR}/lib/gmock.lib"
+    "${PROJECT_BINARY_DIR}/lib/gmock_main.lib")
+else(WIN32)
 set(GTEST_LIBRARIES
     "${PROJECT_BINARY_DIR}/lib/libgtest.a"
     "${PROJECT_BINARY_DIR}/lib/libgtest_main.a")
@@ -50,6 +59,7 @@ set(GTEST_LIBRARIES
 set(GMOCK_LIBRARIES
     "${PROJECT_BINARY_DIR}/lib/libgmock.a"
     "${PROJECT_BINARY_DIR}/lib/libgmock_main.a")
+endif(WIN32)
 
 # Unit Test
 

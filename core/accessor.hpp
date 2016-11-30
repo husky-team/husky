@@ -70,12 +70,12 @@ class AccessorBase {
     BarrierType* commit_barrier_ = nullptr;
     GenerationLock* access_barrier_ = nullptr;
 
+    static thread_local std::unordered_set<AccessorBase*> access_states_;
+
    private:
     bool owner_can_access_collection_ = true;
     const std::string class_name_;
     size_t num_unit_ = 0;
-
-    static thread_local std::unordered_set<AccessorBase*> access_states_;
 };
 
 /// Accessor is designed for collection accessing management.
