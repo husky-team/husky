@@ -34,6 +34,13 @@ class PushChannel : public Source2ObjListChannel<DstObjT> {
     PushChannel(ChannelSource* src, ObjList<DstObjT>* dst) : Source2ObjListChannel<DstObjT>(src, dst) {
         this->src_ptr_->register_outchannel(this->channel_id_, this);
         this->dst_ptr_->register_inchannel(this->channel_id_, this);
+
+        recv_comm_handler_ = [&](const MsgT& msg, DstObjT* recver_obj) {
+            size_t idx = this->dst_ptr_->index_of(recver_obj);
+            if (idx >= recv_buffer_.size())
+                recv_buffer_.resize(idx + 1);
+            recv_buffer_[idx].push_back(std::move(msg));
+        };
     }
 
     ~PushChannel() override {
@@ -95,6 +102,17 @@ class PushChannel : public Source2ObjListChannel<DstObjT> {
         this->reset_flushed();
     }
 
+    /// \brief Set a customized handler to handle incoming communication
+    ///
+    /// The handler takes the message and its destinating object as its two arguments.
+    /// Then the handler decides the operation to apply on this object.
+    ///
+    /// @param comm_handler A handler that contains the operation to be applied on
+    ///                     the obejct, using the received message.
+    void set_recv_comm_handler(std::function<void(const MsgT&, DstObjT*)> recv_comm_handler) {
+        recv_comm_handler_ = recv_comm_handler;
+    }
+
    protected:
     void clear_recv_buffer_() {
         // TODO(yuzhen): What types of clear do we need?
@@ -109,19 +127,16 @@ class PushChannel : public Source2ObjListChannel<DstObjT> {
             bin_push >> msg;
 
             DstObjT* recver_obj = this->dst_ptr_->find(key);
-            size_t idx;
             if (recver_obj == nullptr) {
                 DstObjT obj(key);  // Construct obj using key only
-                idx = this->dst_ptr_->add_object(std::move(obj));
-            } else {
-                idx = this->dst_ptr_->index_of(recver_obj);
+                size_t idx = this->dst_ptr_->add_object(std::move(obj));
+                recver_obj = &(this->dst_ptr_->get(idx));
             }
-            if (idx >= recv_buffer_.size())
-                recv_buffer_.resize(idx + 1);
-            recv_buffer_[idx].push_back(std::move(msg));
+            recv_comm_handler_(msg, recver_obj);
         }
     }
 
+    std::function<void(const MsgT&, DstObjT*)> recv_comm_handler_;
     std::vector<BinStream> send_buffer_;
     std::vector<std::vector<MsgT>> recv_buffer_;
 };
