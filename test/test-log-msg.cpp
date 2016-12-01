@@ -21,5 +21,14 @@ int main(int argc, char** argv) {
     husky::base::log_debug("Debug Log");
     husky::base::log_error("Error Log");
     husky::base::log_warning("Warning Log");
+    // Test for glog
+    google::InitGoogleLogging(argv[0]);
+    LOG(INFO) << "GLOG info test";
+    LOG(WARNING) << "GLOG warning test";
+    LOG(ERROR) << "GLOG error test";
+    VLOG(0) << "GLOG vlog 0";
+    VLOG(1) << "GLOG vlog 1";
+    VLOG(2) << "GLOG vlog 2";
+    VLOG(5) << "GLOG vlog 5";
     return 0;
 }

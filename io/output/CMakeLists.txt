@@ -13,7 +13,7 @@
 # limitations under the License.
 
 
-include_directories(${PROJECT_SOURCE_DIR} ${Boost_INCLUDE_DIRS})
+include_directories(${PROJECT_SOURCE_DIR} ${EXTERNAL_INCLUDE})
 
 set(output_cpps outputformat_base.cpp)
 
@@ -24,4 +24,4 @@ if(MONGOCLIENT_FOUND)
 endif(MONGOCLIENT_FOUND)
 
 add_library(output-objs OBJECT ${output_cpps})
-set_property(TARGET output-objs PROPERTY CXX_STANDARD 14)
+husky_default_properties(output-objs)

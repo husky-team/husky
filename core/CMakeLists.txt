@@ -13,7 +13,7 @@
 # limitations under the License.
 
 
-include_directories(${PROJECT_SOURCE_DIR} ${Boost_INCLUDE_DIRS} ${ZMQ_INCLUDE_DIR})
+include_directories(${PROJECT_SOURCE_DIR} ${EXTERNAL_INCLUDE})
 
 add_subdirectory(channel)
 
@@ -35,6 +35,6 @@ add_library(core-objs OBJECT
     objlist_store.cpp
     shuffle_combiner_store.cpp
     worker_info.cpp)
-set_property(TARGET core-objs PROPERTY CXX_STANDARD 14)
+husky_default_properties(core-objs)
 
 add_library(husky-core STATIC $<TARGET_OBJECTS:core-objs> $<TARGET_OBJECTS:channel-objs>)

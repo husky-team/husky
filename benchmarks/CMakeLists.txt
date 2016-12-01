@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-include_directories(${PROJECT_SOURCE_DIR} ${Boost_INCLUDE_DIRS})
+include_directories(${PROJECT_SOURCE_DIR} ${EXTERNAL_INCLUDE})
 
 if(LIBHDFS3_FOUND)
     include_directories(${LIBHDFS3_INCLUDE_DIR})
@@ -32,4 +32,4 @@ set(husky husky-lib husky-io husky-core husky-base)
 add_executable(BenchPageRank pagerank.cpp)
 target_link_libraries(BenchPageRank ${husky})
 target_link_libraries(BenchPageRank ${EXTERNAL_LIB})
-set_property(TARGET BenchPageRank PROPERTY CXX_STANDARD 14)
+husky_default_properties(BenchPageRank)

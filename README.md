@@ -18,6 +18,7 @@ Husky has the following minimal dependencies:
 * Boost (Version >= 1.58)
 * A working C++ compiler (clang/gcc Version >= 4.9/icc/MSVC)
 * TCMalloc (In [gperftools](https://github.com/gperftools/gperftools))
+* [GLOG](https://github.com/google/glog) (Latest version, it will be included automatically)
 
 Some optional dependencies:
 

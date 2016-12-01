@@ -16,6 +16,9 @@
 
 #include <string>
 
+// FIXME(Legend): This include is only used for test now, which is not self-sufficient.
+#include "glog/logging.h"
+
 namespace husky {
 namespace base {
 

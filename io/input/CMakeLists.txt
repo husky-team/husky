@@ -13,7 +13,7 @@
 # limitations under the License.
 
 
-include_directories(${PROJECT_SOURCE_DIR} ${Boost_INCLUDE_DIRS})
+include_directories(${PROJECT_SOURCE_DIR} ${EXTERNAL_INCLUDE})
 
 set(input_cpps inputformat_helper.cpp
     line_inputformat.cpp
@@ -47,4 +47,4 @@ endif(THRIFT_FOUND)
 set(input_cpps ${input_cpps} inputformat_store.cpp)
 
 add_library(input-objs OBJECT ${input_cpps})
-set_property(TARGET input-objs PROPERTY CXX_STANDARD 14)
+husky_default_properties(input-objs)

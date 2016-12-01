@@ -13,16 +13,12 @@
 # limitations under the License.
 
 
-include_directories(${PROJECT_SOURCE_DIR} ${EXTERNAL_INCLUDE})
-
-add_library(base-objs OBJECT
-    counter_barrier.cpp
-    generation_lock.cpp
-    hash.cpp
-    log.cpp
-    serialization.cpp
-    session_local.cpp
-    thread_support.cpp)
-husky_default_properties(base-objs)
-
-add_library(husky-base STATIC $<TARGET_OBJECTS:base-objs>)
+# Short command for setting default properties
+# Usage:
+#   husky_default_properties(<target>)
+function(husky_default_properties target)
+    set_property(TARGET ${target} PROPERTY CXX_STANDARD 14)
+    if (DEFINED external_project_dependencies)
+        add_dependencies(${target} ${external_project_dependencies})
+    endif()
+endfunction()
