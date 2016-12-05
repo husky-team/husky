@@ -121,8 +121,8 @@ TEST_F(TestInputFormatStore, BinaryInputFormat) {
 }
 
 #ifdef WITH_THRIFT
-// Mark this case disabled since WITH_THRIFT is always set to false by CMakeLists.txt.
-// The namespace(etc. std::tuple) has collision between flume and gtest, which causes this failure.
+// The namespace(etc. std::tuple) has collision between flume and gtest, which causes failure.
+// The test case is leaved here but would not be compiled.
 TEST_F(TestInputFormatStore, DISABLED_FlumeInputFormat) {
     // Create
     auto& infmt1 = InputFormatStore::create_flume_inputformat("localhost", 2016, "infmt1");

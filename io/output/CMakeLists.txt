@@ -18,9 +18,7 @@ include_directories(${PROJECT_SOURCE_DIR} ${EXTERNAL_INCLUDE})
 set(output_cpps outputformat_base.cpp)
 
 if(MONGOCLIENT_FOUND)
-    include_directories(${MONGOCLIENT_INCLUDE_DIR})
-    add_definitions(-DWITH_MONGODB)
-    set(output_cpps ${output_cpps} mongodb_outputformat.cpp)
+    list(APPEND output_cpps mongodb_outputformat.cpp)
 endif(MONGOCLIENT_FOUND)
 
 add_library(output-objs OBJECT ${output_cpps})

@@ -15,17 +15,14 @@
 
 include_directories(${PROJECT_SOURCE_DIR} ${EXTERNAL_INCLUDE})
 
-set(master_plugins mongodb_assigner.cpp nfs_assigner.cpp progress_tracker.cpp nfs_binary_assigner.cpp)
+set(master_plugins nfs_assigner.cpp progress_tracker.cpp nfs_binary_assigner.cpp)
 
 if(LIBHDFS3_FOUND)
-    include_directories(${LIBHDFS3_INCLUDE_DIR})
-    add_definitions(-DWITH_HDFS)
-    set(master_plugins ${master_plugins} hdfs_assigner.cpp hdfs_binary_assigner.cpp)
+    list(APPEND master_plugins hdfs_assigner.cpp hdfs_binary_assigner.cpp)
 endif(LIBHDFS3_FOUND)
 
 if(MONGOCLIENT_FOUND)
-    include_directories(${MONGOCLIENT_INCLUDE_DIR})
-    add_definitions(-DWITH_MONGODB)
+    list(APPEND master_plugins mongodb_assigner.cpp)
 endif(MONGOCLIENT_FOUND)
 
 set(husky husky-lib husky-io husky-core husky-base)

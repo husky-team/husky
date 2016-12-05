@@ -17,10 +17,6 @@ include_directories(${PROJECT_SOURCE_DIR} ${EXTERNAL_INCLUDE})
 
 add_subdirectory(channel)
 
-if(DEP_FOUND)
-    include_directories(${ZMQ_INCLUDE_DIR})
-endif(DEP_FOUND)
-
 add_library(core-objs OBJECT
     accessor.cpp
     accessor_store.cpp

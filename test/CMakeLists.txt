@@ -15,21 +15,12 @@
 
 include_directories(${PROJECT_SOURCE_DIR} ${EXTERNAL_INCLUDE})
 
-if(LIBHDFS3_FOUND)
-    include_directories(${LIBHDFS3_INCLUDE_DIR})
-    add_definitions(-DWITH_HDFS)
-endif(LIBHDFS3_FOUND)
-
-if(MONGOCLIENT_FOUND)
-    include_directories(${MONGOCLIENT_INCLUDE_DIR})
-    add_definitions(-DWITH_MONGODB)
-endif(MONGOCLIENT_FOUND)
-
 set(husky husky-lib husky-io husky-core husky-base) 
 
 # Unit Test
 
 file(GLOB_RECURSE UNITTEST_FILES ${PROJECT_SOURCE_DIR}/*_unittest.cpp) 
+remove_definitions(-DWITH_THRIFT)  # Workaround for namespace collisions between gtest and flume.
 include_directories(${GTEST_INCLUDE})
 add_executable(HuskyUnitTest ${UNITTEST_FILES} unittest_main.cpp)
 add_dependencies(HuskyUnitTest gtest)
