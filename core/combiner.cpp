@@ -23,7 +23,7 @@ void sort_buffer_by_key(std::vector<int>& combine_buffer) {
     boost::sort::spreadsort::spreadsort(combine_buffer.begin(), combine_buffer.end());
 }
 
-#ifdef __linux__
+#ifdef _MSC_VER
 void sort_buffer_by_key_msg(std::vector<std::pair<int, int>>& combine_buffer) {
     auto get_char = [](int x, size_t offset) {
         const int bit_shift = 8 * (sizeof(int) - offset - 1);

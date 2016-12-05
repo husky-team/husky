@@ -12,14 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <set>
 #include <string>
+#include <vector>
 
 namespace husky {
 
 std::string get_hostname();
-std::string ns_lookup(const std::string& name);
-std::set<std::string> get_self_ips();
+std::vector<std::string> get_ips();
 bool is_local(const std::string& name);
 
 }  // namespace husky

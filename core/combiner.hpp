@@ -122,7 +122,7 @@ void sort_buffer_by_key(std::vector<std::pair<KeyT, MsgT>>& combine_buffer) {
 }
 
 // For some reason MSVC does not deal with SFINAE very well
-#ifdef __linux__
+#ifndef _MSC_VER
 void sort_buffer_by_key_msg(std::vector<std::pair<int, int>>& combine_buffer);
 #endif
 
