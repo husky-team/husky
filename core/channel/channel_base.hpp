@@ -46,12 +46,12 @@ class ChannelBase {
     void set_global_id(size_t global_id);
     void set_worker_info(WorkerInfo* worker_info);
     void set_mailbox(LocalMailbox* mailbox);
-    void set_hash_ring(HashRing* hash_ring);
+    void set_hash_ring(const HashRing* const hash_ring);
 
     void set_as_async_channel();
     void set_as_sync_channel();
 
-    void setup(size_t, size_t, WorkerInfo*, LocalMailbox*, HashRing*);
+    void setup(size_t, size_t, WorkerInfo*, LocalMailbox*, const HashRing* const);
 
     /// customized_setup() is used to do customized setup for subclass
     virtual void customized_setup() = 0;
@@ -98,7 +98,7 @@ class ChannelBase {
 
     WorkerInfo* worker_info_ = nullptr;
     LocalMailbox* mailbox_ = nullptr;
-    HashRing* hash_ring_ = nullptr;
+    const HashRing* hash_ring_ = nullptr;
 
     static thread_local size_t counter;
 };
