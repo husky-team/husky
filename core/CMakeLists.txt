@@ -30,7 +30,8 @@ add_library(core-objs OBJECT
     network.cpp
     objlist_store.cpp
     shuffle_combiner_store.cpp
-    worker_info.cpp)
+    worker_info.cpp
+    balance.cpp)
 husky_default_properties(core-objs)
 
 add_library(husky-core STATIC $<TARGET_OBJECTS:core-objs> $<TARGET_OBJECTS:channel-objs>)

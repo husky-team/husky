@@ -20,6 +20,7 @@
 
 #include "base/exception.hpp"
 #include "base/log.hpp"
+#include "core/balance.hpp"
 #include "core/channel/channel_base.hpp"
 #include "core/channel/channel_manager.hpp"
 #include "core/channel/channel_store.hpp"
@@ -27,6 +28,59 @@
 #include "core/objlist.hpp"
 
 namespace husky {
+
+// Algo is the implementation of the algorithm used to balance.
+// The parameters that Algo should accept is a unordered_map of pairs whose first element is an int for 'global_tid'
+// and second element is an int for the number of objects this particular thread has.
+// The value that Algo should return is a unordered_map of pair whose first element is an int for 'global_tid'
+// and second element is an int for the number of objects this current thread should send to 'global_tid'.
+template <typename ObjT, typename Algo>
+void balance(ObjList<ObjT>& obj_list, Algo algo) {
+    auto& migrate_channel = ChannelStore::create_migrate_channel(obj_list, obj_list, "tmp_balance_migrate");
+
+    // key: global_tid
+    // value: number of objects in obj_list in current thread
+    auto& broadcast_channel = ChannelStore::create_broadcast_channel<int, int>(obj_list, "tmp_balance_broadcast");
+
+    broadcast_channel.broadcast(Context::get_global_tid(), obj_list.get_size());
+    broadcast_channel.flush();
+
+    broadcast_channel.prepare_broadcast();
+    std::unordered_map<int, int> num_objs;
+    for (auto& global_tid : Context::get_global()->hash_ring.get_global_tids()) {
+        num_objs[global_tid] = broadcast_channel.get(global_tid);
+    }
+
+    // key: the global_tid of the thread which this current thread should send objects to
+    // value: the number of objects sent
+    std::unordered_map<int, int> plans = algo(num_objs, Context::get_global_tid());
+
+    // here assume that current obj_list is not in the situation where its objects are marked deleted
+    int obj_index = 0;
+    for (auto& plan : plans) {
+        int dst_tid = plan.first;
+        int num_to_move = plan.second;
+        while (num_to_move != 0) {
+            migrate_channel.migrate(obj_list.get_data()[obj_index], dst_tid);
+            num_to_move--;
+            obj_index++;
+        }
+    }
+    obj_list.deletion_finalize();
+
+    migrate_channel.flush();
+    migrate_channel.prepare_immigrants();
+    obj_list.sort();
+
+    ChannelStore::drop_channel("tmp_balance_broadcast");
+    ChannelStore::drop_channel("tmp_balance_migrate");
+}
+
+// default balance method use default algorithm
+template <typename ObjT>
+void balance(ObjList<ObjT>& obj_list) {
+    balance(obj_list, base_balance_algo);
+}
 
 template <typename ObjT>
 void globalize(ObjList<ObjT>& obj_list) {
