@@ -117,7 +117,7 @@ class LocalMailbox {
     /// @param progress Progress of the corresponding Channel.
     /// @param src_hash_ring Group of threads that issue the outgoing communication
     /// @param src_hash_ring Group of threads that will receive the communication
-    void send_complete(int channel_id, int progress, HashRing* src_hash_ring, HashRing* dst_hash_ring);
+    void send_complete(int channel_id, int progress, const HashRing* const src_hash_ring, const HashRing* const dst_hash_ring);
 
     /// \brief Indicate that a round of outgoing communication finishes.
     ///
@@ -127,7 +127,7 @@ class LocalMailbox {
     /// @param channel_id Channel of the communication.
     /// @param progress Progress of the corresponding Channel.
     /// @param src_hash_ring Group of threads that involes in the communication
-    void send_complete(int channel_id, int progress, HashRing* hash_ring);
+    void send_complete(int channel_id, int progress, const HashRing* const hash_ring);
 
     /// \brief Receive incoming communication
     ///

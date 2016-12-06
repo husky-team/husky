@@ -156,11 +156,11 @@ void LocalMailbox::send(int thread_id, int channel_id, int progress, BinStream& 
     event_loop_connector_->generate_out_comm_event(thread_id, channel_id, progress, bin_stream);
 }
 
-void LocalMailbox::send_complete(int channel_id, int progress, HashRing* hash_ring) {
+void LocalMailbox::send_complete(int channel_id, int progress, const HashRing* const hash_ring) {
     send_complete(channel_id, progress, hash_ring, hash_ring);
 }
 
-void LocalMailbox::send_complete(int channel_id, int progress, HashRing* src_hash_ring, HashRing* dst_hash_ring) {
+void LocalMailbox::send_complete(int channel_id, int progress, const HashRing* const src_hash_ring, const HashRing* const dst_hash_ring) {
     auto& sender_tids = src_hash_ring->get_global_tids();
     if (std::find(sender_tids.begin(), sender_tids.end(), thread_id_) != sender_tids.end()) {
         auto* global_pids_copy = new std::vector<int>(dst_hash_ring->get_global_pids());

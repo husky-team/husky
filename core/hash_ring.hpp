@@ -45,12 +45,14 @@ class HashRing {
     }
 
     std::vector<int>& get_global_pids() { return global_pids_vector_; }
+    const std::vector<int>& get_global_pids() const { return global_pids_vector_; }
 
     std::vector<int>& get_global_tids() { return global_tids_vector_; }
+    const std::vector<int>& get_global_tids() const { return global_tids_vector_; }
 
     int get_num_processes() { return global_pids_vector_.size(); }
 
-    int get_num_local_threads(int pid) { return num_local_threads_[pid]; }
+    int get_num_local_threads(int pid) const { return num_local_threads_[pid]; }
 
     friend BinStream& operator<<(BinStream& stream, HashRing& hash_ring);
     friend BinStream& operator>>(BinStream& stream, HashRing& hash_ring);
