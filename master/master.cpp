@@ -31,6 +31,7 @@
 #include "core/context.hpp"
 #include "core/worker_info.hpp"
 #include "core/zmq_helpers.hpp"
+#include "core/job_runner.hpp"
 
 namespace husky {
 
@@ -52,8 +53,8 @@ void Master::setup() {
 
 void Master::init_socket() {
     master_socket.reset(new zmq::socket_t(zmq_context, ZMQ_ROUTER));
-    master_socket->bind("tcp://*:" + std::to_string(Context::get_config()->get_master_port()));
-    base::log_msg("Binded to tcp://*:" + std::to_string(Context::get_config()->get_master_port()));
+    master_socket->bind("tcp://*:" + std::to_string(Context::get_config().get_master_port()));
+    base::log_msg("Binded to tcp://*:" + std::to_string(Context::get_config().get_master_port()));
 }
 
 void Master::serve() {
@@ -83,8 +84,7 @@ int main(int argc, char** argv) {
     args.push_back("hdfs_namenode");
     args.push_back("hdfs_namenode_port");
 #endif
-    husky::Context::init_global();
-    if (husky::Context::get_config()->init_with_args(argc, argv, args)) {
+    if (husky::init_with_args(argc, argv, args)) {
         auto& master = husky::Master::get_instance();
         master.setup();
         master.serve();

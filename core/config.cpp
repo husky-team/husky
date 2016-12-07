@@ -23,7 +23,6 @@
 #include "boost/program_options.hpp"
 
 #include "base/log.hpp"
-#include "core/context.hpp"
 #include "core/network.hpp"
 
 namespace husky {
@@ -49,7 +48,8 @@ void Config::set_comm_port(const int& comm_port) { comm_port_ = comm_port; }
 
 void Config::set_param(const std::string& key, const std::string& value) { params_[key] = value; }
 
-bool Config::init_with_args(int ac, char** av, const std::vector<std::string>& customized) {
+bool Config::init_with_args(int ac, char** av, const std::vector<std::string>& customized, HashRing* hash_ring,
+                            WorkerInfo* worker_info) {
     namespace po = boost::program_options;
 
     po::options_description generic_options("Generic options");
@@ -156,17 +156,19 @@ bool Config::init_with_args(int ac, char** av, const std::vector<std::string>& c
                 num_local_threads = num_threads;
                 proc_id = num_workers;
             }
-            Context::get_global()->worker_info.add_proc(num_workers, worker_hostname);
+            if (worker_info != nullptr)
+                worker_info->set_hostname(num_workers, worker_hostname);
             for (int i = 0; i < num_threads; i++) {
-                Context::get_global()->hash_ring.insert(num_global_threads, num_workers);
-                Context::get_global()->worker_info.add_worker(num_workers, num_global_threads, i);
+                if (hash_ring != nullptr)
+                    hash_ring->insert(num_global_threads, num_workers);
+                if (worker_info != nullptr)
+                    worker_info->add_worker(num_workers, num_global_threads, i);
                 ++num_global_threads;
             }
             num_workers += 1;
         }
-        Context::get_global()->worker_info.set_num_processes(num_workers);
-        Context::get_global()->worker_info.set_num_workers(num_global_threads);
-        Context::get_global()->worker_info.set_proc_id(proc_id);
+        if (worker_info != nullptr)
+            worker_info->set_process_id(proc_id);
         set_param("hostname", hostname);
         setup_all += 1;
     } else {

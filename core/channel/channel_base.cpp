@@ -31,23 +31,19 @@ void ChannelBase::set_local_id(size_t local_id) { local_id_ = local_id; }
 
 void ChannelBase::set_global_id(size_t global_id) { global_id_ = global_id; }
 
-void ChannelBase::set_worker_info(WorkerInfo* worker_info) { worker_info_ = worker_info; }
+void ChannelBase::set_worker_info(const WorkerInfo& worker_info) { worker_info_.reset(new WorkerInfo(worker_info)); }
 
 void ChannelBase::set_mailbox(LocalMailbox* mailbox) { mailbox_ = mailbox; }
-
-void ChannelBase::set_hash_ring(const HashRing* const hash_ring) { hash_ring_ = hash_ring; }
 
 void ChannelBase::set_as_async_channel() { type_ = ChannelType::Async; }
 
 void ChannelBase::set_as_sync_channel() { type_ = ChannelType::Sync; }
 
-void ChannelBase::setup(size_t local_id, size_t global_id, WorkerInfo* worker_info, LocalMailbox* mailbox,
-                        const HashRing* const hash_ring) {
+void ChannelBase::setup(size_t local_id, size_t global_id, const WorkerInfo& worker_info, LocalMailbox* mailbox) {
     set_local_id(local_id);
     set_global_id(global_id);
     set_worker_info(worker_info);
     set_mailbox(mailbox);
-    set_hash_ring(hash_ring);
     customized_setup();
 }
 

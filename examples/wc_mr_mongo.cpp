@@ -67,10 +67,12 @@ void wc() {
 
     // Show topk words.
     const int kMaxNum = 100;
-    typedef std::set<std::pair<int, std::string> > TopKPairs;
+    typedef std::set<std::pair<int, std::string>> TopKPairs;
     auto add_to_topk = [](TopKPairs& pairs, const std::pair<int, std::string>& p) {
-        if (pairs.size() == kMaxNum && *pairs.begin() < p) pairs.erase(pairs.begin());
-        if (pairs.size() < kMaxNum) pairs.insert(p);
+        if (pairs.size() == kMaxNum && *pairs.begin() < p)
+            pairs.erase(pairs.begin());
+        if (pairs.size() < kMaxNum)
+            pairs.insert(p);
     };
     husky::lib::Aggregator<TopKPairs> unique_topk(
         TopKPairs(),

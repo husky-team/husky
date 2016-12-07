@@ -63,7 +63,7 @@
 using husky::lib::Aggregator;
 using husky::lib::AggregatorFactory;
 
-template<bool is_sparse>
+template <bool is_sparse>
 void svm() {
     using ObjT = husky::lib::ml::LabeledPointHObj<double, double, is_sparse>;
     auto& train_set = husky::ObjListStore::create_objlist<ObjT>("train_set");
@@ -130,7 +130,7 @@ void svm() {
             sqr_w = 1 / lambda;
         }
 
-        double eta = 1.0 / (i+1);
+        double eta = 1.0 / (i + 1);
 
         // regularize w in param_list
         if (husky::Context::get_global_tid() == 0) {
@@ -143,27 +143,27 @@ void svm() {
         auto& ac = AggregatorFactory::get_channel();
         // calculate gradient
         list_execute(train_set, {}, {&ac}, [&](ObjT& this_obj) {
-           double prod = 0;  // prod = WX * y
-           double y = this_obj.y;
-           auto X = this_obj.x;
-           for (auto it = X.begin_feaval(); it != X.end_feaval(); ++it)
-               prod += bweight[(*it).fea] * (*it).val;
-           // bias
-           prod += bweight[num_features];
-           prod *= y;
+            double prod = 0;  // prod = WX * y
+            double y = this_obj.y;
+            auto X = this_obj.x;
+            for (auto it = X.begin_feaval(); it != X.end_feaval(); ++it)
+                prod += bweight[(*it).fea] * (*it).val;
+            // bias
+            prod += bweight[num_features];
+            prod *= y;
 
-           if (prod < 1) {  // the data point falls within the margin
-               for (auto it = X.begin_feaval(); it != X.end_feaval(); ++it) {
-                   auto x = *it;
-                   x.val *= y;  // calculate the gradient for each parameter
-                   param_list.update(x.fea, eta * x.val / num_samples / lambda);
-               }
-               // update bias
-               param_list.update(num_features, eta * y / num_samples);
-               loss_agg.update(1 - prod);
-           }
-           sqr_w_agg.update(sqr_w);
-           regulator_agg.update(regulator);
+            if (prod < 1) {  // the data point falls within the margin
+                for (auto it = X.begin_feaval(); it != X.end_feaval(); ++it) {
+                    auto x = *it;
+                    x.val *= y;  // calculate the gradient for each parameter
+                    param_list.update(x.fea, eta * x.val / num_samples / lambda);
+                }
+                // update bias
+                param_list.update(num_features, eta * y / num_samples);
+                loss_agg.update(1 - prod);
+            }
+            sqr_w_agg.update(sqr_w);
+            regulator_agg.update(regulator);
         });
 
         int num_samples = num_samples_agg.get_value();
@@ -171,9 +171,8 @@ void svm() {
         regulator = regulator_agg.get_value() / num_samples;
         double loss = lambda / 2 * sqr_w + loss_agg.get_value() / num_samples;
         if (husky::Context::get_global_tid() == 0) {
-            husky::base::log_msg("Iteration " + std::to_string(i+1)
-                    + ": ||w|| = " + std::to_string(sqrt(sqr_w))
-                    + ", loss = " + std::to_string(loss));
+            husky::base::log_msg("Iteration " + std::to_string(i + 1) + ": ||w|| = " + std::to_string(sqrt(sqr_w)) +
+                                 ", loss = " + std::to_string(loss));
         }
     }
     auto end = std::chrono::steady_clock::now();
@@ -181,7 +180,8 @@ void svm() {
     // Show result
     if (husky::Context::get_global_tid() == 0) {
         param_list.present();
-        husky::base::log_msg("Time per iter: " +
+        husky::base::log_msg(
+            "Time per iter: " +
             std::to_string(std::chrono::duration_cast<std::chrono::duration<float>>(end - start).count() / num_iter));
     }
 
@@ -191,21 +191,22 @@ void svm() {
     auto& ac = AggregatorFactory::get_channel();
     auto bweight = param_list.get_all_param();
     list_execute(test_set, {}, {&ac}, [&](ObjT& this_obj) {
-       double indicator = 0;
-       auto y = this_obj.y;
-       auto X = this_obj.x;
-       for (auto it = X.begin_feaval(); it != X.end_feaval(); it++)
-           indicator += bweight[(*it).fea] * (*it).val;
-       // bias
-       indicator += bweight[num_features];
-       indicator *= y;  // right prediction if positive (Wx+b and y have the same sign)
-       if (indicator < 0) error_agg.update(1);
-       num_test_agg.update(1);
+        double indicator = 0;
+        auto y = this_obj.y;
+        auto X = this_obj.x;
+        for (auto it = X.begin_feaval(); it != X.end_feaval(); it++)
+            indicator += bweight[(*it).fea] * (*it).val;
+        // bias
+        indicator += bweight[num_features];
+        indicator *= y;  // right prediction if positive (Wx+b and y have the same sign)
+        if (indicator < 0)
+            error_agg.update(1);
+        num_test_agg.update(1);
     });
 
     if (husky::Context::get_global_tid() == 0) {
-        husky::base::log_msg("Error rate on testing set: "
-                + std::to_string(static_cast<double>(error_agg.get_value()) / num_test_agg.get_value()));
+        husky::base::log_msg("Error rate on testing set: " +
+                             std::to_string(static_cast<double>(error_agg.get_value()) / num_test_agg.get_value()));
     }
 }
 
@@ -218,9 +219,8 @@ void init() {
 }
 
 int main(int argc, char** argv) {
-    std::vector<std::string> args({
-        "hdfs_namenode", "hdfs_namenode_port", "train", "test", "n_iter", "lambda", "format", "is_sparse"
-    });
+    std::vector<std::string> args(
+        {"hdfs_namenode", "hdfs_namenode_port", "train", "test", "n_iter", "lambda", "format", "is_sparse"});
     if (husky::init_with_args(argc, argv, args)) {
         husky::run_job(init);
         return 0;

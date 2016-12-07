@@ -112,7 +112,8 @@ class BroadcastChannel : public ChannelBase {
             mailbox_->send(dst, channel_id_, progress_, broadcast_buffer_[dst]);
             broadcast_buffer_[dst].purge();
         }
-        mailbox_->send_complete(this->channel_id_, this->progress_, this->hash_ring_);
+        this->mailbox_->send_complete(this->channel_id_, this->progress_, this->worker_info_->get_local_tids(),
+                                      this->worker_info_->get_pids());
     }
 
     /// This method is only useful without list_execute

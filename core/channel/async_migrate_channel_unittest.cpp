@@ -56,18 +56,15 @@ TEST_F(TestAsyncMigrateChannel, Create) {
 
     // WorkerInfo Setup
     WorkerInfo workerinfo;
-    workerinfo.add_proc(0, "worker1");
     workerinfo.add_worker(0, 0, 0);
-    workerinfo.set_num_processes(1);
-    workerinfo.set_num_workers(1);
-    workerinfo.set_proc_id(0);
+    workerinfo.set_process_id(0);
 
     // ObjList Setup
     ObjList<Obj> obj_list;
 
     // AsyncMigrateChannel
     auto async_migrate_channel = create_async_migrate_channel(obj_list);
-    async_migrate_channel.setup(0, 0, &workerinfo, &mailbox, &hashring);
+    async_migrate_channel.setup(0, 0, workerinfo, &mailbox);
 }
 
 TEST_F(TestAsyncMigrateChannel, MigrateOtherIncProgress) {
@@ -86,11 +83,8 @@ TEST_F(TestAsyncMigrateChannel, MigrateOtherIncProgress) {
 
     // WorkerInfo Setup
     WorkerInfo workerinfo;
-    workerinfo.add_proc(0, "worker1");
     workerinfo.add_worker(0, 0, 0);
-    workerinfo.set_num_processes(1);
-    workerinfo.set_num_workers(1);
-    workerinfo.set_proc_id(0);
+    workerinfo.set_process_id(0);
 
     // ObjList Setup
     ObjList<Obj> obj_list;
@@ -105,7 +99,7 @@ TEST_F(TestAsyncMigrateChannel, MigrateOtherIncProgress) {
     // AsyncMigrateChannel
     // Round 1
     auto async_migrate_channel = create_async_migrate_channel(obj_list);
-    async_migrate_channel.setup(0, 0, &workerinfo, &mailbox, &hashring);
+    async_migrate_channel.setup(0, 0, workerinfo, &mailbox);
     // migrate
     Obj* p = obj_list.find(100);
     async_migrate_channel.migrate(*p, 0);  // migrate Obj(18) to thread 0

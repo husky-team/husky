@@ -19,6 +19,9 @@
 #include <string>
 #include <vector>
 
+#include "core/hash_ring.hpp"
+#include "core/worker_info.hpp"
+
 namespace husky {
 
 class Config {
@@ -44,7 +47,8 @@ class Config {
         return ret->second;
     }
 
-    bool init_with_args(int ac, char** av, const std::vector<std::string>& customized);
+    bool init_with_args(int ac, char** av, const std::vector<std::string>& customized, HashRing* hash_ring = nullptr,
+                        WorkerInfo* worker_info = nullptr);
 
    private:
     // TODO(legend): add boolean of valid.

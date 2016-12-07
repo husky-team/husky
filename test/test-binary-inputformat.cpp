@@ -25,16 +25,14 @@ void read_bin_file(const std::string& path) {
     auto& infmt = husky::io::InputFormatStore::create_binary_inputformat(path, "");
 
     size_t read_sz = 0;
-    husky::load(infmt, [&read_sz](husky::base::BinStream& bin) {
-        read_sz += bin.size();
-    });
+    husky::load(infmt, [&read_sz](husky::base::BinStream& bin) { read_sz += bin.size(); });
 
-    husky::base::log_msg(std::to_string(husky::Context::get_global_tid())
-        + " reads " + std::to_string(read_sz) + " bytes.");
+    husky::base::log_msg(std::to_string(husky::Context::get_global_tid()) + " reads " + std::to_string(read_sz) +
+                         " bytes.");
 }
 
 int main(int argc, char** argv) {
     ASSERT_MSG(husky::init_with_args(argc, argv, {"path", "hdfs_namenode", "hdfs_namenode_port"}),
-        "Argument `path` is not provided.");
+               "Argument `path` is not provided.");
     husky::run_job(std::bind(read_bin_file, husky::Context::get_param("path")));
 }

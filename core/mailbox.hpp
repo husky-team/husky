@@ -115,19 +115,11 @@ class LocalMailbox {
     ///
     /// @param channel_id Channel of the communication.
     /// @param progress Progress of the corresponding Channel.
-    /// @param src_hash_ring Group of threads that issue the outgoing communication
-    /// @param src_hash_ring Group of threads that will receive the communication
-    void send_complete(int channel_id, int progress, const HashRing* const src_hash_ring, const HashRing* const dst_hash_ring);
-
-    /// \brief Indicate that a round of outgoing communication finishes.
-    ///
-    /// Similar as send_complete(int channel_id, int progress, HashRing* src_hash_ring, HashRing* dst_hash_ring)
-    /// except that the communication happen within the same group of machines.
-    ///
-    /// @param channel_id Channel of the communication.
-    /// @param progress Progress of the corresponding Channel.
-    /// @param src_hash_ring Group of threads that involes in the communication
-    void send_complete(int channel_id, int progress, const HashRing* const hash_ring);
+    /// @param sender_tids Global thread ids of the *local* process that issue
+    ///        the outgoing communication
+    /// @param recver_tids Global ids of threads that will possibly receive the communication
+    void send_complete(int channel_id, int progress, const std::vector<int>& sender_tids,
+                       const std::vector<int>& recver_tids);
 
     /// \brief Receive incoming communication
     ///
@@ -159,6 +151,7 @@ class CentralRecver {
    public:
     // Create the recver thread and recver socket
     CentralRecver(zmq::context_t* zmq_context, const std::string& bind_addr);
+
     // Join the thread and free resources
     virtual ~CentralRecver();
 

@@ -4,8 +4,8 @@
 #include "gtest/gtest.h"
 
 #include "base/serialization.hpp"
-#include "core/hash_ring.hpp"
 #include "core/mailbox.hpp"
+#include "core/worker_info.hpp"
 
 namespace husky {
 namespace {
@@ -49,16 +49,12 @@ TEST_F(TestMailbox, SendRecvOnce) {
     mailbox.set_thread_id(0);
     el.register_mailbox(mailbox);
 
-    // Hash ring
-    HashRing hash_ring;
-    hash_ring.insert(0, 0);
-
     // send a message
     BinStream send_bin_stream;
     int send_int = 1;
     send_bin_stream << send_int;
     mailbox.send(0, 0, 0, send_bin_stream);
-    mailbox.send_complete(0, 0, &hash_ring);
+    mailbox.send_complete(0, 0, {0}, {0});
 
     // Recv the message
     mailbox.poll(0, 0);
@@ -80,16 +76,12 @@ TEST_F(TestMailbox, SendRecvOnceAsync) {
     mailbox.set_thread_id(0);
     el.register_mailbox(mailbox);
 
-    // Hash ring
-    HashRing hash_ring;
-    hash_ring.insert(0, 0);
-
     // send a message
     BinStream send_bin_stream;
     int send_int = 1;
     send_bin_stream << send_int;
     mailbox.send(0, 0, 0, send_bin_stream);
-    mailbox.send_complete(0, 0, &hash_ring);
+    mailbox.send_complete(0, 0, {0}, {0});
 
     // Recv the message
     while (1) {
@@ -115,16 +107,12 @@ TEST_F(TestMailbox, SendRecvOnceAsyncTimeout) {
     mailbox.set_thread_id(0);
     el.register_mailbox(mailbox);
 
-    // Hash ring
-    HashRing hash_ring;
-    hash_ring.insert(0, 0);
-
     // send a message
     BinStream send_bin_stream;
     int send_int = 1;
     send_bin_stream << send_int;
     mailbox.send(0, 0, 0, send_bin_stream);
-    mailbox.send_complete(0, 0, &hash_ring);
+    mailbox.send_complete(0, 0, {0}, {0});
 
     // Recv the message
     bool if_recv = false;
@@ -153,10 +141,6 @@ TEST_F(TestMailbox, SendRecvMultiple) {
     mailbox.set_thread_id(0);
     el.register_mailbox(mailbox);
 
-    // Hash ring
-    HashRing hash_ring;
-    hash_ring.insert(0, 0);
-
     // send a message
     BinStream send_bin_stream;
     int send_int = 419;
@@ -164,7 +148,7 @@ TEST_F(TestMailbox, SendRecvMultiple) {
     send_bin_stream << send_int;
     send_bin_stream << send_float;
     mailbox.send(0, 0, 0, send_bin_stream);
-    mailbox.send_complete(0, 0, &hash_ring);
+    mailbox.send_complete(0, 0, {0}, {0});
 
     // Recv the message
     mailbox.poll(0, 0);
@@ -192,11 +176,6 @@ TEST_F(TestMailbox, Multithread) {
     mailbox_1.set_thread_id(1);
     el.register_mailbox(mailbox_1);
 
-    // Hash ring
-    HashRing hash_ring;
-    hash_ring.insert(0, 0);
-    hash_ring.insert(1, 0);
-
     // send a message
     BinStream send_bin_stream;
     int send_int = 419;
@@ -205,8 +184,8 @@ TEST_F(TestMailbox, Multithread) {
     send_bin_stream << send_float;
     mailbox_1.send(0, 0, 0, send_bin_stream);
 
-    mailbox_1.send_complete(0, 0, &hash_ring);
-    mailbox_0.send_complete(0, 0, &hash_ring);
+    mailbox_1.send_complete(0, 0, {0, 1}, {0});
+    mailbox_0.send_complete(0, 0, {0, 1}, {0});
 
     // Recv the message
     assert(mailbox_1.poll(0, 0) == false);
@@ -260,8 +239,8 @@ TEST_F(TestMailbox, TwoProcesses) {
     send_bin_stream << send_float;
     mailbox_0.send(1, 0, 0, send_bin_stream);
 
-    mailbox_0.send_complete(0, 0, &hash_ring);
-    mailbox_1.send_complete(0, 0, &hash_ring);
+    mailbox_0.send_complete(0, 0, {0}, {0, 1});
+    mailbox_1.send_complete(0, 0, {1}, {0, 1});
 
     // Recv the message
     assert(mailbox_0.poll(0, 0) == false);
@@ -315,8 +294,8 @@ TEST_F(TestMailbox, Iterative) {
         send_bin_stream << send_float;
         mailbox_0.send(1, 0, i, send_bin_stream);
 
-        mailbox_0.send_complete(0, i, &hash_ring);
-        mailbox_1.send_complete(0, i, &hash_ring);
+        mailbox_0.send_complete(0, i, {0}, {0, 1});
+        mailbox_1.send_complete(0, i, {1}, {0, 1});
 
         // Recv the message
         assert(mailbox_0.poll(0, i) == false);
@@ -359,7 +338,7 @@ TEST_F(TestMailbox, OutOfOrder) {
                     mailboxes[i]->send(i_, i, j, send_bin_stream);
                 }
                 for (int i_ = 0; i_ < 4; i_++)
-                    mailboxes[i]->send_complete(i_, j, &hash_ring);
+                    mailboxes[i]->send_complete(i_, j, {0, 1, 2, 3}, {0});
                 int sum = 0;
                 BinStream recv_bin_stream;
                 std::vector<std::pair<int, int>> poll_list = {{0, j}, {1, j}, {2, j}, {3, j}};

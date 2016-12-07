@@ -46,7 +46,7 @@ boost::string_ref NFSFileSplitter::fetch_block(bool is_next) {
     } else {
         base::BinStream question;
         question << url_;
-        base::BinStream answer = husky::Context::get_coordinator().ask_master(question, husky::TYPE_LOCAL_BLK_REQ);
+        base::BinStream answer = husky::Context::get_coordinator()->ask_master(question, husky::TYPE_LOCAL_BLK_REQ);
         std::string fn;
         answer >> fn;
         answer >> offset_;

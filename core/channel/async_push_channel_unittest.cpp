@@ -50,10 +50,6 @@ MigrateChannel<ObjT> create_migrate_channel(ObjList<ObjT>& src_list, ObjList<Obj
 }
 
 TEST_F(TestAsyncPushChannel, Create) {
-    // HashRing Setup
-    HashRing hashring;
-    hashring.insert(0, 0);
-
     // Mailbox Setup
     zmq::context_t zmq_context;
     MailboxEventLoop el(&zmq_context);
@@ -65,25 +61,18 @@ TEST_F(TestAsyncPushChannel, Create) {
 
     // WorkerInfo Setup
     WorkerInfo workerinfo;
-    workerinfo.add_proc(0, "worker1");
     workerinfo.add_worker(0, 0, 0);
-    workerinfo.set_num_processes(1);
-    workerinfo.set_num_workers(1);
-    workerinfo.set_proc_id(0);
+    workerinfo.set_process_id(0);
 
     // ObjList Setup
     ObjList<Obj> obj_list;
 
     // PushChannel
     auto async_push_channel = create_async_push_channel<int>(obj_list);
-    async_push_channel.setup(0, 0, &workerinfo, &mailbox, &hashring);
+    async_push_channel.setup(0, 0, workerinfo, &mailbox);
 }
 
 TEST_F(TestAsyncPushChannel, PushSingle) {
-    // HashRing Setup
-    HashRing hashring;
-    hashring.insert(0, 0);
-
     // Mailbox Setup
     zmq::context_t zmq_context;
     MailboxEventLoop el(&zmq_context);
@@ -95,18 +84,15 @@ TEST_F(TestAsyncPushChannel, PushSingle) {
 
     // WorkerInfo Setup
     WorkerInfo workerinfo;
-    workerinfo.add_proc(0, "worker1");
     workerinfo.add_worker(0, 0, 0);
-    workerinfo.set_num_processes(1);
-    workerinfo.set_num_workers(1);
-    workerinfo.set_proc_id(0);
+    workerinfo.set_process_id(0);
 
     // ObjList Setup
     ObjList<Obj> obj_list;
 
     // PushChannel
     auto async_push_channel = create_async_push_channel<int>(obj_list);
-    async_push_channel.setup(0, 0, &workerinfo, &mailbox, &hashring);
+    async_push_channel.setup(0, 0, workerinfo, &mailbox);
     // push
     async_push_channel.push(123, 10);  // send 123 to 10
     async_push_channel.out();
@@ -121,10 +107,6 @@ TEST_F(TestAsyncPushChannel, PushSingle) {
 }
 
 TEST_F(TestAsyncPushChannel, PushMultipleTime) {
-    // HashRing Setup
-    HashRing hashring;
-    hashring.insert(0, 0);
-
     // Mailbox Setup
     zmq::context_t zmq_context;
     MailboxEventLoop el(&zmq_context);
@@ -139,15 +121,12 @@ TEST_F(TestAsyncPushChannel, PushMultipleTime) {
 
     // WorkerInfo Setup
     WorkerInfo workerinfo;
-    workerinfo.add_proc(0, "worker1");
     workerinfo.add_worker(0, 0, 0);
-    workerinfo.set_num_processes(1);
-    workerinfo.set_num_workers(1);
-    workerinfo.set_proc_id(0);
+    workerinfo.set_process_id(0);
 
     // PushChannel
     auto async_push_channel = create_async_push_channel<int>(obj_list);
-    async_push_channel.setup(0, 0, &workerinfo, &mailbox, &hashring);
+    async_push_channel.setup(0, 0, workerinfo, &mailbox);
     // push to two dst
     async_push_channel.push(123, 10);  // send 123 to 10
     async_push_channel.push(32, 3);
@@ -172,10 +151,6 @@ TEST_F(TestAsyncPushChannel, PushMultipleTime) {
 }
 
 TEST_F(TestAsyncPushChannel, IncProgress) {
-    // HashRing Setup
-    HashRing hashring;
-    hashring.insert(0, 0);
-
     // Mailbox Setup
     zmq::context_t zmq_context;
     MailboxEventLoop el(&zmq_context);
@@ -187,11 +162,8 @@ TEST_F(TestAsyncPushChannel, IncProgress) {
 
     // WorkerInfo Setup
     WorkerInfo workerinfo;
-    workerinfo.add_proc(0, "worker1");
     workerinfo.add_worker(0, 0, 0);
-    workerinfo.set_num_processes(1);
-    workerinfo.set_num_workers(1);
-    workerinfo.set_proc_id(0);
+    workerinfo.set_process_id(0);
 
     // ObjList Setup
     ObjList<Obj> obj_list;
@@ -199,7 +171,7 @@ TEST_F(TestAsyncPushChannel, IncProgress) {
     // PushChannel
     // Round 1
     auto async_push_channel = create_async_push_channel<int>(obj_list);
-    async_push_channel.setup(0, 0, &workerinfo, &mailbox, &hashring);
+    async_push_channel.setup(0, 0, workerinfo, &mailbox);
     // push
     async_push_channel.push(123, 10);  // send 123 to 10
     async_push_channel.out();
@@ -225,11 +197,6 @@ TEST_F(TestAsyncPushChannel, IncProgress) {
 }
 
 TEST_F(TestAsyncPushChannel, MultiThread) {
-    // HashRing Setup
-    HashRing hashring;
-    hashring.insert(0, 0);
-    hashring.insert(1, 0);
-
     // Mailbox Setup
     zmq::context_t zmq_context;
     MailboxEventLoop el(&zmq_context);
@@ -246,12 +213,9 @@ TEST_F(TestAsyncPushChannel, MultiThread) {
 
     // WorkerInfo Setup
     WorkerInfo workerinfo;
-    workerinfo.add_proc(0, "worker1");
     workerinfo.add_worker(0, 0, 0);
     workerinfo.add_worker(0, 1, 1);
-    workerinfo.set_num_processes(1);
-    workerinfo.set_num_workers(2);
-    workerinfo.set_proc_id(0);
+    workerinfo.set_process_id(0);
 
     std::thread th1 = std::thread([&]() {
         ObjList<Obj> obj_list;
@@ -260,11 +224,11 @@ TEST_F(TestAsyncPushChannel, MultiThread) {
         obj_list.add_object(Obj(18));
         obj_list.add_object(Obj(57));
 
-        // GLobalize
+        // Globalize
         auto migrate_channel = create_migrate_channel(obj_list, obj_list);
-        migrate_channel.setup(0, 0, &workerinfo, &mailbox_0, &hashring);
+        migrate_channel.setup(0, 0, workerinfo, &mailbox_0);
         for (auto& obj : obj_list.get_data()) {
-            int dst_thread_id = hashring.hash_lookup(obj.id());
+            int dst_thread_id = workerinfo.get_hash_ring()->hash_lookup(obj.id());
             if (dst_thread_id != 0) {
                 migrate_channel.migrate(obj, dst_thread_id);
             }
@@ -276,7 +240,7 @@ TEST_F(TestAsyncPushChannel, MultiThread) {
 
         // Push
         auto async_push_channel = create_async_push_channel<int>(obj_list);
-        async_push_channel.setup(0, 0, &workerinfo, &mailbox_0, &hashring);
+        async_push_channel.setup(0, 0, workerinfo, &mailbox_0);
         async_push_channel.push(123, 1);
         async_push_channel.push(123, 1342148);
         async_push_channel.push(123, 5);
@@ -301,9 +265,9 @@ TEST_F(TestAsyncPushChannel, MultiThread) {
 
         // GLobalize
         auto migrate_channel = create_migrate_channel(obj_list, obj_list);
-        migrate_channel.setup(1, 1, &workerinfo, &mailbox_1, &hashring);
+        migrate_channel.setup(1, 1, workerinfo, &mailbox_1);
         for (auto& obj : obj_list.get_data()) {
-            int dst_thread_id = hashring.hash_lookup(obj.id());
+            int dst_thread_id = workerinfo.get_hash_ring()->hash_lookup(obj.id());
             if (dst_thread_id != 1) {
                 migrate_channel.migrate(obj, dst_thread_id);
             }
@@ -315,7 +279,7 @@ TEST_F(TestAsyncPushChannel, MultiThread) {
 
         // Push
         auto async_push_channel = create_async_push_channel<int>(obj_list);
-        async_push_channel.setup(1, 1, &workerinfo, &mailbox_1, &hashring);
+        async_push_channel.setup(1, 1, workerinfo, &mailbox_1);
         async_push_channel.push(123, 1);
         async_push_channel.push(123, 1342148);
         async_push_channel.push(123, 5);

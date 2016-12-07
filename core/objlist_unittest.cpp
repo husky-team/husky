@@ -126,13 +126,5 @@ TEST_F(TestObjList, IndexOf) {
     }
 }
 
-TEST_F(TestObjList, SetHashRing) {
-    ObjList<Obj> obj_list;
-    HashRing hash_ring;
-    obj_list.set_hash_ring(hash_ring);
-    hash_ring.insert(1, 0);
-    obj_list.set_hash_ring(hash_ring);
-}
-
 }  // namespace
 }  // namespace husky

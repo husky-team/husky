@@ -65,7 +65,7 @@ void test_load() {
     }
 }
 
-int main(int argc, char ** argv) {
+int main(int argc, char** argv) {
     std::vector<std::string> args;
     // if hostname = "h1", listen on machine h1
     // if hostname = "localhost", listen all machines

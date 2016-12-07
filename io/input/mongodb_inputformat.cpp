@@ -80,7 +80,7 @@ void MongoDBInputFormat::ask_split() {
     else
         question << server_ << ns_ << husky::Context::get_param("hostname");
 
-    BinStream answer = husky::Context::get_coordinator().ask_master(question, husky::TYPE_MONGODB_REQ);
+    BinStream answer = husky::Context::get_coordinator()->ask_master(question, husky::TYPE_MONGODB_REQ);
     answer >> split_;
     return;
 }
@@ -110,7 +110,7 @@ void MongoDBInputFormat::read() {
 void MongoDBInputFormat::send_end() {
     BinStream question;
     question << split_;
-    husky::Context::get_coordinator().ask_master(question, husky::TYPE_MONGODB_END_REQ);
+    husky::Context::get_coordinator()->ask_master(question, husky::TYPE_MONGODB_END_REQ);
     return;
 }
 

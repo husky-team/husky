@@ -243,10 +243,6 @@ class ObjList : public ObjListBase {
         }
     }
 
-    void set_hash_ring(const HashRing& hash_ring) { hash_ring_.reset(new HashRing(hash_ring)); }
-
-    const HashRing& get_hash_ring() { return *hash_ring_; }
-
     // getter
     inline size_t get_sorted_size() const { return sorted_size; }
     inline size_t get_num_del() const { return objlist_data_.num_del_; }
@@ -261,6 +257,5 @@ class ObjList : public ObjListBase {
     size_t sorted_size = 0;
     std::unordered_map<typename ObjT::KeyT, size_t> hashed_objs;
     std::unordered_map<std::string, AttrListBase*> attrlist_map;
-    std::unique_ptr<HashRing> hash_ring_;
 };
 }  // namespace husky

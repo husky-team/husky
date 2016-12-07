@@ -18,34 +18,73 @@
 #include <set>
 #include <string>
 
+#ifdef __linux__
+#include <ifaddrs.h>
+#endif
+
 #include "boost/asio.hpp"
 
 #include "core/utils.hpp"
 
 namespace husky {
 
-std::string get_hostname() {
-    return boost::asio::ip::host_name();
-}
+std::string get_hostname() { return boost::asio::ip::host_name(); }
 
-std::vector<std::string> get_ips(const std::string& name) {
-    std::vector<std::string> ips;
+std::set<std::string> get_ips(const std::string& name) {
+    std::set<std::string> ips;
 
     boost::asio::io_service io_service;
     boost::asio::ip::tcp::resolver resolver(io_service);
     boost::asio::ip::tcp::resolver::query query(name, "");
     boost::asio::ip::tcp::resolver::iterator iter = resolver.resolve(query);
     boost::asio::ip::tcp::resolver::iterator end;
-    while(iter != end) {
-        ips.push_back(iter->endpoint().address().to_string());
+    while (iter != end) {
+        ips.insert(iter->endpoint().address().to_string());
         iter++;
     }
 
     return ips;
 }
 
-bool is_local(const std::string& name) {
-    return get_ips(get_hostname()) == get_ips(name);
+std::set<std::string> get_local_ips() {
+    std::set<std::string> ips;
+
+#ifdef __linux__
+    struct ifaddrs* ifap;
+    getifaddrs(&ifap);
+
+    char* addr;
+    struct ifaddrs* ifa;
+    struct sockaddr_in* sa;
+    for (ifa = ifap; ifa; ifa = ifa->ifa_next) {
+        if (ifa->ifa_addr->sa_family == AF_INET) {
+            sa = (struct sockaddr_in*) ifa->ifa_addr;
+            addr = inet_ntoa(sa->sin_addr);
+            ips.insert(addr);
+        }
+    }
+#endif
+
+#ifdef _WIN32
+    struct hostent* phe = gethostbyname(get_hostname().c_str());
+    for (int i = 0; phe->h_addr_list[i] != 0; i++) {
+        struct in_addr addr;
+        memcpy(&addr, phe->h_addr_list[i], sizeof(struct inaddr));
+        ips.insert(inet_ntoa(addr));
+    }
+#endif
+
+    return ips;
 }
+
+template <typename T>
+bool has_overlap(const std::set<T>& s1, const std::set<T>& s2) {
+    for (auto& x : s1)
+        if (s2.find(x) != s2.end())
+            return true;
+    return false;
+}
+
+bool is_local(const std::string& name) { return has_overlap(get_local_ips(), get_ips(name)); }
 
 }  // namespace husky

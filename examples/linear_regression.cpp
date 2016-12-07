@@ -60,13 +60,13 @@
 
 using husky::lib::ml::ParameterBucket;
 
-void report(std::string msg) { if (husky::Context::get_global_tid() == 0) husky::base::log_msg(msg); }
-
-template <bool is_sparse>
-void linear_regression(double alpha, int num_iter, husky::lib::ml::DataFormat format) {
-    typedef husky::lib::ml::LabeledPointHObj<double, double, is_sparse> LabeledPointHObj;
-    auto & train_set = husky::ObjListStore::create_objlist<LabeledPointHObj>("train_set");
-    auto & test_set = husky::ObjListStore::create_objlist<LabeledPointHObj>("test_set");
+void report(std::string msg) {
+    if (husky::Context::get_global_tid() == 0)
+        husky::base::log_msg(msg);
+}
+void linear_regression() {
+    auto& train_set = husky::ObjListStore::create_objlist<SparseFeatureLabel>("train_set");
+    auto& test_set = husky::ObjListStore::create_objlist<SparseFeatureLabel>("test_set");
 
     // load data
     int num_features = husky::lib::ml::load_data(husky::Context::get_param("train"), train_set, format);
@@ -110,9 +110,8 @@ void initialize() {
 }
 
 int main(int argc, char** argv) {
-    std::vector<std::string> args({
-        "hdfs_namenode", "hdfs_namenode_port", "train", "test", "n_iter", "alpha", "format", "is_sparse"
-    });
+    std::vector<std::string> args(
+        {"hdfs_namenode", "hdfs_namenode_port", "train", "test", "n_iter", "alpha", "format", "is_sparse"});
     if (husky::init_with_args(argc, argv, args)) {
         husky::run_job(initialize);
         return 0;

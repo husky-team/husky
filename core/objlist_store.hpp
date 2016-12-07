@@ -34,7 +34,6 @@ class ObjListStore {
         ASSERT_MSG(objlist_map.find(list_name) == objlist_map.end(),
                    "ObjListStore::create_objlist: ObjList name already exists");
         auto* objlist = new ObjList<ObjT>();
-        objlist->set_hash_ring(*(Context::get_hashring()));
         objlist_map.insert({list_name, objlist});
         return *objlist;
     }

@@ -14,33 +14,35 @@
 
 #include "core/worker_info.hpp"
 
+#include <algorithm>
 #include <string>
 
 namespace husky {
 
-void WorkerInfo::set_num_processes(int num_proc) { num_proc_ = num_proc; }
-
-void WorkerInfo::set_num_workers(int num_workers) { num_workers_ = num_workers; }
-
-void WorkerInfo::set_proc_id(int proc_id) { proc_id_ = proc_id; }
-
-void WorkerInfo::add_worker(int proc_id, int global_worker_id, int local_worker_id) {
+void WorkerInfo::add_worker(int process_id, int global_worker_id, int local_worker_id, int num_hash_ranges) {
     if (global_to_proc_.size() <= global_worker_id)
-        global_to_proc_.resize(global_worker_id + 1);
-    global_to_proc_[global_worker_id] = proc_id;
+        global_to_proc_.resize(global_worker_id + 1, -1);
+    global_to_proc_[global_worker_id] = process_id;
 
-    if (local_to_global_.size() <= proc_id)
-        local_to_global_.resize(proc_id + 1);
+    if (local_to_global_.size() <= process_id)
+        local_to_global_.resize(process_id + 1);
 
-    if (local_to_global_[proc_id].size() <= local_worker_id)
-        local_to_global_[proc_id].resize(local_worker_id + 1);
-    local_to_global_[proc_id][local_worker_id] = global_worker_id;
+    if (local_to_global_[process_id].size() <= local_worker_id)
+        local_to_global_[process_id].resize(local_worker_id + 1);
+    local_to_global_[process_id][local_worker_id] = global_worker_id;
+
+    hash_ring_.insert(global_worker_id);
+
+    if (std::find(processes.begin(), processes.end(), process_id) == processes.end())
+        processes.push_back(process_id);
+    if (std::find(workers.begin(), workers.end(), global_worker_id) == workers.end())
+        workers.push_back(global_worker_id);
 }
 
-void WorkerInfo::add_proc(int proc_id, const std::string& hostname) {
-    if (host_.size() <= proc_id)
-        host_.resize(proc_id + 1);
-    host_[proc_id] = hostname;
+void WorkerInfo::set_hostname(int process_id, const std::string& hostname) {
+    if (hostname_.size() <= process_id)
+        hostname_.resize(process_id + 1);
+    hostname_[process_id] = hostname;
 }
 
 }  // namespace husky

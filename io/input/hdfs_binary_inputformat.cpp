@@ -66,7 +66,7 @@ void HDFSFileAsker::init(const std::string& path, const std::string& filter) {
 std::string HDFSFileAsker::fetch_new_file() {
     base::BinStream request;
     request << get_hostname() << file_url_;
-    base::BinStream response = Context::get_coordinator().ask_master(request, TYPE_HDFS_FILE_REQ);
+    base::BinStream response = Context::get_coordinator()->ask_master(request, TYPE_HDFS_FILE_REQ);
     return base::deser<std::string>(response);
 }
 

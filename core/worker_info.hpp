@@ -17,41 +17,64 @@
 #include <string>
 #include <vector>
 
+#include "base/exception.hpp"
+#include "core/hash_ring.hpp"
+
 namespace husky {
 
 class WorkerInfo {
    public:
-    inline int get_num_workers() const { return num_workers_; }
-    inline int get_num_processes() const { return num_proc_; }
-    inline int get_proc_id() const { return proc_id_; }
-    inline int get_proc_id(int global_worker_id) const { return global_to_proc_[global_worker_id]; }
+    inline int get_process_id() const {
+        if (process_id_ == -1)
+            throw base::HuskyException("process_id not set yet");
+        return process_id_;
+    }
 
-    inline int get_num_local_workers(int proc_id) const { return local_to_global_[proc_id].size(); }
+    inline int get_process_id(int global_worker_id) const { return global_to_proc_[global_worker_id]; }
 
-    inline int get_num_local_workers() const { return local_to_global_[proc_id_].size(); }
+    inline int get_num_local_workers() const { return local_to_global_[process_id_].size(); }
+
+    inline int get_num_local_workers(int process_id) const { return local_to_global_[process_id].size(); }
 
     inline const std::vector<int>& get_tids_by_pid(int pid) const { return local_to_global_[pid]; }
 
-    inline const std::string& get_host(int proc_id) const { return host_[proc_id]; }
+    inline const std::vector<int>& get_local_tids() const { return local_to_global_[process_id_]; }
 
-    inline int local_to_global_id(int proc_id, int local_worker_id) const {
-        return local_to_global_[proc_id][local_worker_id];
+    inline const std::vector<int>& get_pids() const { return processes; }
+
+    inline const std::string& get_hostname(int process_id) const {
+        if (hostname_[process_id].size() == 0) {
+            throw base::HuskyException("Host name of the process not set or process does not exist");
+        }
+        return hostname_[process_id];
     }
 
-    void set_num_processes(int num_proc);
-    void set_num_workers(int num_workers);
-    void set_proc_id(int proc_id);
+    inline int get_num_processes() const { return processes.size(); }
 
-    void add_worker(int proc_id, int global_worker_id, int local_worker_id);
-    void add_proc(int proc_id, const std::string& hostname);
+    inline int get_num_workers() const { return workers.size(); }
+
+    inline const std::vector<int>& get_global_tids() const { return workers; }
+
+    HashRing* get_hash_ring() { return &hash_ring_; }
+
+    inline int local_to_global_id(int process_id, int local_worker_id) const {
+        return local_to_global_[process_id][local_worker_id];
+    }
+
+    void add_worker(int process_id, int global_worker_id, int local_worker_id, int num_hash_ranges = 1);
+
+    void set_hostname(int process_id, const std::string& hostname = "");
+
+    inline void set_process_id(int process_id) { process_id_ = process_id; }
 
    protected:
     std::vector<int> global_to_proc_;
-    std::vector<std::string> host_;
+    std::vector<std::string> hostname_;
     std::vector<std::vector<int>> local_to_global_;
-    int num_proc_ = -1;
-    int num_workers_ = -1;
-    int proc_id_ = -1;
+    std::vector<int> processes;
+    std::vector<int> workers;
+    HashRing hash_ring_;
+    int process_id_ = -1;
 };
 
 }  // namespace husky

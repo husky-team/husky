@@ -54,9 +54,8 @@ void wc() {
     if (style == ListExecuteStyle::simple) {
         // This_list execute style is simple and direct
         husky::load(infmt, parse_wc);
-        husky::list_execute(word_list, [&ch](Word& word) {
-            husky::base::log_msg(word.word + ": " + std::to_string(ch.get(word)));
-        });
+        husky::list_execute(
+            word_list, [&ch](Word& word) { husky::base::log_msg(word.word + ": " + std::to_string(ch.get(word))); });
     } else if (style == ListExecuteStyle::precise) {
         // This_list execute is precise. Need to decide which channels to be used as in/out channels
         husky::load(infmt, {&ch}, parse_wc);

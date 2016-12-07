@@ -72,7 +72,8 @@ class MigrateChannel : public ObjList2ObjListChannel<ObjT, ObjT> {
             this->mailbox_->send(dst, this->channel_id_, this->progress_, migrate_buffer_[dst]);
             migrate_buffer_[dst].purge();
         }
-        this->mailbox_->send_complete(this->channel_id_, this->progress_, this->hash_ring_);
+        this->mailbox_->send_complete(this->channel_id_, this->progress_, this->worker_info_->get_local_tids(),
+                                      this->worker_info_->get_pids());
     }
 
     /// This method is only useful without list_execute

@@ -84,7 +84,7 @@ class ChannelStore : public ChannelStoreBase {
 
     static void setup(ChannelBase& ch) {
         ch.setup(Context::get_local_tid(), Context::get_global_tid(), Context::get_worker_info(),
-                 Context::get_mailbox(), Context::get_hashring());
+                 Context::get_mailbox());
     }
 };
 

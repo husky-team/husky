@@ -47,7 +47,7 @@ void balance(ObjList<ObjT>& obj_list, Algo algo) {
 
     broadcast_channel.prepare_broadcast();
     std::unordered_map<int, int> num_objs;
-    for (auto& global_tid : Context::get_global()->hash_ring.get_global_tids()) {
+    for (auto& global_tid : Context::get_worker_info().get_global_tids()) {
         num_objs[global_tid] = broadcast_channel.get(global_tid);
     }
 
@@ -143,7 +143,8 @@ void list_execute_async(ObjList<ObjT>& obj_list, ExecT execute, int async_time, 
         // 3. flush
         channel->out();
     }
-    mailbox->send_complete(channel->get_channel_id(), channel->get_progress(), Context::get_hashring());
+    mailbox->send_complete(channel->get_channel_id(), channel->get_progress(),
+                           Context::get_worker_info().get_local_tids(), Context::get_worker_info().get_pids());
     channel->prepare();
     while (mailbox->poll(channel->get_channel_id(), channel->get_progress())) {
         auto bin = mailbox->recv(channel->get_channel_id(), channel->get_progress());

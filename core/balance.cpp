@@ -128,7 +128,7 @@ std::unordered_map<int, std::unordered_map<int, int>> local_balance_first_algo_f
     for (auto& p : num_objs) {
         int global_tid = p.first;
         int num_objs = p.second;
-        int global_pid = husky::Context::get_global()->worker_info.get_proc_id(global_tid);
+        int global_pid = husky::Context::get_process_id();
         if (processes.find(global_pid) != processes.end()) {
             processes[global_pid] = std::unordered_map<int, int>();
         }

@@ -33,9 +33,9 @@ TEST_F(TestHashRing, Functional) {
     HashRing hash_ring;
     ASSERT_EQ(hash_ring.get_num_workers(), 0);
 
-    hash_ring.insert(0, 0);
-    hash_ring.insert(1, 0);
-    hash_ring.insert(2, 0);
+    hash_ring.insert(0);
+    hash_ring.insert(1);
+    hash_ring.insert(2);
     EXPECT_EQ(hash_ring.get_num_workers(), 3);
 
     hash_ring.remove(3);
@@ -44,9 +44,9 @@ TEST_F(TestHashRing, Functional) {
     hash_ring.remove(1);
     EXPECT_EQ(hash_ring.get_num_workers(), 2);
 
-    hash_ring.insert(3, 0);
-    hash_ring.insert(4, 0);
-    hash_ring.insert(5, 0);
+    hash_ring.insert(3);
+    hash_ring.insert(4);
+    hash_ring.insert(5);
     EXPECT_EQ(hash_ring.get_num_workers(), 5);
 
     std::vector<int> locations = {0, 0, 4, 4, 2, 5, 3, 0, 5, 3, 3, 3, 2, 0, 0, 5, 3, 5, 5, 5};
@@ -62,9 +62,9 @@ TEST_F(TestHashRing, Serialization) {
     stream >> output;
     EXPECT_EQ(input.get_num_workers(), output.get_num_workers());
 
-    input.insert(5, 0);
-    input.insert(15, 0);
-    input.insert(25, 0);
+    input.insert(5);
+    input.insert(15);
+    input.insert(25);
 
     stream << input;
     stream >> output;

@@ -62,8 +62,8 @@ using husky::lib::ml::ParameterBucket;
 template <bool is_sparse>
 void logistic_regression() {
     using LabeledPointHObj = husky::lib::ml::LabeledPointHObj<double, double, is_sparse>;
-    auto & train_set = husky::ObjListStore::create_objlist<LabeledPointHObj>("train_set");
-    auto & test_set = husky::ObjListStore::create_objlist<LabeledPointHObj>("test_set");
+    auto& train_set = husky::ObjListStore::create_objlist<LabeledPointHObj>("train_set");
+    auto& test_set = husky::ObjListStore::create_objlist<LabeledPointHObj>("test_set");
 
     // load data
     auto format_str = husky::Context::get_param("format");
@@ -79,10 +79,12 @@ void logistic_regression() {
 
     // processing labels
     husky::list_execute(train_set, [](auto& this_obj) {
-        if (this_obj.y < 0) this_obj.y = 0;
+        if (this_obj.y < 0)
+            this_obj.y = 0;
     });
     husky::list_execute(test_set, [](auto& this_obj) {
-        if (this_obj.y < 0) this_obj.y = 0;
+        if (this_obj.y < 0)
+            this_obj.y = 0;
     });
 
     double alpha = std::stod(husky::Context::get_param("alpha"));

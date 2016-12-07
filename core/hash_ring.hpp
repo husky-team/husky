@@ -26,7 +26,7 @@ using base::BinStream;
 class HashRing {
    public:
     /// Insert a worker thread into the hash ring
-    void insert(int tid, int pid, int num_ranges = 1);
+    void insert(int tid, int num_ranges = 1);
 
     /// Remove a worker thread from the hash ring
     void remove(int tid);
@@ -44,24 +44,11 @@ class HashRing {
         return lookup(pos);
     }
 
-    std::vector<int>& get_global_pids() { return global_pids_vector_; }
-    const std::vector<int>& get_global_pids() const { return global_pids_vector_; }
-
-    std::vector<int>& get_global_tids() { return global_tids_vector_; }
-    const std::vector<int>& get_global_tids() const { return global_tids_vector_; }
-
-    int get_num_processes() { return global_pids_vector_.size(); }
-
-    int get_num_local_threads(int pid) const { return num_local_threads_[pid]; }
-
     friend BinStream& operator<<(BinStream& stream, HashRing& hash_ring);
     friend BinStream& operator>>(BinStream& stream, HashRing& hash_ring);
 
    protected:
     std::vector<int> global_tids_vector_;
-    std::vector<int> global_pids_vector_;
-    std::vector<int> num_local_threads_;
-    std::vector<int> tid_to_pid_;
 };
 
 BinStream& operator<<(BinStream& stream, HashRing& hash_ring);

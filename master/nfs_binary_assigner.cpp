@@ -60,7 +60,7 @@ std::string NFSFileAssigner::answer(const std::string& fileurl) {
     }
     NFSFileInfo& info = file_infos_[fileurl];
     if (info.files_to_assign.empty()) {
-        if (++info.finish_count == Context::get_worker_info()->get_num_workers()) {
+        if (++info.finish_count == Context::get_num_workers()) {
             file_infos_.erase(fileurl);
         }
         return "";  // no file to assign

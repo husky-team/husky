@@ -57,18 +57,15 @@ TEST_F(TestBroadcastChannel, Create) {
 
     // WorkerInfo Setup
     WorkerInfo workerinfo;
-    workerinfo.add_proc(0, "worker1");
     workerinfo.add_worker(0, 0, 0);
-    workerinfo.set_num_processes(1);
-    workerinfo.set_num_workers(1);
-    workerinfo.set_proc_id(0);
+    workerinfo.set_process_id(0);
 
     // ObjList Setup
     ObjList<Obj> src_list;
 
     // BroadcastChannel
     auto broadcast_channel = create_broadcast_channel<int, int>(src_list);
-    broadcast_channel.setup(0, 0, &workerinfo, &mailbox, &hashring);
+    broadcast_channel.setup(0, 0, workerinfo, &mailbox);
 }
 
 TEST_F(TestBroadcastChannel, Broadcast) {
@@ -87,18 +84,15 @@ TEST_F(TestBroadcastChannel, Broadcast) {
 
     // WorkerInfo Setup
     WorkerInfo workerinfo;
-    workerinfo.add_proc(0, "worker1");
     workerinfo.add_worker(0, 0, 0);
-    workerinfo.set_num_processes(1);
-    workerinfo.set_num_workers(1);
-    workerinfo.set_proc_id(0);
+    workerinfo.set_process_id(0);
 
     // ObjList Setup
     ObjList<Obj> src_list;
 
     // BroadcastChannel
     auto broadcast_channel = create_broadcast_channel<int, std::string>(src_list);
-    broadcast_channel.setup(0, 0, &workerinfo, &mailbox, &hashring);
+    broadcast_channel.setup(0, 0, workerinfo, &mailbox);
 
     // broadcast
     // Round 1
@@ -145,18 +139,15 @@ TEST_F(TestBroadcastChannel, BroadcastClearDict) {
 
     // WorkerInfo Setup
     WorkerInfo workerinfo;
-    workerinfo.add_proc(0, "worker1");
     workerinfo.add_worker(0, 0, 0);
-    workerinfo.set_num_processes(1);
-    workerinfo.set_num_workers(1);
-    workerinfo.set_proc_id(0);
+    workerinfo.set_process_id(0);
 
     // ObjList Setup
     ObjList<Obj> src_list;
 
     // BroadcastChannel
     auto broadcast_channel = create_broadcast_channel<int, std::string>(src_list);
-    broadcast_channel.setup(0, 0, &workerinfo, &mailbox, &hashring);
+    broadcast_channel.setup(0, 0, workerinfo, &mailbox);
 
     // broadcast
     // Round 1
@@ -202,12 +193,9 @@ TEST_F(TestBroadcastChannel, MultiThread) {
 
     // WorkerInfo Setup
     WorkerInfo workerinfo;
-    workerinfo.add_proc(0, "worker1");
     workerinfo.add_worker(0, 0, 0);
     workerinfo.add_worker(0, 1, 1);
-    workerinfo.set_num_processes(1);
-    workerinfo.set_num_workers(2);
-    workerinfo.set_proc_id(0);
+    workerinfo.set_process_id(0);
 
     std::thread th1 = std::thread([&]() {
         // ObjList Setup
@@ -215,7 +203,7 @@ TEST_F(TestBroadcastChannel, MultiThread) {
 
         // BroacastChannel
         auto broadcast_channel = create_broadcast_channel<int, std::string>(src_list);
-        broadcast_channel.setup(0, 0, &workerinfo, &mailbox_0, &hashring);
+        broadcast_channel.setup(0, 0, workerinfo, &mailbox_0);
 
         // broadcast
         // Round 1
@@ -232,7 +220,7 @@ TEST_F(TestBroadcastChannel, MultiThread) {
 
         // BroacastChannel
         auto broadcast_channel = create_broadcast_channel<int, std::string>(src_list);
-        broadcast_channel.setup(1, 1, &workerinfo, &mailbox_1, &hashring);
+        broadcast_channel.setup(1, 1, workerinfo, &mailbox_1);
 
         // broadcast
         // Round 1

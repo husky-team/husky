@@ -33,57 +33,43 @@
 namespace husky {
 
 bool init_with_args(int ac, char** av, const std::vector<std::string>& customized) {
-    Context::init_global();
-    return Context::get_config()->init_with_args(ac, av, customized);
+    Config config;
+    WorkerInfo worker_info;
+    HashRing hash_ring;
+
+    bool succ = config.init_with_args(ac, av, customized, &hash_ring, &worker_info);
+    if (succ) {
+        Context::set_config(std::move(config));
+        Context::set_hash_ring(std::move(hash_ring));
+        Context::set_worker_info(std::move(worker_info));
+    }
+    return succ;
 }
 
 void run_job(const std::function<void()>& job) {
-    zmq::context_t& zmq_context = Context::get_zmq_context();
-    WorkerInfo& worker_info = *(Context::get_worker_info());
-
-    // Initialize mailbox sub-system
-    auto* el = new MailboxEventLoop(&zmq_context);
-    el->set_process_id(worker_info.get_proc_id());
-    std::vector<LocalMailbox*> mailboxes;
-    for (int i = 0; i < worker_info.get_num_processes(); i++)
-        el->register_peer_recver(
-            i, "tcp://" + worker_info.get_host(i) + ":" + std::to_string(Context::get_config()->get_comm_port()));
-    for (int i = 0; i < worker_info.get_num_workers(); i++) {
-        if (worker_info.get_proc_id(i) != worker_info.get_proc_id()) {
-            el->register_peer_thread(worker_info.get_proc_id(i), i);
-        } else {
-            auto* mailbox = new LocalMailbox(&zmq_context);
-            mailbox->set_thread_id(i);
-            el->register_mailbox(*mailbox);
-            mailboxes.push_back(mailbox);
-        }
-    }
-    auto* recver = new CentralRecver(&zmq_context, Context::get_recver_bind_addr());
-
+    Context::create_mailbox_env();
     // Initialize coordinator
-    Context::get_coordinator().serve();
+    Context::get_coordinator()->serve();
 
     base::SessionLocal::initialize();
     // Initialize worker threads
     std::vector<boost::thread*> threads;
     int local_id = 0;
-    for (int i = 0; i < worker_info.get_num_workers(); i++) {
-        if (worker_info.get_proc_id(i) != worker_info.get_proc_id())
+    auto& worker_info = Context::get_worker_info();
+    for (int i = 0; i < Context::get_num_workers(); i++) {
+        if (worker_info.get_process_id(i) != Context::get_process_id())
             continue;
 
-        threads.push_back(new boost::thread([=, &zmq_context, &el, &mailboxes]() {
-            Context::init_local();
+        threads.push_back(new boost::thread([=]() {
             Context::set_local_tid(local_id);
             Context::set_global_tid(i);
-            Context::set_mailbox(mailboxes[local_id]);
 
             job();
             base::SessionLocal::thread_finalize();
-            Context::finalize_local();
 
             base::BinStream finish_signal;
             finish_signal << Context::get_param("hostname") << i;
-            Context::get_coordinator().notify_master(finish_signal, TYPE_EXIT);
+            Context::get_coordinator()->notify_master(finish_signal, TYPE_EXIT);
         }));
         local_id += 1;
     }
@@ -92,13 +78,8 @@ void run_job(const std::function<void()>& job) {
         threads[i]->join();
         delete threads[i];
     }
-    delete recver;
-    delete el;
-    for (int i = 0; i < threads.size(); i++)
-        delete mailboxes[i];
 
     base::SessionLocal::finalize();
-    Context::finalize_global();
 }
 
 }  // namespace husky

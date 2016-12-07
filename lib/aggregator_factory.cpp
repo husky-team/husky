@@ -35,15 +35,17 @@ AggregatorChannel& AggregatorFactory::channel() { return aggregator_channel_; }
 
 size_t AggregatorFactory::get_factory_id() { return Context::get_global_tid(); }
 
-size_t AggregatorFactory::get_num_global_factory() { return Context::get_worker_info()->get_num_workers(); }
+size_t AggregatorFactory::get_num_global_factory() { return Context::get_num_workers(); }
 
-size_t AggregatorFactory::get_num_local_factory() { return Context::get_worker_info()->get_num_local_workers(); }
+size_t AggregatorFactory::get_num_local_factory() { return Context::get_num_local_workers(); }
 
-size_t AggregatorFactory::get_num_machine() { return Context::get_worker_info()->get_num_processes(); }
+size_t AggregatorFactory::get_num_machine() { return Context::get_num_processes(); }
 
-size_t AggregatorFactory::get_machine_id() { return Context::get_worker_info()->get_proc_id(); }
+size_t AggregatorFactory::get_machine_id() { return Context::get_process_id(); }
 
-size_t AggregatorFactory::get_machine_id(size_t fid) { return Context::get_worker_info()->get_proc_id(fid); }
+size_t AggregatorFactory::get_machine_id(size_t fid) {
+    return Context::get_worker_info().get_process_id(Context::get_global_tid());
+}
 
 void AggregatorFactory::send_local_update(std::vector<BinStream>& bins) { send(aggregator_channel_, bins); }
 

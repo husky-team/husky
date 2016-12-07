@@ -61,7 +61,7 @@ std::string HDFSFileAssigner::answer(const std::string& fileurl) {
     HDFSFileInfo& info = file_infos_[fileurl];
     std::vector<std::string>& files = info.files_to_assign;
     if (files.empty()) {
-        if (++info.finish_count == Context::get_worker_info()->get_num_workers()) {
+        if (++info.finish_count == Context::get_num_workers()) {
             file_infos_.erase(fileurl);
         }
         return "";  // no file to assign

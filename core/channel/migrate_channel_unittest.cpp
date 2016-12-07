@@ -78,11 +78,8 @@ TEST_F(TestMigrateChannel, Create) {
 
     // WorkerInfo Setup
     WorkerInfo workerinfo;
-    workerinfo.add_proc(0, "worker1");
     workerinfo.add_worker(0, 0, 0);
-    workerinfo.set_num_processes(1);
-    workerinfo.set_num_workers(1);
-    workerinfo.set_proc_id(0);
+    workerinfo.set_process_id(0);
 
     // ObjList Setup
     ObjList<Obj> src_list;
@@ -90,7 +87,7 @@ TEST_F(TestMigrateChannel, Create) {
 
     // MigrateChannel
     auto migrate_channel = create_migrate_channel(src_list, dst_list);
-    migrate_channel.setup(0, 0, &workerinfo, &mailbox, &hashring);
+    migrate_channel.setup(0, 0, workerinfo, &mailbox);
 }
 
 TEST_F(TestMigrateChannel, MigrateOther) {
@@ -109,11 +106,8 @@ TEST_F(TestMigrateChannel, MigrateOther) {
 
     // WorkerInfo Setup
     WorkerInfo workerinfo;
-    workerinfo.add_proc(0, "worker1");
     workerinfo.add_worker(0, 0, 0);
-    workerinfo.set_num_processes(1);
-    workerinfo.set_num_workers(1);
-    workerinfo.set_proc_id(0);
+    workerinfo.set_process_id(0);
 
     // ObjList Setup
     ObjList<Obj> src_list;
@@ -125,7 +119,7 @@ TEST_F(TestMigrateChannel, MigrateOther) {
 
     // MigrateChannel
     auto migrate_channel = create_migrate_channel(src_list, dst_list);
-    migrate_channel.setup(0, 0, &workerinfo, &mailbox, &hashring);
+    migrate_channel.setup(0, 0, workerinfo, &mailbox);
     // migrate
     Obj* p = src_list.find(18);
     migrate_channel.migrate(*p, 0);  // migrate Obj(18) to thread 0
@@ -155,11 +149,8 @@ TEST_F(TestMigrateChannel, MigrateItself) {
 
     // WorkerInfo Setup
     WorkerInfo workerinfo;
-    workerinfo.add_proc(0, "worker1");
     workerinfo.add_worker(0, 0, 0);
-    workerinfo.set_num_processes(1);
-    workerinfo.set_num_workers(1);
-    workerinfo.set_proc_id(0);
+    workerinfo.set_process_id(0);
 
     // ObjList Setup
     ObjList<Obj> src_list;
@@ -181,7 +172,7 @@ TEST_F(TestMigrateChannel, MigrateItself) {
 
     // MigrateChannel
     auto migrate_channel = create_migrate_channel(src_list, dst_list);
-    migrate_channel.setup(0, 0, &workerinfo, &mailbox, &hashring);
+    migrate_channel.setup(0, 0, workerinfo, &mailbox);
     // migrate
     Obj* p = src_list.find(18);
     migrate_channel.migrate(*p, 0);  // migrate Obj(18) to thread 0
@@ -215,11 +206,8 @@ TEST_F(TestMigrateChannel, MigrateOtherIncProgress) {
 
     // WorkerInfo Setup
     WorkerInfo workerinfo;
-    workerinfo.add_proc(0, "worker1");
     workerinfo.add_worker(0, 0, 0);
-    workerinfo.set_num_processes(1);
-    workerinfo.set_num_workers(1);
-    workerinfo.set_proc_id(0);
+    workerinfo.set_process_id(0);
 
     // ObjList Setup
     ObjList<Obj> src_list;
@@ -242,7 +230,7 @@ TEST_F(TestMigrateChannel, MigrateOtherIncProgress) {
     // MigrateChannel
     // Round 1
     auto migrate_channel = create_migrate_channel(src_list, dst_list);
-    migrate_channel.setup(0, 0, &workerinfo, &mailbox, &hashring);
+    migrate_channel.setup(0, 0, workerinfo, &mailbox);
     // migrate
     Obj* p = src_list.find(18);
     migrate_channel.migrate(*p, 0);  // migrate Obj(18) to thread 0

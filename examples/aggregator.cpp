@@ -43,7 +43,7 @@ class Word {
 
 void aggregator() {
     auto id = Context::get_global_tid();  // [0, number of threads globally)
-    {  // 1. an easy example
+    {                                     // 1. an easy example
         Aggregator<int> agg;              // creation
         agg.update(id);                   // aggregate
         AggregatorFactory::sync();        // synchronize manually

@@ -14,78 +14,34 @@
 
 #include "core/context.hpp"
 
-#include <fstream>
-#include <string>
-#include <utility>
-#include <vector>
-
-#include "boost/filesystem/path.hpp"
-#include "zmq.hpp"
-
-#include "core/config.hpp"
-#include "core/coordinator.hpp"
-#include "core/hash_ring.hpp"
-#include "core/mailbox.hpp"
-#include "core/utils.hpp"
-#include "core/worker_info.hpp"
-
 namespace husky {
-namespace Context {
 
-static Global* global = nullptr;
-static thread_local Local* local = nullptr;
+void Context::create_mailbox_env() {
+    global_.mailbox_event_loop.reset(new MailboxEventLoop(&global_.zmq_context_));
+    global_.mailbox_event_loop->set_process_id(get_process_id());
 
-// The following are global methods
+    global_.local_mailboxes_.resize(get_num_local_workers());
+    int local_tid = 0;
+    for (int global_tid = 0; global_tid < get_num_global_workers(); global_tid++) {
+        if (global_.worker_info.get_process_id(global_tid) == get_process_id()) {
+            global_.local_mailboxes_.at(local_tid).reset(new LocalMailbox(&global_.zmq_context_));
+            global_.local_mailboxes_.at(local_tid)->set_process_id(get_process_id());
+            global_.local_mailboxes_.at(local_tid)->set_thread_id(global_tid);
+            global_.mailbox_event_loop->register_mailbox(*(global_.local_mailboxes_.at(local_tid).get()));
+            local_tid += 1;
+        } else {
+            global_.mailbox_event_loop->register_peer_thread(global_.worker_info.get_process_id(global_tid),
+                                                             global_tid);
+        }
+    }
 
-void init_global() {
-    global = new Global();
-    global->zmq_context_ptr = new zmq::context_t();
+    for (int proc_id = 0; proc_id < get_num_processes(); proc_id++) {
+        global_.mailbox_event_loop->register_peer_recver(proc_id, "tcp://" + global_.worker_info.get_hostname(proc_id) +
+                                                                      ":" +
+                                                                      std::to_string(global_.config.get_comm_port()));
+    }
 }
 
-void finalize_global() {
-    // TODO(Fan): Ugly, delay deleting zmq_context_ptr.
-    auto p = global->zmq_context_ptr;
-    delete global;
-    delete p;
-    global = nullptr;
-}
-
-Global* get_global() { return global; }
-
-std::string get_param(const std::string& key) { return global->config.get_param(key); }
-
-Config* get_config() { return &(global->config); }
-
-zmq::context_t& get_zmq_context() { return *(global->zmq_context_ptr); }
-
-WorkerInfo* get_worker_info() { return &(global->worker_info); }
-
-HashRing* get_hashring() { return &(global->hash_ring); }
-
-std::string get_recver_bind_addr() { return "tcp://*:" + std::to_string(global->config.get_comm_port()); }
-
-// The following are local methods
-
-void init_local() { local = new Local(); }
-
-void finalize_local() {
-    delete local;
-    local = nullptr;
-}
-
-void set_local_tid(int local_tid) { local->local_thread_id = local_tid; }
-
-void set_global_tid(int global_tid) { local->global_thread_id = global_tid; }
-
-void set_mailbox(LocalMailbox* mailbox) { local->mailbox = mailbox; }
-
-int get_local_tid() { return local->local_thread_id; }
-
-int get_global_tid() { return local->global_thread_id; }
-
-LocalMailbox* get_mailbox() { return local->mailbox; }
-
-Coordinator& get_coordinator() { return global->coordinator; }
-
-}  // namespace Context
+ContextGlobal Context::global_;
+thread_local ContextLocal Context::local_;
 }  // namespace husky

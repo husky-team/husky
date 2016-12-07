@@ -40,7 +40,7 @@ void ProgressTracker::finish_handler() {
 
     base::log_msg("master => worker finsished @" + worker_name + "-" + std::to_string(worker_id));
 
-    if (!master.is_continuous() && (finished_workers_.size() == Context::get_worker_info()->get_num_workers())) {
+    if (!master.is_continuous() && (finished_workers_.size() == Context::get_num_workers())) {
         master.halt();
     }
 }

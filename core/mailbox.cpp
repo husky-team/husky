@@ -156,16 +156,12 @@ void LocalMailbox::send(int thread_id, int channel_id, int progress, BinStream& 
     event_loop_connector_->generate_out_comm_event(thread_id, channel_id, progress, bin_stream);
 }
 
-void LocalMailbox::send_complete(int channel_id, int progress, const HashRing* const hash_ring) {
-    send_complete(channel_id, progress, hash_ring, hash_ring);
-}
-
-void LocalMailbox::send_complete(int channel_id, int progress, const HashRing* const src_hash_ring, const HashRing* const dst_hash_ring) {
-    auto& sender_tids = src_hash_ring->get_global_tids();
+void LocalMailbox::send_complete(int channel_id, int progress, const std::vector<int>& sender_tids,
+                                 const std::vector<int>& recver_pids) {
     if (std::find(sender_tids.begin(), sender_tids.end(), thread_id_) != sender_tids.end()) {
-        auto* global_pids_copy = new std::vector<int>(dst_hash_ring->get_global_pids());
-        event_loop_connector_->generate_out_comm_complete_event(
-            channel_id, progress, src_hash_ring->get_num_local_threads(process_id_), global_pids_copy);
+        auto* recver_pids_copy = new std::vector<int>(recver_pids);
+        event_loop_connector_->generate_out_comm_complete_event(channel_id, progress, sender_tids.size(),
+                                                                recver_pids_copy);
     }
 }
 
@@ -379,7 +375,7 @@ void MailboxEventLoop::_recv_comm_complete_handler(int channel_id, int progress,
 void MailboxEventLoop::register_peer_recver(int process_id, const std::string& addr) {
     ASSERT_MSG(sender_.count(process_id) == 0, "Register the same peer recver more than once");
     sender_[process_id] = new zmq::socket_t(*zmq_context_, ZMQ_PUSH);
-    int linger = 2000;
+    int linger = 4000;
     sender_[process_id]->setsockopt(ZMQ_LINGER, &linger, sizeof(linger));
     sender_[process_id]->connect(addr);
     num_global_processes_ += 1;

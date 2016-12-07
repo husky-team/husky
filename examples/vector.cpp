@@ -12,17 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "core/engine.hpp"
 #include "lib/vector.hpp"
+#include "core/engine.hpp"
 
 class Obj {
-public:
+   public:
     typedef int KeyT;
     KeyT key;
 
-    inline KeyT id() const {
-        return key;
-    }
+    inline KeyT id() const { return key; }
 
     Obj() = default;
     explicit Obj(int key) : key(key) {}
@@ -33,8 +31,10 @@ void vector_example() {
     obj_list.add_object(Obj(husky::Context::get_global_tid()));
     husky::globalize(obj_list);
 
-    auto& channel = husky::ChannelStore::create_push_combined_channel<
-            husky::lib::DenseVector<double>, husky::SumCombiner<husky::lib::DenseVector<double>>>(obj_list, obj_list);
+    auto& channel =
+        husky::ChannelStore::create_push_combined_channel<husky::lib::DenseVector<double>,
+                                                          husky::SumCombiner<husky::lib::DenseVector<double>>>(
+            obj_list, obj_list);
     husky::lib::DenseVector<double> vec1(5, husky::Context::get_global_tid());
 
     channel.prepare_messages();
@@ -56,4 +56,3 @@ int main(int argc, char** argv) {
     }
     return 1;
 }
-

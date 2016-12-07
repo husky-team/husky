@@ -21,30 +21,14 @@
 
 namespace husky {
 
-void HashRing::insert(int tid, int pid, int num_ranges) {
-    global_tids_vector_.push_back(tid);
-    if (std::count(global_pids_vector_.begin(), global_pids_vector_.end(), pid) == 0)
-        global_pids_vector_.push_back(pid);
-    if (num_local_threads_.size() < pid + 1)
-        num_local_threads_.resize(pid + 1);
-    num_local_threads_[pid] += 1;
-    if (tid_to_pid_.size() < tid + 1)
-        tid_to_pid_.resize(tid + 1);
-    tid_to_pid_[tid] = pid;
+void HashRing::insert(int tid, int num_ranges) {
+    for (int i = 0; i < num_ranges; i++)
+        global_tids_vector_.push_back(tid);
 }
 
 void HashRing::remove(int tid) {
-    // TODO(Fan): remove from global_pids_vector_ as well
-    if (std::find(global_tids_vector_.begin(), global_tids_vector_.end(), tid) == global_tids_vector_.end())
-        return;
     global_tids_vector_.erase(std::remove(global_tids_vector_.begin(), global_tids_vector_.end(), tid),
                               global_tids_vector_.end());
-    int pid = tid_to_pid_[tid];
-    tid_to_pid_[tid] = -1;
-    num_local_threads_[pid] -= 1;
-    if (num_local_threads_[pid] == 0)
-        global_pids_vector_.erase(std::remove(global_pids_vector_.begin(), global_pids_vector_.end(), pid),
-                                  global_pids_vector_.end());
 }
 
 int HashRing::lookup(uint64_t pos) const {
@@ -57,20 +41,8 @@ int HashRing::lookup(uint64_t pos) const {
     return global_tids_vector_[b];
 }
 
-BinStream& operator<<(BinStream& stream, HashRing& hash_ring) {
-    stream << hash_ring.global_tids_vector_;
-    stream << hash_ring.global_pids_vector_;
-    stream << hash_ring.num_local_threads_;
-    stream << hash_ring.tid_to_pid_;
-    return stream;
-}
+BinStream& operator<<(BinStream& stream, HashRing& hash_ring) { return stream << hash_ring.global_tids_vector_; }
 
-BinStream& operator>>(BinStream& stream, HashRing& hash_ring) {
-    stream >> hash_ring.global_tids_vector_;
-    stream >> hash_ring.global_pids_vector_;
-    stream >> hash_ring.num_local_threads_;
-    stream >> hash_ring.tid_to_pid_;
-    return stream;
-}
+BinStream& operator>>(BinStream& stream, HashRing& hash_ring) { return stream >> hash_ring.global_tids_vector_; }
 
 }  // namespace husky

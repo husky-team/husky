@@ -34,15 +34,15 @@ void Coordinator::serve() {
     if (zmq_coord_)
         return;
 
-    proc_id_ = Context::get_worker_info()->get_proc_id();
+    proc_id_ = Context::get_process_id();
     std::string hostname = Context::get_param("hostname") + "-" + std::to_string(proc_id_);
 
-    zmq_coord_ = new zmq::socket_t(Context::get_zmq_context(), ZMQ_DEALER);
+    zmq_coord_ = new zmq::socket_t(*(Context::get_zmq_context()), ZMQ_DEALER);
     zmq_coord_->setsockopt(ZMQ_IDENTITY, hostname.c_str(), hostname.size());
     int linger = 2000;
     zmq_coord_->setsockopt(ZMQ_LINGER, &linger, sizeof(linger));
-    zmq_coord_->connect("tcp://" + Context::get_config()->get_master_host() + ":" +
-                        std::to_string(Context::get_config()->get_master_port()));
+    zmq_coord_->connect("tcp://" + Context::get_config().get_master_host() + ":" +
+                        std::to_string(Context::get_config().get_master_port()));
 }
 
 base::BinStream Coordinator::ask_master(base::BinStream& question, size_t type) {

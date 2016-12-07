@@ -15,6 +15,7 @@
 #ifdef WITH_HDFS
 
 #include "io/hdfs_manager.hpp"
+#include "base/exception.hpp"
 
 #include <string>
 
@@ -104,7 +105,13 @@ void HDFSManager::flush(const std::string& url, const int& worker_id) {
         return;
 
     auto file = opened_files[worker_id][url];
-    hdfsFlush(fs_, file);
+    int num_retries = 3;
+    while (num_retries--) {
+        int rc = hdfsFlush(fs_, file);
+        if (rc == 0)
+            return;
+    }
+    throw base::HuskyException("Failed to flush to HDFS");
 }
 
 void HDFSManager::flush_all_files() {

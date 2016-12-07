@@ -48,7 +48,7 @@ void NFSBlockAssigner::master_main_handler() {
     base::log_msg(host + " => " + ret.first + "@" + std::to_string(ret.second));
 }
 
-void NFSBlockAssigner::master_setup_handler() { num_workers_alive = Context::get_worker_info()->get_num_workers(); }
+void NFSBlockAssigner::master_setup_handler() { num_workers_alive = Context::get_num_workers(); }
 
 void NFSBlockAssigner::browse_local(const std::string& url) {
     // If url is a directory, recursively traverse all files in url
