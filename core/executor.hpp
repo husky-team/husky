@@ -88,7 +88,7 @@ void globalize(ObjList<ObjT>& obj_list) {
     auto& migrate_channel = ChannelStore::create_migrate_channel(obj_list, obj_list, "tmp_globalize");
 
     for (auto& obj : obj_list.get_data()) {
-        int dst_thread_id = obj_list.get_hash_ring().hash_lookup(obj.id());
+        int dst_thread_id = Context::get_hash_ring().hash_lookup(obj.id());
         if (dst_thread_id != Context::get_global_tid()) {
             migrate_channel.migrate(obj, dst_thread_id);
         }
