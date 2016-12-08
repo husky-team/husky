@@ -103,7 +103,7 @@ class ParameterBucket : public ParameterBase<T> {
     void init(int _num_param, double initial_val = 0.0) {
         this->num_param_ = _num_param;
         // split aggregation of parameters
-        const int num_worker = Context::get_worker_info()->get_num_workers();
+        const int num_worker = Context::get_num_workers();
         this->block_size = (_num_param > num_worker) ? std::ceil((0.0 + _num_param) / num_worker) : 1;
 
         vector_agg.reserve(num_worker);

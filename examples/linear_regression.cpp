@@ -64,13 +64,27 @@ void report(std::string msg) {
     if (husky::Context::get_global_tid() == 0)
         husky::base::log_msg(msg);
 }
+
+template <bool is_sparse>
 void linear_regression() {
-    auto& train_set = husky::ObjListStore::create_objlist<SparseFeatureLabel>("train_set");
-    auto& test_set = husky::ObjListStore::create_objlist<SparseFeatureLabel>("test_set");
+    double alpha = std::stod(husky::Context::get_param("alpha"));
+    int num_iter = std::stoi(husky::Context::get_param("n_iter"));
+    auto format = husky::Context::get_param("format");
+
+    husky::lib::ml::DataFormat data_format;
+    if (format == "libsvm") {
+        data_format = husky::lib::ml::kLIBSVMFormat;
+    } else if (format == "tsv") {
+        data_format = husky::lib::ml::kTSVFormat;
+    }
+
+    using LabeledPointHObj = husky::lib::ml::LabeledPointHObj<double, double, is_sparse>;
+    auto& train_set = husky::ObjListStore::create_objlist<LabeledPointHObj>("train_set");
+    auto& test_set = husky::ObjListStore::create_objlist<LabeledPointHObj>("test_set");
 
     // load data
-    int num_features = husky::lib::ml::load_data(husky::Context::get_param("train"), train_set, format);
-    husky::lib::ml::load_data(husky::Context::get_param("test"), test_set, format, num_features);
+    int num_features = husky::lib::ml::load_data(husky::Context::get_param("train"), train_set, data_format);
+    husky::lib::ml::load_data(husky::Context::get_param("test"), test_set, data_format, num_features);
 
     // scale values to [-1, 1]
     // TODO(Tatiana): applying the same scaling results in large error?
@@ -93,19 +107,10 @@ void linear_regression() {
 }
 
 void initialize() {
-    double alpha = std::stod(husky::Context::get_param("alpha"));
-    int num_iter = std::stoi(husky::Context::get_param("n_iter"));
-    auto format = husky::Context::get_param("format");
-    husky::lib::ml::DataFormat data_format;
-    if (format == "libsvm") {
-        data_format = husky::lib::ml::kLIBSVMFormat;
-    } else if (format == "tsv") {
-        data_format = husky::lib::ml::kTSVFormat;
-    }
     if (husky::Context::get_param("is_sparse") == "true") {
-        linear_regression<true>(alpha, num_iter, data_format);
+        linear_regression<true>();
     } else {
-        linear_regression<false>(alpha, num_iter, data_format);
+        linear_regression<false>();
     }
 }
 
