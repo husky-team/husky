@@ -132,6 +132,26 @@ class LocalMailbox {
     /// @return The actual incoming communication in the form of BinStream.
     BinStream recv(int channel_id, int progress);
 
+    /// \brief Set the handler for new incoming communication
+    ///
+    /// The handler will be apply once there's new incoming communication available
+    /// (in the form of BinStream).
+    ///
+    /// @param handler The handler to use
+    void set_comm_available_handler(std::function<void(int channel_id, int progress)> handler) {
+        comm_available_handler_ = handler;
+    }
+
+    /// \brief Set the handler at the completion incoming communication
+    ///
+    /// The handler will be used once the communication of a specific (channel_id, progress)
+    /// pair finishes.
+    ///
+    /// @param handler The handler to use
+    void set_comm_complete_handler(std::function<void(int channel_id, int progress)> handler) {
+        comm_complete_handler_ = handler;
+    }
+
     friend class MailboxEventLoop;
 
    protected:
@@ -140,6 +160,8 @@ class LocalMailbox {
     zmq::context_t* zmq_context_;
     std::condition_variable poll_cv_;
     std::mutex notify_lock;
+    std::function<void(int, int)> comm_available_handler_;
+    std::function<void(int, int)> comm_complete_handler_;
 
     ConcurrentChannelStore<ConcurrentQueue<BinStream*>> in_queue_;
     ConcurrentChannelStore<bool> comm_completed_;

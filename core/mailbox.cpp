@@ -31,6 +31,13 @@ const char* kEventLoopListenAddress = "inproc://central-event-loop";
 LocalMailbox::LocalMailbox(zmq::context_t* zmq_context) : zmq_context_(zmq_context) {
     event_loop_connector_ = new EventLoopConnector(zmq_context_);
     comm_completed_.init(false);
+    set_comm_available_handler([&](int, int) {
+        this->poll_cv_.notify_one();
+    });
+
+    set_comm_complete_handler([&](int, int) {
+        this->poll_cv_.notify_one();
+    });
 }
 
 LocalMailbox::~LocalMailbox() { delete event_loop_connector_; }
@@ -279,7 +286,7 @@ void MailboxEventLoop::_recv_comm_handler(int thread_id, int channel_id, int pro
     auto& mailbox = *(registered_mailbox_[thread_id]);
 
     mailbox.in_queue_.get(channel_id, progress).push(std::move(recv_bin_stream_ptr));
-    mailbox.poll_cv_.notify_one();
+    mailbox.comm_available_handler_(channel_id, progress);
 }
 
 void MailboxEventLoop::send_comm_handler() {
@@ -366,7 +373,7 @@ void MailboxEventLoop::_recv_comm_complete_handler(int channel_id, int progress,
             std::unique_lock<std::mutex> cv_lock(mailbox.notify_lock);
             mailbox.comm_completed_.get(channel_id, progress) = true;
             cv_lock.unlock();
-            mailbox.poll_cv_.notify_one();
+            mailbox.comm_complete_handler_(channel_id, progress);
         }
         recv_comm_complete_counter_.erase(chnl_prgs_pair);
     }
