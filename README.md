@@ -81,6 +81,10 @@ In the distributed environment, use the following to execute workers on all mach
 
     ./exec.sh <executable> --conf /path/to/your/conf
 
+If MPI has been installed in the distributed environment, you may use the following alternatively,
+
+    ./mpiexec.sh <executable> --conf /path/to/your/conf
+
 In the single-machine environment, use the following,
 
     ./<executable> --conf /path/to/your/conf
