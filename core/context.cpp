@@ -40,6 +40,7 @@ void Context::create_mailbox_env() {
                                                                       ":" +
                                                                       std::to_string(global_.config.get_comm_port()));
     }
+    global_.central_recver.reset(new CentralRecver(get_zmq_context(), get_recver_bind_addr()));
 }
 
 ContextGlobal Context::global_;

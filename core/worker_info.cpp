@@ -20,10 +20,17 @@
 namespace husky {
 
 void WorkerInfo::add_worker(int process_id, int global_worker_id, int local_worker_id, int num_hash_ranges) {
+    // set global_to_proc_
     if (global_to_proc_.size() <= global_worker_id)
         global_to_proc_.resize(global_worker_id + 1, -1);
     global_to_proc_[global_worker_id] = process_id;
 
+    // set global_to_local_
+    if (global_to_local_.size() <= global_worker_id)
+        global_to_local_.resize(global_worker_id + 1);
+    global_to_local_[global_worker_id] = local_worker_id;
+
+    // set local_to_global_
     if (local_to_global_.size() <= process_id)
         local_to_global_.resize(process_id + 1);
 
@@ -31,8 +38,10 @@ void WorkerInfo::add_worker(int process_id, int global_worker_id, int local_work
         local_to_global_[process_id].resize(local_worker_id + 1);
     local_to_global_[process_id][local_worker_id] = global_worker_id;
 
+    // set hash_ring_
     hash_ring_.insert(global_worker_id);
 
+    // set processes and workers
     if (std::find(processes.begin(), processes.end(), process_id) == processes.end())
         processes.push_back(process_id);
     if (std::find(workers.begin(), workers.end(), global_worker_id) == workers.end())

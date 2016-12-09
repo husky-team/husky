@@ -48,6 +48,9 @@ class WorkerInfo {
         }
         return hostname_[process_id];
     }
+    inline const std::vector<std::string> get_hostnames() const {
+        return hostname_;
+    }
 
     inline int get_num_processes() const { return processes.size(); }
 
@@ -61,6 +64,14 @@ class WorkerInfo {
         return local_to_global_[process_id][local_worker_id];
     }
 
+    inline int local_to_global_id(int local_worker_id) const {
+        return local_to_global_[process_id_][local_worker_id];
+    }
+
+    inline int global_to_local_id(int global_worker_id) const {
+        return global_to_local_[global_worker_id];
+    }
+
     void add_worker(int process_id, int global_worker_id, int local_worker_id, int num_hash_ranges = 1);
 
     void set_hostname(int process_id, const std::string& hostname = "");
@@ -71,6 +82,7 @@ class WorkerInfo {
     std::vector<int> global_to_proc_;
     std::vector<std::string> hostname_;
     std::vector<std::vector<int>> local_to_global_;
+    std::vector<int> global_to_local_;
     std::vector<int> processes;
     std::vector<int> workers;
     HashRing hash_ring_;
