@@ -47,7 +47,7 @@ class AsyncPushChannel : public PushChannel<MsgT, ObjT> {
         int start = this->global_id_;
         for (int i = 0; i < this->send_buffer_.size(); ++i) {
             int dst = (start + i) % this->send_buffer_.size();
-            if (this->send_buffer_.size() == 0)
+            if (this->send_buffer_[dst].size() == 0)
                 continue;
             this->mailbox_->send(dst, this->channel_id_, this->progress_, this->send_buffer_[dst]);
             this->send_buffer_[dst].purge();
