@@ -27,7 +27,11 @@ ExternalProject_Add(
     UPDATE_COMMAND ""
 )
 set(GLOG_INCLUDE "${PROJECT_BINARY_DIR}/include")
+if(WIN32)
+set(GLOG_LIBRARY "${PROJECT_BINARY_DIR}/lib/libglog.lib")
+else(WIN32)
 set(GLOG_LIBRARY "${PROJECT_BINARY_DIR}/lib/libglog.a")
+endif(WIN32)
 list(APPEND external_project_dependencies glog)
 
 ### GTest, GMock ###

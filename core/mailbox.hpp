@@ -31,9 +31,9 @@
 
 namespace husky {
 
+using base::BinStream;
 using base::ConcurrentChannelStore;
 using base::ConcurrentQueue;
-using base::BinStream;
 
 class EventLoopConnector;
 class MailboxEventLoop;

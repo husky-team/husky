@@ -5,6 +5,7 @@
 #include <thread>
 #include <vector>
 
+#include "boost/random.hpp"
 #include "gtest/gtest.h"
 
 namespace husky {
@@ -50,15 +51,16 @@ TEST_F(TestAccessor, FunctionalInMultiThreads) {
         i.init(N);
     for (int i = 0; i < N; i++) {
         workers[i] = new std::thread([&V, i, N, Round, MaxTime, &done]() {
-            srand(time(NULL));
+            boost::random::mt19937 gen;
+            boost::random::uniform_int_distribution<> random{1, MaxTime};
             Accessor<int>& v = V[i];
             for (int round = 1, sum = 0; round <= Round; round++, sum = 0) {
                 v.storage() += i * round;
-                std::this_thread::sleep_for(std::chrono::milliseconds(rand() % MaxTime));
+                std::this_thread::sleep_for(std::chrono::milliseconds(random(gen)));
                 v.commit();
                 for (int j = 0; j < N; j++) {
                     sum += V[j].access();
-                    std::this_thread::sleep_for(std::chrono::milliseconds(rand() % MaxTime));
+                    std::this_thread::sleep_for(std::chrono::milliseconds(random(gen)));
                     V[j].leave();
                 }
                 EXPECT_EQ(sum << 2, N * (N - 1) * round * (round + 1));

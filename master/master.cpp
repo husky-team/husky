@@ -29,9 +29,9 @@
 #include "core/config.hpp"
 #include "core/constants.hpp"
 #include "core/context.hpp"
+#include "core/job_runner.hpp"
 #include "core/worker_info.hpp"
 #include "core/zmq_helpers.hpp"
-#include "core/job_runner.hpp"
 
 namespace husky {
 

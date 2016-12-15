@@ -31,21 +31,21 @@ class WorkerInfo {
         return process_id_;
     }
 
-    inline int get_process_id(int global_worker_id) const { 
+    inline int get_process_id(int global_worker_id) const {
         auto p = global_to_proc_.find(global_worker_id);
         ASSERT_MSG(p != global_to_proc_.end(), "global_worker_id not found");
-        return p->second; 
+        return p->second;
     }
 
-    inline int get_num_local_workers(int process_id) const { 
+    inline int get_num_local_workers(int process_id) const {
         auto p = local_to_global_.find(process_id);
         ASSERT_MSG(p != local_to_global_.end(), "process_id not found");
-        return p->second.size(); 
+        return p->second.size();
     }
 
     inline int get_num_local_workers() const { return get_num_local_workers(process_id_); }
 
-    inline std::vector<int> get_tids_by_pid(int pid) const { 
+    inline std::vector<int> get_tids_by_pid(int pid) const {
         auto p_local_to_global_map = local_to_global_.find(pid);
         std::vector<int> tids;
         tids.reserve(p_local_to_global_map->second.size());
@@ -66,9 +66,7 @@ class WorkerInfo {
         return hostname_[process_id];
     }
 
-    inline const std::vector<std::string> get_hostnames() const {
-        return hostname_;
-    }
+    inline const std::vector<std::string> get_hostnames() const { return hostname_; }
 
     inline int get_num_processes() const { return processes_.size(); }
 
@@ -103,10 +101,10 @@ class WorkerInfo {
     inline void set_process_id(int process_id) { process_id_ = process_id; }
 
    protected:
-    std::unordered_map<int,int> global_to_proc_;
+    std::unordered_map<int, int> global_to_proc_;
     std::vector<std::string> hostname_;
-    std::unordered_map<int, std::unordered_map<int,int>> local_to_global_;
-    std::unordered_map<int,int> global_to_local_;
+    std::unordered_map<int, std::unordered_map<int, int>> local_to_global_;
+    std::unordered_map<int, int> global_to_local_;
     std::unordered_set<int> processes_;
     std::unordered_set<int> workers_;
     HashRing hash_ring_;

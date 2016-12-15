@@ -6,8 +6,10 @@
 #include <utility>
 #include <vector>
 
-#include "core/zmq_helpers.hpp"
+#include "boost/random.hpp"
 #include "gtest/gtest.h"
+
+#include "core/zmq_helpers.hpp"
 
 namespace husky {
 
@@ -28,7 +30,6 @@ TEST_F(TestShuffleCombiner, ShuffleCombiner) {
     int total_sum = 0;
     for (int i = 0; i < num_local_workers; i++)
         total_sum += i;
-    unsigned int seed = time(NULL);
     zmq::context_t context(1);
     std::atomic_int done(0);
     std::vector<ShuffleCombiner<std::pair<int, int>>> workers(num_local_workers);
@@ -38,9 +39,11 @@ TEST_F(TestShuffleCombiner, ShuffleCombiner) {
         workers[i].init(num_global_workers, num_local_workers, 0, i);
     }
     for (int i = 0; i < num_local_workers; i++) {
-        threads[i] = new std::thread([&workers, i, max_time, &done, &seed, total_sum]() {
+        threads[i] = new std::thread([&workers, i, max_time, &done, total_sum]() {
+            boost::random::mt19937 gen;
+            boost::random::uniform_int_distribution<> random{1, max_time};
             int sum = 0;
-            std::this_thread::sleep_for(std::chrono::milliseconds(rand_r(&seed) % max_time));
+            std::this_thread::sleep_for(std::chrono::milliseconds(random(gen)));
             workers[i].send_shuffler_buffer();
 
             for (int j = 0; j < num_local_workers - 1; j++) {

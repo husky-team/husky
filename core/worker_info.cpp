@@ -21,15 +21,18 @@ namespace husky {
 
 void WorkerInfo::add_worker(int process_id, int global_worker_id, int local_worker_id, int num_hash_ranges) {
     // set global_to_proc_
-    ASSERT_MSG(global_to_proc_.find(global_worker_id) == global_to_proc_.end(), "global_worker_id already exists in global_to_proc_");
+    ASSERT_MSG(global_to_proc_.find(global_worker_id) == global_to_proc_.end(),
+               "global_worker_id already exists in global_to_proc_");
     global_to_proc_.insert({global_worker_id, process_id});
 
     // set global_to_local_
-    ASSERT_MSG(global_to_local_.find(global_worker_id) == global_to_local_.end(), "global_worker_id already exists in global_to_local_");
+    ASSERT_MSG(global_to_local_.find(global_worker_id) == global_to_local_.end(),
+               "global_worker_id already exists in global_to_local_");
     global_to_local_.insert({global_worker_id, local_worker_id});
 
     // set local_to_global_
-    ASSERT_MSG(local_to_global_[process_id].find(local_worker_id) == local_to_global_[process_id].end(), "{process_id, local_worker_id} already exists in local_to_global_");
+    ASSERT_MSG(local_to_global_[process_id].find(local_worker_id) == local_to_global_[process_id].end(),
+               "{process_id, local_worker_id} already exists in local_to_global_");
     local_to_global_[process_id].insert({local_worker_id, global_worker_id});
 
     // set hash_ring_

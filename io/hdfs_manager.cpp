@@ -15,10 +15,10 @@
 #ifdef WITH_HDFS
 
 #include "io/hdfs_manager.hpp"
-#include "base/exception.hpp"
 
 #include <string>
 
+#include "base/exception.hpp"
 #include "core/utils.hpp"
 
 namespace husky {
