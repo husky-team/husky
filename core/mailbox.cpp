@@ -31,13 +31,6 @@ const char* kEventLoopListenAddress = "inproc://central-event-loop";
 LocalMailbox::LocalMailbox(zmq::context_t* zmq_context) : zmq_context_(zmq_context) {
     event_loop_connector_ = new EventLoopConnector(zmq_context_);
     comm_completed_.init(false);
-    set_comm_available_handler([&](int, int) {
-        this->poll_cv_.notify_one();
-    });
-
-    set_comm_complete_handler([&](int, int) {
-        this->poll_cv_.notify_one();
-    });
 }
 
 LocalMailbox::~LocalMailbox() { delete event_loop_connector_; }
@@ -57,7 +50,7 @@ bool LocalMailbox::poll(int channel_id, int progress) {
     // step 2: check the flag
     // block when the queue is not empty but the flag is true
     // std::unique_lock<std::mutex> lock(poll_mutex_.get(channel_id, progress));
-    std::unique_lock<std::mutex> lock(notify_lock);
+    std::unique_lock<std::mutex> lock(notify_lock_);
 
     poll_cv_.wait(lock, [&]() {
         if (in_queue_.get(channel_id, progress).size() > 0)
@@ -121,7 +114,7 @@ bool LocalMailbox::poll(const std::vector<std::pair<int, int>>& channel_progress
         }
     }
 
-    std::unique_lock<std::mutex> lock(notify_lock);
+    std::unique_lock<std::mutex> lock(notify_lock_);
     poll_cv_.wait(lock, [&]() {
         for (auto& chnl_prgs_pair : channel_progress_pairs)
             if (in_queue_.get(chnl_prgs_pair.first, chnl_prgs_pair.second).size() > 0)
@@ -284,9 +277,13 @@ void MailboxEventLoop::_recv_comm_handler(int thread_id, int channel_id, int pro
                ("[ERROR] Local mailbox for " + std::to_string(thread_id) + " does not exist").c_str());
 
     auto& mailbox = *(registered_mailbox_[thread_id]);
-
-    mailbox.in_queue_.get(channel_id, progress).push(std::move(recv_bin_stream_ptr));
-    mailbox.comm_available_handler_(channel_id, progress);
+    {
+        std::lock_guard<std::mutex> cv_lock(mailbox.notify_lock_);
+        mailbox.in_queue_.get(channel_id, progress).push(std::move(recv_bin_stream_ptr));
+        mailbox.poll_cv_.notify_one();
+    }
+    if (mailbox.comm_available_handler_)
+        mailbox.comm_available_handler_(channel_id, progress);
 }
 
 void MailboxEventLoop::send_comm_handler() {
@@ -370,10 +367,13 @@ void MailboxEventLoop::_recv_comm_complete_handler(int channel_id, int progress,
         for (auto& tid_mailbox_pair : registered_mailbox_) {
             int thread_id = tid_mailbox_pair.first;
             auto& mailbox = *(registered_mailbox_[thread_id]);
-            std::unique_lock<std::mutex> cv_lock(mailbox.notify_lock);
-            mailbox.comm_completed_.get(channel_id, progress) = true;
-            cv_lock.unlock();
-            mailbox.comm_complete_handler_(channel_id, progress);
+            {
+                std::lock_guard<std::mutex> cv_lock(mailbox.notify_lock_);
+                mailbox.comm_completed_.get(channel_id, progress) = true;
+                mailbox.poll_cv_.notify_one();
+            }
+            if (mailbox.comm_complete_handler_)
+                mailbox.comm_complete_handler_(channel_id, progress);
         }
         recv_comm_complete_counter_.erase(chnl_prgs_pair);
     }

@@ -159,7 +159,7 @@ class LocalMailbox {
     int process_id_ = 0;
     zmq::context_t* zmq_context_;
     std::condition_variable poll_cv_;
-    std::mutex notify_lock;
+    std::mutex notify_lock_;
     std::function<void(int, int)> comm_available_handler_;
     std::function<void(int, int)> comm_complete_handler_;
 
