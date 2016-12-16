@@ -54,7 +54,7 @@ class BroadcastChannel : public ChannelBase {
     BroadcastChannel& operator=(BroadcastChannel&&) = default;
 
     void customized_setup() override {
-        broadcast_buffer_.resize(worker_info_->get_num_workers());
+        broadcast_buffer_.resize(worker_info_->get_largest_tid()+1);
         accessor_ = AccessorStore::create_accessor<std::unordered_map<KeyT, ValueT>>(
             channel_id_, local_id_, worker_info_->get_num_local_workers());
     }

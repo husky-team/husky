@@ -57,12 +57,14 @@ class PushCombinedChannel : public Source2ObjListChannel<DstObjT> {
 
     void customized_setup() override {
         // Initialize send_buffer_
-        send_buffer_.resize(this->worker_info_->get_num_workers());
+        // use get_largest_tid() instead of get_num_workers()
+        // sine we may only use a subset of worker
+        send_buffer_.resize(this->worker_info_->get_largest_tid()+1);
         // Create shuffle_combiner_
         // TODO(yuzhen): Only support sortcombine, hashcombine can be added using enableif
         shuffle_combiner_ = ShuffleCombinerStore::create_shuffle_combiner<typename DstObjT::KeyT, MsgT>(
             this->channel_id_, this->local_id_, this->worker_info_->get_num_local_workers(),
-            this->worker_info_->get_num_workers());
+            this->worker_info_->get_largest_tid()+1);
     }
 
     void push(const MsgT& msg, const typename DstObjT::KeyT& key) {
@@ -166,7 +168,7 @@ class PushCombinedChannel : public Source2ObjListChannel<DstObjT> {
         for (int iter = 0; iter < this->worker_info_->get_num_local_workers() - 1; iter++) {
             int next_worker = self_shuffle_combiner.access_next();
             auto& peer_shuffle_combiner = (*shuffle_combiner_)[next_worker];
-            for (int i = this->local_id_; i < this->worker_info_->get_num_workers();
+            for (int i = this->local_id_; i < this->worker_info_->get_largest_tid()+1;
                  i += this->worker_info_->get_num_local_workers()) {
                 // combining the i-th buffer
                 auto& self_buffer = self_shuffle_combiner.storage(i);
@@ -175,13 +177,13 @@ class PushCombinedChannel : public Source2ObjListChannel<DstObjT> {
                 peer_buffer.clear();
             }
         }
-        for (int i = this->local_id_; i < this->worker_info_->get_num_workers();
+        for (int i = this->local_id_; i < this->worker_info_->get_largest_tid()+1;
              i += this->worker_info_->get_num_local_workers()) {
             auto& self_buffer = self_shuffle_combiner.storage(i);
             combine_single<CombineT>(self_buffer);
         }
         // step 2: serialize combine buffer
-        for (int i = this->local_id_; i < this->worker_info_->get_num_workers();
+        for (int i = this->local_id_; i < this->worker_info_->get_largest_tid()+1;
              i += this->worker_info_->get_num_local_workers()) {
             auto& combine_buffer = self_shuffle_combiner.storage(i);
             for (int k = 0; k < combine_buffer.size(); k++) {

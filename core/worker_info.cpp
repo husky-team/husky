@@ -43,6 +43,10 @@ void WorkerInfo::add_worker(int process_id, int global_worker_id, int local_work
         processes_.insert(process_id);
     if (workers_.find(global_worker_id) == workers_.end())
         workers_.insert(global_worker_id);
+
+    // set largest_tid
+    if (global_worker_id > largest_tid_)
+        largest_tid_ = global_worker_id;
 }
 
 void WorkerInfo::set_hostname(int process_id, const std::string& hostname) {
