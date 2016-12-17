@@ -25,11 +25,14 @@ if(MONGOCLIENT_FOUND)
     list(APPEND master_plugins mongodb_assigner.cpp)
 endif(MONGOCLIENT_FOUND)
 
-set(husky husky-lib husky-io husky-core husky-base)
+add_library(husky-master-objs OBJECT master.cpp ${master_plugins})
+husky_default_properties(husky-master-objs)
+
+set(husky-master-dep husky-io husky-core husky-base)
 
 # Master
-add_executable(Master master.cpp ${master_plugins})
-target_link_libraries(Master ${husky})
+add_executable(Master master_main.cpp $<TARGET_OBJECTS:husky-master-objs>)
+target_link_libraries(Master ${husky-master-dep})
 target_link_libraries(Master ${EXTERNAL_LIB})
 if(WIN32)
     set_target_properties(Master PROPERTIES COMPILER_FLAGS "/EHsc")

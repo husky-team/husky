@@ -29,7 +29,6 @@
 #include "core/config.hpp"
 #include "core/constants.hpp"
 #include "core/context.hpp"
-#include "core/job_runner.hpp"
 #include "core/worker_info.hpp"
 #include "core/zmq_helpers.hpp"
 
@@ -76,19 +75,3 @@ void Master::handle_message(uint32_t message, const std::string& id) {
 }
 
 }  // namespace husky
-
-int main(int argc, char** argv) {
-    std::vector<std::string> args;
-    args.push_back("serve");
-#ifdef WITH_HDFS
-    args.push_back("hdfs_namenode");
-    args.push_back("hdfs_namenode_port");
-#endif
-    if (husky::init_with_args(argc, argv, args)) {
-        auto& master = husky::Master::get_instance();
-        master.setup();
-        master.serve();
-        return 0;
-    }
-    return 1;
-}
