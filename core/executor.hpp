@@ -89,9 +89,8 @@ void globalize(ObjList<ObjT>& obj_list) {
 
     for (auto& obj : obj_list.get_data()) {
         int dst_thread_id = Context::get_hash_ring().hash_lookup(obj.id());
-        if (dst_thread_id != Context::get_global_tid()) {
+        if (dst_thread_id != Context::get_global_tid())
             migrate_channel.migrate(obj, dst_thread_id);
-        }
     }
     obj_list.deletion_finalize();
     migrate_channel.flush();

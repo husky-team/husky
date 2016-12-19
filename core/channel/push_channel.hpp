@@ -62,7 +62,7 @@ class PushChannel : public Source2ObjListChannel<DstObjT> {
     }
 
     void push(const MsgT& msg, const typename DstObjT::KeyT& key) {
-        int dst_worker_id = this->worker_info_->get_hash_ring()->hash_lookup(key);
+        int dst_worker_id = this->worker_info_->get_hash_ring().hash_lookup(key);
         send_buffer_[dst_worker_id] << key << msg;
     }
 

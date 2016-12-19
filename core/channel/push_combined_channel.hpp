@@ -69,7 +69,7 @@ class PushCombinedChannel : public Source2ObjListChannel<DstObjT> {
 
     void push(const MsgT& msg, const typename DstObjT::KeyT& key) {
         // shuffle_combiner_.init();  // Already move init() to create_shuffle_combiner_()
-        int dst_worker_id = this->worker_info_->get_hash_ring()->hash_lookup(key);
+        int dst_worker_id = this->worker_info_->get_hash_ring().hash_lookup(key);
         auto& buffer = (*shuffle_combiner_)[this->local_id_].storage(dst_worker_id);
         back_combine<CombineT>(buffer, key, msg);
     }

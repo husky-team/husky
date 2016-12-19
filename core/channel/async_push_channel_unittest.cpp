@@ -228,7 +228,7 @@ TEST_F(TestAsyncPushChannel, MultiThread) {
         auto migrate_channel = create_migrate_channel(obj_list, obj_list);
         migrate_channel.setup(0, 0, workerinfo, &mailbox_0);
         for (auto& obj : obj_list.get_data()) {
-            int dst_thread_id = workerinfo.get_hash_ring()->hash_lookup(obj.id());
+            int dst_thread_id = workerinfo.get_hash_ring().hash_lookup(obj.id());
             if (dst_thread_id != 0) {
                 migrate_channel.migrate(obj, dst_thread_id);
             }
@@ -267,7 +267,7 @@ TEST_F(TestAsyncPushChannel, MultiThread) {
         auto migrate_channel = create_migrate_channel(obj_list, obj_list);
         migrate_channel.setup(1, 1, workerinfo, &mailbox_1);
         for (auto& obj : obj_list.get_data()) {
-            int dst_thread_id = workerinfo.get_hash_ring()->hash_lookup(obj.id());
+            int dst_thread_id = workerinfo.get_hash_ring().hash_lookup(obj.id());
             if (dst_thread_id != 1) {
                 migrate_channel.migrate(obj, dst_thread_id);
             }

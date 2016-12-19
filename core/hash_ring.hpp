@@ -25,16 +25,14 @@ using base::BinStream;
 
 class HashRing {
    public:
-    /// Insert a worker thread into the hash ring
+    /// Insert a worker thread into the hash ring.
     void insert(int tid, int num_ranges = 1);
 
-    /// Remove a worker thread from the hash ring
+    /// Remove a worker thread from the hash ring.
     void remove(int tid);
 
-    /// Given a position on the hash ring, return the worker thread id
+    /// Given a position on the hash ring, return the worker thread id.
     int lookup(uint64_t pos) const;
-
-    inline int get_num_workers() const { return global_tids_vector_.size(); }
 
     template <typename KeyT>
     int hash_lookup(const KeyT& key) const {
@@ -43,6 +41,8 @@ class HashRing {
         uint64_t pos = std::hash<KeyT>()(key);
         return lookup(pos);
     }
+
+    inline int get_global_tids_size() const { return global_tids_vector_.size(); }
 
     friend BinStream& operator<<(BinStream& stream, HashRing& hash_ring);
     friend BinStream& operator>>(BinStream& stream, HashRing& hash_ring);

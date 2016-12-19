@@ -47,11 +47,10 @@ class Config {
         return ret->second;
     }
 
-    bool init_with_args(int ac, char** av, const std::vector<std::string>& customized, HashRing* hash_ring = nullptr,
-                        WorkerInfo* worker_info = nullptr);
+    bool init_with_args(int ac, char** av, const std::vector<std::string>& customized, WorkerInfo* worker_info = nullptr);
 
    private:
-    // TODO(legend): add boolean of valid.
+    // TODO(legend): add boolean for validation.
     std::string master_host_ = "";
     int master_port_ = -1;
     int comm_port_ = -1;

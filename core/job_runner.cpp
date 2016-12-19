@@ -35,12 +35,10 @@ namespace husky {
 bool init_with_args(int ac, char** av, const std::vector<std::string>& customized) {
     Config config;
     WorkerInfo worker_info;
-    HashRing hash_ring;
 
-    bool succ = config.init_with_args(ac, av, customized, &hash_ring, &worker_info);
+    bool succ = config.init_with_args(ac, av, customized, &worker_info);
     if (succ) {
         Context::set_config(std::move(config));
-        Context::set_hash_ring(std::move(hash_ring));
         Context::set_worker_info(std::move(worker_info));
     }
     return succ;

@@ -36,7 +36,6 @@ struct ContextGlobal {
     std::vector<std::unique_ptr<LocalMailbox>> local_mailboxes_;
     std::unique_ptr<MailboxEventLoop> mailbox_event_loop;
     std::unique_ptr<CentralRecver> central_recver;
-    HashRing hash_ring;
     Config config;
     Coordinator coordinator;
     WorkerInfo worker_info;
@@ -66,7 +65,7 @@ class Context {
 
     static MailboxEventLoop* get_mailbox_event_loop() { return global_.mailbox_event_loop.get(); }
 
-    static const HashRing& get_hash_ring() { return global_.hash_ring; }
+    static const HashRing& get_hash_ring() { return global_.worker_info.get_hash_ring(); }
 
     static const WorkerInfo& get_worker_info() { return global_.worker_info; }
 
@@ -87,8 +86,6 @@ class Context {
     static int get_process_id() { return global_.worker_info.get_process_id(); }
 
     static const void set_config(Config&& config) { global_.config = config; }
-
-    static const void set_hash_ring(HashRing&& hash_ring) { global_.hash_ring = hash_ring; }
 
     static const void set_worker_info(WorkerInfo&& worker_info) { global_.worker_info = worker_info; }
 

@@ -33,7 +33,7 @@ void HashRing::remove(int tid) {
 
 int HashRing::lookup(uint64_t pos) const {
     int64_t b = 1, j = 0;
-    while (j < get_num_workers()) {
+    while (j < get_global_tids_size()) {
         b = j;
         pos = pos * 2862933555777941757ULL + 1;
         j = (b + 1) * (static_cast<double>(1LL << 31) / static_cast<double>((pos >> 33) + 1));
