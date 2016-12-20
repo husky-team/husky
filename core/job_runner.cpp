@@ -49,6 +49,14 @@ bool init_with_args(int ac, char** av, const std::vector<std::string>& customize
 }
 
 void run_job(const std::function<void()>& job) {
+    // Exception thrown by Context::get_process_id() means that this machine
+    // is not chosen to run jobs
+    try {
+        Context::get_process_id();
+    } catch (base::HuskyException& e) {
+        return;
+    }
+
     Context::create_mailbox_env();
     // Initialize coordinator
     Context::get_coordinator()->serve();
