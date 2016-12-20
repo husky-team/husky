@@ -94,8 +94,8 @@ void affinity() {
     load(infmt, {&ac}, parse_ndpoint);
     globalize(ndpoint_list);
     int totPts = dataCountAgg.get_value();
-    husky::base::log_msg("No. of rows in input " + std::to_string(totPts));
-    husky::base::log_msg("No. of rows in local " + std::to_string(ndpoint_list.get_size()));
+    husky::base::log_info("No. of rows in input " + std::to_string(totPts));
+    husky::base::log_info("No. of rows in local " + std::to_string(ndpoint_list.get_size()));
 
     auto& allPtsCh = husky::ChannelStore::create_broadcast_channel<int, NDpoint>(ndpoint_list);
     list_execute(ndpoint_list, [&](NDpoint& p) { allPtsCh.broadcast(p.id(), p); });

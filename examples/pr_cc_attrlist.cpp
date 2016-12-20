@@ -71,7 +71,7 @@ void pr_cc() {
     husky::load(infmt, parser);
     husky::globalize(vertex_list);
     if (husky::Context::get_global_tid() == 0)
-        husky::base::log_msg("Loading input is done.");
+        husky::base::log_info("Loading input is done.");
 
     // Iterative PageRank computation
     auto& prch =
@@ -91,7 +91,7 @@ void pr_cc() {
         });
     }
     if (husky::Context::get_global_tid() == 0)
-        husky::base::log_msg("PageRank is done.");
+        husky::base::log_info("PageRank is done.");
 
     // Connected component computation
     // Computation is finished if there is no message
@@ -133,11 +133,11 @@ void pr_cc() {
         });
     }
     if (husky::Context::get_global_tid() == 0)
-        husky::base::log_msg("ConnectComponent is done.");
+        husky::base::log_info("ConnectComponent is done.");
     std::string small_graph = husky::Context::get_param("print");
     if (small_graph == "1") {
         husky::list_execute(vertex_list, [&cid_list](Vertex& v) {
-            husky::base::log_msg("vertex: " + std::to_string(v.id()) + " component id: " + std::to_string(cid_list[v]));
+            husky::base::log_info("vertex: " + std::to_string(v.id()) + " component id: " + std::to_string(cid_list[v]));
         });
     }
 }

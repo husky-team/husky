@@ -14,79 +14,49 @@
 
 #include "base/log.hpp"
 
-#include <fstream>
-#include <iostream>
-#include <mutex>
 #include <string>
+
+#include "boost/filesystem.hpp"
+#include "glog/logging.h"
+
+#include "base/exception.hpp"
 
 namespace husky {
 namespace base {
 
-std::mutex gPrintLock;
-
-void log_msg(const std::string& msg, LOG_TYPE type) {
-    std::string prefix;
-    switch (type) {
-    case LOG_TYPE::LOG_INFO: {
-        prefix = "\033[1;32m[INFO] \033[0m";
-        break;
-    }
-    case LOG_TYPE::LOG_DEBUG: {
-        prefix = "\033[1;30m[DEBUG] \033[0m";
-        break;
-    }
-    case LOG_TYPE::LOG_WARNING: {
-        prefix = "\033[1;34m[WARNING] \033[0m";
-        break;
-    }
-    case LOG_TYPE::LOG_ERROR: {
-        prefix = "\033[1;31m[ERROR] \033[0m";
-        break;
-    }
-    default: { break; }
-    }
-
-    gPrintLock.lock();
-    std::cout << prefix << msg << "\n";
-    gPrintLock.unlock();
+void log_init(const char* program_name) {
+    google::InitGoogleLogging(program_name);
+    // FLAGS_stderrthreshold:
+    // default is 2, which means only show error msg.
+    // change it with 0, which makes all kinds of msg show up.
+    FLAGS_stderrthreshold = 0;
 }
 
-void log_msg_to_file(const std::string& msg, LOG_TYPE type, const std::string& file_name) {
-    std::string prefix;
-    switch (type) {
-    case LOG_TYPE::LOG_INFO: {
-        prefix = "[INFO] ";
-        break;
+bool log_to_dir(const std::string& dir) {
+    boost::filesystem::path dir_path(dir);
+    try {
+        if (boost::filesystem::exists(dir_path)) {
+            if (!boost::filesystem::is_directory(dir_path))
+                throw HuskyException("Log dir: " + dir + " is not a directory!");
+        } else {
+            boost::filesystem::create_directories(dir_path);
+        }
+        // TODO(legend: check permission.
+        // boost::filesystem::file_status result = boost::filesystem::status(dir_path);
+        // printf("%o\n", result.permissions());
+    } catch (boost::filesystem::filesystem_error& e) {
+        throw HuskyException(std::string(e.what()));
     }
-    case LOG_TYPE::LOG_DEBUG: {
-        prefix = "[DEBUG] ";
-        break;
-    }
-    case LOG_TYPE::LOG_WARNING: {
-        prefix = "[WARNING] ";
-        break;
-    }
-    case LOG_TYPE::LOG_ERROR: {
-        prefix = "[ERROR] ";
-        break;
-    }
-    default: { break; }
-    }
-
-    gPrintLock.lock();
-    std::ofstream log_file(file_name, std::ofstream::out | std::ofstream::app);
-    log_file << prefix << msg << "\n";
-    log_file.close();
-    gPrintLock.unlock();
+    FLAGS_log_dir = dir;
 }
 
-void log_info(const std::string& msg) { log_msg(msg, LOG_TYPE::LOG_INFO); }
+void log_info(const std::string& msg) { LOG(INFO) << msg; }
 
-void log_debug(const std::string& msg) { log_msg(msg, LOG_TYPE::LOG_DEBUG); }
+void log_warning(const std::string& msg) { LOG(WARNING) << msg; }
 
-void log_error(const std::string& msg) { log_msg(msg, LOG_TYPE::LOG_ERROR); }
+void log_error(const std::string& msg) { LOG(ERROR) << msg; }
 
-void log_warning(const std::string& msg) { log_msg(msg, LOG_TYPE::LOG_WARNING); }
+void log_fatal(const std::string& msg) { LOG(FATAL) << msg; }
 
 }  // namespace base
 }  // namespace husky

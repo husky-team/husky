@@ -27,9 +27,6 @@
 
 namespace husky {
 
-using base::log_msg;
-using base::LOG_TYPE;
-
 Config::Config() {
     machines_.clear();
     params_.clear();
@@ -48,6 +45,10 @@ void Config::set_comm_port(const int& comm_port) { comm_port_ = comm_port; }
 
 void Config::set_param(const std::string& key, const std::string& value) { params_[key] = value; }
 
+void Config::set_log_dir(const std::string& log_dir) {
+    log_dir_ = log_dir; 
+}
+
 bool Config::init_with_args(int ac, char** av, const std::vector<std::string>& customized, WorkerInfo* worker_info) {
     namespace po = boost::program_options;
 
@@ -61,10 +62,13 @@ bool Config::init_with_args(int ac, char** av, const std::vector<std::string>& c
     std::string master_host;
     int master_port;
     int comm_port;
+    std::string log_dir;
     po::options_description required_options("Required options");
-    required_options.add_options()("master_host", po::value<std::string>(&master_host), "Master hostname")(
-        "master_port", po::value<int>(&master_port), "Master port")("comm_port", po::value<int>(&comm_port),
-                                                                    "Communication port");
+    required_options.add_options()
+        ("master_host", po::value<std::string>(&master_host), "Master hostname")
+        ("master_port", po::value<int>(&master_port), "Master port")
+        ("comm_port", po::value<int>(&comm_port), "Communication port")
+        ("log_dir", po::value<std::string>(&log_dir), "Log directory");
 
     po::options_description worker_info_options("Worker Info options");
     worker_info_options.add_options()("worker.info", po::value<std::vector<std::string>>()->multitoken(),
@@ -103,7 +107,7 @@ bool Config::init_with_args(int ac, char** av, const std::vector<std::string>& c
     if (vm.count("conf")) {
         std::ifstream config_file(config_file_path.c_str());
         if (!config_file) {
-            log_msg("Can not open config file: " + config_file_path, LOG_TYPE::LOG_ERROR);
+            base::log_error("Can not open config file: " + config_file_path);
             return false;
         }
         // The configure in config_file would be overwritten by cmdline.
@@ -117,22 +121,25 @@ bool Config::init_with_args(int ac, char** av, const std::vector<std::string>& c
         set_master_host(master_host);
         setup_all += 1;
     } else {
-        log_msg("arg master_host is needed", LOG_TYPE::LOG_ERROR);
+        base::log_error("arg master_host is needed");
     }
 
     if (vm.count("master_port")) {
         set_master_port(master_port);
         setup_all += 1;
     } else {
-        log_msg("arg master_port is needed", LOG_TYPE::LOG_ERROR);
+        base::log_error("arg master_port is needed");
     }
 
     if (vm.count("comm_port")) {
         set_comm_port(comm_port);
         setup_all += 1;
     } else {
-        log_msg("arg comm_port is needed", LOG_TYPE::LOG_ERROR);
+        base::log_error("arg comm_port is needed");
     }
+
+    if (vm.count("log_dir"))
+        set_log_dir(log_dir);
 
     if (vm.count("worker.info")) {
         std::string hostname = get_hostname();
@@ -145,7 +152,7 @@ bool Config::init_with_args(int ac, char** av, const std::vector<std::string>& c
             std::size_t colon_pos = w.find(':');
             if (colon_pos == std::string::npos || colon_pos == w.size() - 1) {
                 // Cannot find colon ':' or lack number of threads.
-                log_msg("arg worker.info '" + w + "' not match the format", LOG_TYPE::LOG_ERROR);
+                base::log_error("arg worker.info '" + w + "' not match the format");
                 return false;
             }
             std::string worker_hostname = w.substr(0, colon_pos);
@@ -169,7 +176,7 @@ bool Config::init_with_args(int ac, char** av, const std::vector<std::string>& c
         set_param("hostname", hostname);
         setup_all += 1;
     } else {
-        log_msg("arg worker.info is needed", LOG_TYPE::LOG_ERROR);
+        base::log_error("arg worker.info is needed");
     }
 
     if (!customized.empty()) {
@@ -178,12 +185,12 @@ bool Config::init_with_args(int ac, char** av, const std::vector<std::string>& c
                 set_param(arg, vm[arg.c_str()].as<std::string>());
                 setup_all += 1;
             } else {
-                log_msg("arg " + arg + " is needed", LOG_TYPE::LOG_ERROR);
+                base::log_error("arg " + arg + " is needed");
             }
     }
 
     if (setup_all != customized.size() + 4) {
-        log_msg("Please provide all necessary args!", LOG_TYPE::LOG_ERROR);
+        base::log_error("Please provide all necessary args!");
         return false;
     }
 

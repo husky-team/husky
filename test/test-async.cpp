@@ -47,9 +47,9 @@ void test_async_push() {
             auto& msgs = async_ch.get(obj);
             if (obj.id() == 0) {
                 if (msgs.size() > 0)
-                    base::log_msg("msg content: " + std::to_string(msgs.at(0)) + ", " + std::to_string(msgs.at(1)));
+                    base::log_info("msg content: " + std::to_string(msgs.at(0)) + ", " + std::to_string(msgs.at(1)));
                 else
-                    base::log_msg("No msg");
+                    base::log_info("No msg");
             }
             async_ch.push(obj.id(), (obj.id() + 1) % num_obj);
             async_ch.push(obj.id(), (obj.id() + 2) % num_obj);
@@ -72,7 +72,7 @@ void test_async_mig() {
         async_list,
         [&async_ch](Obj& obj) {
             int tid = Context::get_global_tid();
-            base::log_msg("obj_id: " + std::to_string(obj.id()) + " is in thread " + std::to_string(tid));
+            base::log_info("obj_id: " + std::to_string(obj.id()) + " is in thread " + std::to_string(tid));
             async_ch.migrate(obj, 0);
         },
         3);

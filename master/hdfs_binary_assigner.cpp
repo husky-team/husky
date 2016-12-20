@@ -51,7 +51,7 @@ void HDFSFileAssigner::response() {
 
     if (filename.empty())
         filename = "None";
-    base::log_msg(host + " => " + fileurl + "@" + filename);
+    base::log_info(host + " => " + fileurl + "@" + filename);
 }
 
 std::string HDFSFileAssigner::answer(const std::string& fileurl) {

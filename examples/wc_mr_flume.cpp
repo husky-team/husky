@@ -60,7 +60,7 @@ void test_load() {
             if (sum == 0)
                 return;
             else
-                husky::base::log_msg(word.word + ": " + std::to_string(sum));
+                husky::base::log_info(word.word + ": " + std::to_string(sum));
         });
     }
 }

@@ -49,7 +49,7 @@ void test() {
     husky::load(inputformat, read_and_write);
     outputformat.flush_all();
 
-    husky::base::log_msg("Done");
+    husky::base::log_info("Done");
 }
 
 int main(int argc, char** argv) {

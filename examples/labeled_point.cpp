@@ -51,7 +51,7 @@ void labeled_point_example() {
             }
             // should show <number of thread> * (<number of thread> - 1) / 2.0, <number of thread> * (<number of thread>
             // - 1) / 2.0
-            husky::base::log_msg(std::to_string(sum1[0]) + ", " + std::to_string(sum2));
+            husky::base::log_info(std::to_string(sum1[0]) + ", " + std::to_string(sum2));
         }
     });
 }

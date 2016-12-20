@@ -112,7 +112,7 @@ class Regression {
         int num_samples = num_samples_agg.get_value();
         // report statistics
         if (Context::get_global_tid() == 0) {
-            husky::base::log_msg("Training set size = " + std::to_string(num_samples));
+            husky::base::log_info("Training set size = " + std::to_string(num_samples));
         }
 
         // use gradient descent to calculate step
@@ -130,7 +130,7 @@ class Regression {
                     error_stat.update(error);
                 });
                 if (Context::get_global_tid() == 0) {
-                    base::log_msg("The error in iteration " + std::to_string(round + 1) + ": " +
+                    base::log_info("The error in iteration " + std::to_string(round + 1) + ": " +
                                   std::to_string(error_stat.get_value() / num_samples));
                 }
             }
@@ -157,7 +157,7 @@ class Regression {
         int num_samples = num_samples_agg.get_value();
         // report statistics
         if (Context::get_global_tid() == 0) {
-            husky::base::log_msg("Training set size = " + std::to_string(num_samples));
+            husky::base::log_info("Training set size = " + std::to_string(num_samples));
         }
 
         // use gradient descent to calculate step
@@ -172,7 +172,7 @@ class Regression {
             // option to report error rate
             if (this->report_per_round == true) {
                 if (Context::get_global_tid() == 0) {
-                    base::log_msg("The error in iteration " + std::to_string(round + 1) + ": " +
+                    base::log_info("The error in iteration " + std::to_string(round + 1) + ": " +
                                   std::to_string(currentError));
                 }
             }
@@ -181,7 +181,7 @@ class Regression {
             // validation based early stopping -- naive version
             if (currentError == 0.0 || (round != 0 && currentError > pastError)) {
                 if (Context::get_global_tid() == 0) {
-                    base::log_msg("Early stopping invoked. Training is completed.");
+                    base::log_info("Early stopping invoked. Training is completed.");
                 }
                 break;
             }

@@ -33,11 +33,15 @@
 namespace husky {
 
 bool init_with_args(int ac, char** av, const std::vector<std::string>& customized) {
+    base::log_init(av[0]);
+
     Config config;
     WorkerInfo worker_info;
 
     bool succ = config.init_with_args(ac, av, customized, &worker_info);
     if (succ) {
+        if (!config.get_log_dir().empty())
+            base::log_to_dir(config.get_log_dir());
         Context::set_config(std::move(config));
         Context::set_worker_info(std::move(worker_info));
     }

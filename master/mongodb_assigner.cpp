@@ -62,7 +62,7 @@ void MongoSplitAssigner::master_mongodb_req_handler() {
     zmq_sendmore_string(master_socket.get(), master.get_cur_client());
     zmq_sendmore_dummy(master_socket.get());
     zmq_send_binstream(master_socket.get(), stream);
-    base::log_msg(host + " => " + ret.get_ns() + " " + ret.get_min() + ":" + ret.get_max());
+    base::log_info(host + " => " + ret.get_ns() + " " + ret.get_min() + ":" + ret.get_max());
 }
 
 void MongoSplitAssigner::master_mongodb_req_end_handler() {
@@ -77,7 +77,7 @@ void MongoSplitAssigner::master_mongodb_req_end_handler() {
     zmq_sendmore_string(master_socket.get(), master.get_cur_client());
     zmq_sendmore_dummy(master_socket.get());
     zmq_send_binstream(master_socket.get(), stream);
-    base::log_msg("master => end@" + split.get_ns() + " " + split.get_min() + ":" + split.get_max());
+    base::log_info("master => end@" + split.get_ns() + " " + split.get_min() + ":" + split.get_max());
 }
 
 void MongoSplitAssigner::master_setup_handler() { mongo::client::initialize(); }

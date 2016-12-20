@@ -63,6 +63,8 @@ class Context {
 
     static std::string get_param(const std::string& key) { return global_.config.get_param(key); }
 
+    static std::string get_log_dir() { return global_.config.get_log_dir(); }
+
     static MailboxEventLoop* get_mailbox_event_loop() { return global_.mailbox_event_loop.get(); }
 
     static const HashRing& get_hash_ring() { return global_.worker_info.get_hash_ring(); }

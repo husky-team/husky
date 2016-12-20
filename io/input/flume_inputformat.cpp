@@ -83,13 +83,6 @@ enum FlumeInputFormatSetUp {
 };
 
 FlumeInputFormat::FlumeInputFormat(std::string rcv_host, int rcv_port) {
-    // //debug
-    // std::string log = "rcv_host ";
-    // log += rcv_host;
-    // log += " and port ";
-    // log += std::to_string(rcv_port);
-    // base::log_msg(log);
-    // //debug
     receiver_host_ = rcv_host;
     receiver_port_ = rcv_port;
     if (!is_listening_worker()) {
@@ -135,7 +128,7 @@ void FlumeInputFormat::start_listen() {
     log += " in host ";
     log += hostname;
     log += " is listening on port " + std::to_string(receiver_port_);
-    husky::base::log_msg(log);
+    husky::base::log_info(log);
 }
 
 void FlumeInputFormat::listen_() { server_->serve(); }

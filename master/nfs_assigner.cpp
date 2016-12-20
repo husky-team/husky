@@ -11,12 +11,14 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
+#include "master/nfs_assigner.hpp"
+
 #include <fstream>
 #include <string>
 #include <utility>
 
-#include "master/nfs_assigner.hpp"
-
+#include "base/log.hpp"
 #include "core/constants.hpp"
 #include "core/context.hpp"
 #include "master/master.hpp"
@@ -45,7 +47,7 @@ void NFSBlockAssigner::master_main_handler() {
     zmq_sendmore_dummy(resp_socket.get());
     zmq_send_binstream(resp_socket.get(), stream);
 
-    base::log_msg(host + " => " + ret.first + "@" + std::to_string(ret.second));
+    base::log_info(host + " => " + ret.first + "@" + std::to_string(ret.second));
 }
 
 void NFSBlockAssigner::master_setup_handler() { num_workers_alive = Context::get_num_workers(); }

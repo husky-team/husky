@@ -52,7 +52,7 @@ class ParameterBase {
         Vector<T, false> param = get_all_param();
         int idx = 0;
         for (T val : param) {
-            base::log_msg("Parameter " + std::to_string(++idx) + ": " + std::to_string(val));
+            base::log_info("Parameter " + std::to_string(++idx) + ": " + std::to_string(val));
         }
     }
 

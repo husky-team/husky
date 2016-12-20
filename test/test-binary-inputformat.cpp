@@ -27,7 +27,7 @@ void read_bin_file(const std::string& path) {
     size_t read_sz = 0;
     husky::load(infmt, [&read_sz](husky::base::BinStream& bin) { read_sz += bin.size(); });
 
-    husky::base::log_msg(std::to_string(husky::Context::get_global_tid()) + " reads " + std::to_string(read_sz) +
+    husky::base::log_info(std::to_string(husky::Context::get_global_tid()) + " reads " + std::to_string(read_sz) +
                          " bytes.");
 }
 
