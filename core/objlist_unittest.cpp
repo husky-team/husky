@@ -25,6 +25,10 @@ class Obj {
     const KeyT& id() const { return key; }
     Obj() {}
     explicit Obj(const KeyT& k) : key(k) {}
+
+    friend BinStream& operator<<(BinStream& stream, Obj& obj) { stream << obj.key; }
+
+    friend BinStream& operator>>(BinStream& stream, Obj& obj) { stream >> obj.key; }
 };
 
 TEST_F(TestObjList, InitAndDelete) {
@@ -124,6 +128,22 @@ TEST_F(TestObjList, IndexOf) {
         obj_list.index_of(p3);
     } catch (...) {
     }
+}
+
+TEST_F(TestObjList, WriteAndRead) {
+    ObjList<Obj> list_to_write("TestObjList.WriteAndRead");
+    for (int i = 0; i < 10; ++i) {
+        Obj obj(i);
+        list_to_write.add_object(std::move(obj));
+    }
+    EXPECT_TRUE(list_to_write.write_to_disk());
+
+    ObjList<Obj> list_to_read("TestObjList.WriteAndRead");
+    list_to_read.read_from_disk();
+    EXPECT_NE(list_to_read.get_size(), 0);
+    EXPECT_EQ(list_to_write.get_size(), list_to_read.get_size());
+    for (int i = 0; i < 10; i++)
+        EXPECT_EQ(list_to_write.get(i).id(), list_to_read.get(i).id());
 }
 
 }  // namespace

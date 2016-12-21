@@ -26,6 +26,10 @@ BinStream::BinStream(size_t sz) : front_(0) { buffer_.resize(sz); }
 
 BinStream::BinStream(const char* src, size_t sz) : front_(0) { push_back_bytes(src, sz); }
 
+BinStream::BinStream(const std::vector<char>& v) : front_(0), buffer_(v) {}
+
+BinStream::BinStream(std::vector<char>&& v) : front_(0), buffer_(std::move(v)) {}
+
 BinStream::BinStream(const BinStream& stream) {
     front_ = stream.front_;
     buffer_ = stream.buffer_;

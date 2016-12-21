@@ -36,11 +36,15 @@ class BinStream {
     BinStream();
     explicit BinStream(size_t sz);
     BinStream(const char* src, size_t sz);
+    BinStream(const std::vector<char>& v);
+    BinStream(std::vector<char>&& v);
     BinStream(const BinStream& stream);
     BinStream(BinStream&& stream);
-    BinStream& operator=(BinStream&& stream);
-    size_t hash();
+    virtual ~BinStream();
 
+    BinStream& operator=(BinStream&& stream);
+
+    size_t hash();
     void clear();
     void purge();
     void resize(size_t size);
@@ -55,10 +59,9 @@ class BinStream {
     /// beginning of the buffer_, and doesn't care about how much data have
     /// been read.
     inline char* get_buffer() { return &buffer_[0]; }
+    inline const std::vector<char>& get_buffer_vector() { return buffer_; }
     inline const char* get_remained_buffer() const { return (&buffer_[0]) + front_; }
     inline std::string to_string() const { return std::string(buffer_.begin() + front_, buffer_.end()); }
-
-    virtual ~BinStream();
 
    protected:
     std::vector<char> buffer_;

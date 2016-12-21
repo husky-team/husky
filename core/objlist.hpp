@@ -20,14 +20,18 @@
 #include <unordered_map>
 #include <vector>
 
+#include "base/disk_store.hpp"
 #include "base/exception.hpp"
+#include "base/serialization.hpp"
 #include "core/attrlist.hpp"
 #include "core/channel/channel_destination.hpp"
 #include "core/channel/channel_source.hpp"
+#include "core/utils.hpp"
 
 namespace husky {
 
 using base::BinStream;
+using base::DiskStore;
 
 class ObjListBase : public ChannelSource, public ChannelDestination {
    public:
@@ -48,6 +52,8 @@ class ObjList : public ObjListBase {
    public:
     // TODO(all): should be protected. The list should be constructed by possibly Context
     ObjList() = default;
+
+    explicit ObjList(const std::string& name) : list_name_(name) {}
 
     virtual ~ObjList() {
         for (auto& it : this->attrlist_map) {
@@ -202,9 +208,8 @@ class ObjList : public ObjListBase {
     // Create AttrList
     template <typename AttrT>
     AttrList<ObjT, AttrT>& create_attrlist(const std::string& attr_name, const AttrT& default_attr = {}) {
-        if (attrlist_map.find(attr_name) != attrlist_map.end()) {
+        if (attrlist_map.find(attr_name) != attrlist_map.end())
             throw base::HuskyException("ObjList<T>::create_attrlist error: name already exists");
-        }
         auto* attrlist = new AttrList<ObjT, AttrT>(&objlist_data_, default_attr);
         attrlist_map.insert({attr_name, attrlist});
         return (*attrlist);
@@ -213,37 +218,30 @@ class ObjList : public ObjListBase {
     // Get AttrList
     template <typename AttrT>
     AttrList<ObjT, AttrT>& get_attrlist(const std::string& attr_name) {
-        if (attrlist_map.find(attr_name) == attrlist_map.end()) {
+        if (attrlist_map.find(attr_name) == attrlist_map.end())
             throw base::HuskyException("ObjList<T>::get_attrlist error: AttrList does not exist");
-        }
         return (*static_cast<AttrList<ObjT, AttrT>*>(attrlist_map[attr_name]));
     }
 
     // Delete AttrList
     size_t del_attrlist(const std::string& attr_name) {
-        if (attrlist_map.find(attr_name) != attrlist_map.end()) {
+        if (attrlist_map.find(attr_name) != attrlist_map.end())
             delete attrlist_map[attr_name];
-        }
         return attrlist_map.erase(attr_name);
     }
 
     void migrate_attribute(BinStream& bin, const size_t idx) {
-        if (!this->attrlist_map.empty()) {
-            for (auto& item : this->attrlist_map) {
+        if (!this->attrlist_map.empty())
+            for (auto& item : this->attrlist_map)
                 item.second->migrate(bin, idx);
-            }
-        }
     }
 
     void process_attribute(BinStream& bin, const size_t idx) {
-        if (!this->attrlist_map.empty()) {
-            for (auto& item : this->attrlist_map) {
+        if (!this->attrlist_map.empty())
+            for (auto& item : this->attrlist_map)
                 item.second->process_bin(bin, idx);
-            }
-        }
     }
 
-    // getter
     inline size_t get_sorted_size() const { return sorted_size; }
     inline size_t get_num_del() const { return objlist_data_.num_del_; }
     inline size_t get_hashed_size() const { return hashed_objs.size(); }
@@ -251,10 +249,27 @@ class ObjList : public ObjListBase {
     inline size_t get_vector_size() const { return objlist_data_.get_vector_size(); }
     inline ObjT& get(size_t i) { return objlist_data_.data_[i]; }
 
+    bool write_to_disk() {
+        ASSERT_MSG(!list_name_.empty(), "Must have list name before writing to disk!");
+        DiskStore ds(list_name_);
+        BinStream bs;
+        bs << objlist_data_;
+        return ds.write(std::move(bs));
+    }
+
+    void read_from_disk() {
+        ASSERT_MSG(!list_name_.empty(), "Must have list name before reading from disk!");
+        DiskStore ds(list_name_);
+        BinStream bs = ds.read();
+        objlist_data_.clear();
+        bs >> objlist_data_;
+    }
+
    protected:
     ObjListData<ObjT> objlist_data_;
-    std::vector<bool> del_bitmap;
     size_t sorted_size = 0;
+    std::string list_name_;
+    std::vector<bool> del_bitmap;
     std::unordered_map<typename ObjT::KeyT, size_t> hashed_objs;
     std::unordered_map<std::string, AttrListBase*> attrlist_map;
 };

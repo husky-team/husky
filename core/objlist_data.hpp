@@ -17,8 +17,11 @@
 #include <vector>
 
 #include "base/exception.hpp"
+#include "base/serialization.hpp"
 
 namespace husky {
+
+using base::BinStream;
 
 template <typename ObjT>
 class ObjListData {
@@ -35,6 +38,8 @@ class ObjListData {
     inline size_t get_size() const { return data_.size() - num_del_; }
     inline size_t get_vector_size() const { return data_.size(); }
 
+    void clear() { data_.clear(); }
+
     // Find the index of an obj
     size_t index_of(const ObjT* const obj_ptr) const {
         size_t idx = obj_ptr - &data_[0];
@@ -42,6 +47,10 @@ class ObjListData {
             throw base::HuskyException("ObjListData<T>::index_of error: index out of range");
         return idx;
     }
+
+    friend BinStream& operator<<(BinStream& stream, ObjListData<ObjT>& obj_list_data) { stream << obj_list_data.data_; }
+
+    friend BinStream& operator>>(BinStream& stream, ObjListData<ObjT>& obj_list_data) { stream >> obj_list_data.data_; }
 
    private:
     std::vector<ObjT> data_;
