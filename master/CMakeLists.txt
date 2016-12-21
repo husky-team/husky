@@ -13,7 +13,7 @@
 # limitations under the License.
 
 
-include_directories(${PROJECT_SOURCE_DIR} ${EXTERNAL_INCLUDE})
+include_directories(${PROJECT_SOURCE_DIR} ${HUSKY_EXTERNAL_INCLUDE})
 
 set(master_plugins nfs_assigner.cpp progress_tracker.cpp nfs_binary_assigner.cpp)
 
@@ -33,7 +33,7 @@ set(husky-master-dep husky-io husky-core husky-base)
 # Master
 add_executable(Master master_main.cpp $<TARGET_OBJECTS:husky-master-objs>)
 target_link_libraries(Master ${husky-master-dep})
-target_link_libraries(Master ${EXTERNAL_LIB})
+target_link_libraries(Master ${HUSKY_EXTERNAL_LIB})
 if(WIN32)
     set_target_properties(Master PROPERTIES COMPILER_FLAGS "/EHsc")
 endif()

@@ -13,7 +13,7 @@
 # limitations under the License.
 
 
-include_directories(${PROJECT_SOURCE_DIR} ${EXTERNAL_INCLUDE})
+include_directories(${PROJECT_SOURCE_DIR} ${HUSKY_EXTERNAL_INCLUDE})
 
 add_subdirectory(input)
 add_subdirectory(output)

@@ -13,7 +13,7 @@
 # limitations under the License.
 
 
-include_directories(${PROJECT_SOURCE_DIR} ${EXTERNAL_INCLUDE})
+include_directories(${PROJECT_SOURCE_DIR} ${HUSKY_EXTERNAL_INCLUDE})
 
 set(husky husky-lib husky-io husky-core husky-base) 
 
@@ -25,7 +25,7 @@ include_directories(${GTEST_INCLUDE})
 add_executable(HuskyUnitTest ${UNITTEST_FILES} unittest_main.cpp)
 add_dependencies(HuskyUnitTest gtest)
 target_link_libraries(HuskyUnitTest ${husky})
-target_link_libraries(HuskyUnitTest ${EXTERNAL_LIB})
+target_link_libraries(HuskyUnitTest ${HUSKY_EXTERNAL_LIB})
 target_link_libraries(HuskyUnitTest ${GTEST_LIBRARIES})
 target_link_libraries(HuskyUnitTest ${GMOCK_LIBRARIES})
 husky_default_properties(HuskyUnitTest)
@@ -35,23 +35,23 @@ husky_default_properties(HuskyUnitTest)
 # TestAsync 
 add_executable(TestAsync test-async.cpp)
 target_link_libraries(TestAsync ${husky})
-target_link_libraries(TestAsync ${EXTERNAL_LIB})
+target_link_libraries(TestAsync ${HUSKY_EXTERNAL_LIB})
 husky_default_properties(TestAsync)
 
 # TestBinaryInputFormat
 add_executable(TestBinaryInputFormat test-binary-inputformat.cpp)
 target_link_libraries(TestBinaryInputFormat ${husky})
-target_link_libraries(TestBinaryInputFormat ${EXTERNAL_LIB})
+target_link_libraries(TestBinaryInputFormat ${HUSKY_EXTERNAL_LIB})
 husky_default_properties(TestBinaryInputFormat)
 
 # TestLogMsg
 add_executable(TestLogMsg test-log-msg.cpp)
 target_link_libraries(TestLogMsg ${husky})
-target_link_libraries(TestLogMsg ${EXTERNAL_LIB})
+target_link_libraries(TestLogMsg ${HUSKY_EXTERNAL_LIB})
 husky_default_properties(TestLogMsg)
 
 # TestMongoDBOutputFormat
 add_executable(TestMongoDBOutputFormat test-mongodb-outputformat.cpp)
 target_link_libraries(TestMongoDBOutputFormat ${husky})
-target_link_libraries(TestMongoDBOutputFormat ${EXTERNAL_LIB})
+target_link_libraries(TestMongoDBOutputFormat ${HUSKY_EXTERNAL_LIB})
 husky_default_properties(TestMongoDBOutputFormat)
