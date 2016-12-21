@@ -2,11 +2,15 @@ Husky
 =======
 
 [![Build Status](https://travis-ci.org/husky-team/husky.svg?branch=master)](https://travis-ci.org/husky-team/husky)
+[![Husky License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://github.com/husky-team/husky/blob/master/LICENSE)
 
 [Husky](http://www.husky-project.com/) is a distributed computing system designed to handle mixed jobs of coarse-grained transformations, graph computing and machine learning. The core of Husky is written in C++ so as to leverage the performance of native runtime. For machine learning, Husky supports relaxed consistency level and asynchronous computing in order to exploit higher network/CPU throughput.
 
 For more details about Husky, please check our [Wiki](https://github.com/husky-team/husky/wiki).
 
+For bugs in Husky, please file an issue on [github issue platform](https://github.com/husky-team/husky/issues).
+
+For further discussions, please send email to *support@husky-project.com*.
 
 Dependencies
 -------------
@@ -77,6 +81,10 @@ First make sure that the master is running. Use the following to start the maste
 
     ./Master --conf /path/to/your/conf
 
+In the single-machine environment, use the following,
+
+    ./<executable> --conf /path/to/your/conf
+
 In the distributed environment, use the following to execute workers on all machines,
 
     ./exec.sh <executable> --conf /path/to/your/conf
@@ -84,10 +92,6 @@ In the distributed environment, use the following to execute workers on all mach
 If MPI has been installed in the distributed environment, you may use the following alternatively,
 
     ./mpiexec.sh <executable> --conf /path/to/your/conf
-
-In the single-machine environment, use the following,
-
-    ./<executable> --conf /path/to/your/conf
 
 Run Husky Unit Test
 --------------------
