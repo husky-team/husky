@@ -53,17 +53,17 @@ void Master::setup() {
 void Master::init_socket() {
     master_socket.reset(new zmq::socket_t(zmq_context, ZMQ_ROUTER));
     master_socket->bind("tcp://*:" + std::to_string(Context::get_config().get_master_port()));
-    base::log_info("Binded to tcp://*:" + std::to_string(Context::get_config().get_master_port()));
+    LOG_I << "Binded to tcp://*:" << std::to_string(Context::get_config().get_master_port());
 }
 
 void Master::serve() {
-    base::log_info("\033[1;32mMASTER READY\033[0m");
+    LOG_I << "\033[1;32mMASTER READY\033[0m";
     while (running) {
         cur_client = zmq_recv_string(master_socket.get());
         zmq_recv_dummy(master_socket.get());
         handle_message(zmq_recv_int32(master_socket.get()), cur_client);
     }
-    base::log_info("\033[1;32mMASTER FINISHED\033[0m");
+    LOG_I << "\033[1;32mMASTER FINISHED\033[0m";
 }
 
 void Master::handle_message(uint32_t message, const std::string& id) {

@@ -47,7 +47,7 @@ class MigrateChannel : public ObjList2ObjListChannel<ObjT, ObjT> {
     MigrateChannel(MigrateChannel&&) = default;
     MigrateChannel& operator=(MigrateChannel&&) = default;
 
-    void customized_setup() override { migrate_buffer_.resize(this->worker_info_->get_largest_tid()+1); }
+    void customized_setup() override { migrate_buffer_.resize(this->worker_info_->get_largest_tid() + 1); }
 
     void migrate(ObjT& obj, int dst_thread_id) {
         auto idx = this->src_ptr_->delete_object(&obj);

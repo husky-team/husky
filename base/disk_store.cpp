@@ -14,6 +14,7 @@
 
 #include "base/disk_store.hpp"
 
+#include <algorithm>
 #include <fstream>
 #include <string>
 #include <vector>

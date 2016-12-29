@@ -14,21 +14,45 @@
 
 #pragma once
 
+#include <sstream>
 #include <string>
 
 namespace husky {
+
+#define LOG_I base::HuskyLogger(__FILE__, __LINE__, 0).stream()
+#define LOG_W base::HuskyLogger(__FILE__, __LINE__, 1).stream()
+#define LOG_E base::HuskyLogger(__FILE__, __LINE__, 2).stream()
+#define LOG_F base::HuskyLogger(__FILE__, __LINE__, 3).stream()
+
 namespace base {
+
+/// Not include glog/logging.h to avoid namespace pollution.
+/// Please use LOG_* instead of constructing HuskyLogger.
 
 void log_init(const char* program_name);
 bool log_to_dir(const std::string& dir);
 
-/// Make sure to call `log_init` before these functions.
-void log_info(const std::string& msg);
-void log_warning(const std::string& msg);
-void log_error(const std::string& msg);
-void log_fatal(const std::string& msg);
+/// Make sure to call `log_init` before log functions.
 
-//TODO(legend): may port more functions here from glog.
+class HuskyLogger {
+   public:
+    HuskyLogger() = delete;
+    HuskyLogger(const char* file, int line, int severity);
+    virtual ~HuskyLogger();
+
+    std::stringstream& stream();
+
+   private:
+    std::string file_;
+    int line_;
+    int severity_;
+    std::stringstream log_stream_;
+};
+
+// Deprecated. It would not show the real location of the calling.
+void log_msg(const std::string& msg);
+
+// TODO(legend): may port more functions here from glog.
 
 }  // namespace base
 }  // namespace husky

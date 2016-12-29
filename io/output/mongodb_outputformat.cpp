@@ -96,7 +96,7 @@ void MongoDBOutputFormat::flush_all() {
 
     error_msg_ = client.getLastError();
     if (!error_msg_.empty()) {
-        base::log_error(error_msg_);
+        husky::LOG_E << error_msg_;
         return;
     }
 

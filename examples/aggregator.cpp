@@ -47,7 +47,7 @@ void aggregator() {
         agg.update(id);                   // aggregate
         AggregatorFactory::sync();        // synchronize manually
         if (id == 0) {
-            base::log_info("Sum Calculation: " + std::to_string(agg.get_value()));  // get the value
+            LOG_I << "Sum Calculation: " << agg.get_value();  // get the value
         }
     }
     {  // 2. count average occurence of word, and find the word with maximum occurence
@@ -86,9 +86,9 @@ void aggregator() {
         });
 
         if (id == 0) {
-            base::log_info("Average occurence of words in " + Context::get_param("input") + ": " +
+            base::log_msg("Average occurence of words in " + Context::get_param("input") + ": " +
                     std::to_string((tot_occurence.get_value() + 0.) / tot_word.get_value()));
-            base::log_info("Word with maximum occurence: (\"" + max_occurence.get_value().first + "\", " +
+            base::log_msg("Word with maximum occurence: (\"" + max_occurence.get_value().first + "\", " +
                     std::to_string(max_occurence.get_value().second) + ")");
         }
     }

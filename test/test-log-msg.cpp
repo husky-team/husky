@@ -19,9 +19,9 @@
 int main(int argc, char** argv) {
     husky::base::log_init(argv[0]);
     husky::base::log_to_dir("test-log-msg");
-    husky::base::log_info("Info Log");
-    husky::base::log_warning("Warning Log");
-    husky::base::log_error("Error Log");
-    //husky::base::log_fatal("Fatal Log");
+    husky::LOG_I << "Info Log";
+    husky::LOG_W << "Warning Log";
+    husky::LOG_E << "Error Log";
+    //husky::LOG_F << "Fatal Log";
     return 0;
 }

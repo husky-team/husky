@@ -51,7 +51,7 @@ void NFSFileAssigner::response() {
 
     if (filename.empty())
         filename = "None";
-    base::log_info(host + " => " + fileurl + "@" + filename);
+    LOG_I << host << " => " << fileurl << "@" << filename;
 }
 
 std::string NFSFileAssigner::answer(const std::string& fileurl) {

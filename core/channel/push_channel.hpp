@@ -58,7 +58,7 @@ class PushChannel : public Source2ObjListChannel<DstObjT> {
     void customized_setup() override {
         // use get_largest_tid() instead of get_num_workers()
         // sine we may only use a subset of worker
-        send_buffer_.resize(this->worker_info_->get_largest_tid()+1);
+        send_buffer_.resize(this->worker_info_->get_largest_tid() + 1);
     }
 
     void push(const MsgT& msg, const typename DstObjT::KeyT& key) {

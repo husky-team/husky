@@ -25,7 +25,7 @@ namespace base {
 class DiskStore {
    public:
     DiskStore() = delete;
-    DiskStore(const std::string& path);
+    explicit DiskStore(const std::string& path);
     virtual ~DiskStore() = default;
 
     BinStream read();

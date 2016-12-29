@@ -14,6 +14,7 @@
 
 #include "master/master.hpp"
 
+#include <string>
 #include <vector>
 
 #include "core/job_runner.hpp"

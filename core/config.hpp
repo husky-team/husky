@@ -49,7 +49,8 @@ class Config {
         return ret->second;
     }
 
-    bool init_with_args(int ac, char** av, const std::vector<std::string>& customized, WorkerInfo* worker_info = nullptr);
+    bool init_with_args(int ac, char** av, const std::vector<std::string>& customized,
+                        WorkerInfo* worker_info = nullptr);
 
    private:
     // TODO(legend): add boolean for validation.

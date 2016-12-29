@@ -101,7 +101,7 @@ void logistic_regression() {
     auto test_error = lr.avg_error(test_set);
     if (husky::Context::get_global_tid() == 0) {
         // validation
-        husky::base::log_info("Error on testing set: " + std::to_string(test_error));
+        husky::base::log_msg("Error on testing set: " + std::to_string(test_error));
     }
 }
 

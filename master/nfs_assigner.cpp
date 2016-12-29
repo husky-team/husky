@@ -47,7 +47,7 @@ void NFSBlockAssigner::master_main_handler() {
     zmq_sendmore_dummy(resp_socket.get());
     zmq_send_binstream(resp_socket.get(), stream);
 
-    base::log_info(host + " => " + ret.first + "@" + std::to_string(ret.second));
+    LOG_I << host << " => " << ret.first << "@" << std::to_string(ret.second);
 }
 
 void NFSBlockAssigner::master_setup_handler() { num_workers_alive = Context::get_num_workers(); }

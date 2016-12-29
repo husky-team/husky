@@ -96,9 +96,7 @@ class WorkerInfo {
 
     // this method is to retrieve the largest global id in worker_info
     // It's useful when we create a sub-worker_info from worker_info
-    inline int get_largest_tid() const {
-        return largest_tid_;
-    }
+    inline int get_largest_tid() const { return largest_tid_; }
 
     void add_worker(int process_id, int global_worker_id, int local_worker_id, int num_hash_ranges = 1);
 

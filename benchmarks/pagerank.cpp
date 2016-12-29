@@ -88,7 +88,7 @@ void pagerank() {
         auto t2 = steady_clock::now();
         auto time = duration_cast<duration<double>>(t2 - t1).count();
         if (husky::Context::get_global_tid() == 0)
-            husky::base::log_info("[Iter" + std::to_string(iter) + "] " + std::to_string(time) + "s elapsed.");
+            husky::LOG_I << "[Iter" << std::to_string(iter) << "] " << std::to_string(time) << "s elapsed.";
     }
 }
 

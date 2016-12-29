@@ -128,7 +128,7 @@ void FlumeInputFormat::start_listen() {
     log += " in host ";
     log += hostname;
     log += " is listening on port " + std::to_string(receiver_port_);
-    husky::base::log_info(log);
+    husky::LOG_I << log;
 }
 
 void FlumeInputFormat::listen_() { server_->serve(); }

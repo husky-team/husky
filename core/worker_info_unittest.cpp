@@ -1,5 +1,6 @@
 #include "core/worker_info.hpp"
 
+#include <algorithm>
 #include <string>
 #include <vector>
 
@@ -62,7 +63,7 @@ TEST_F(TestWorkerInfo, Functional) {
 
     EXPECT_EQ(worker_info.local_to_global_id(1, 1), 21);
 
-    EXPECT_EQ(worker_info.get_largest_tid(), num_threads-1);
+    EXPECT_EQ(worker_info.get_largest_tid(), num_threads - 1);
 }
 
 TEST_F(TestWorkerInfo, Inconsecutive) {
@@ -90,7 +91,7 @@ TEST_F(TestWorkerInfo, Inconsecutive) {
     auto global_tids = worker_info.get_global_tids();
     std::sort(global_tids.begin(), global_tids.end());
     std::vector<int> global_tids_res{2, 4, 7};
-    for (int i = 0; i < global_tids.size(); ++ i) {
+    for (int i = 0; i < global_tids.size(); ++i) {
         EXPECT_EQ(global_tids[i], global_tids_res[i]);
     }
 
@@ -103,7 +104,7 @@ TEST_F(TestWorkerInfo, Inconsecutive) {
     auto local_tids = worker_info.get_local_tids();
     std::sort(local_tids.begin(), local_tids.end());
     std::vector<int> local_tids_res{2, 4, 7};
-    for (int i = 0; i < local_tids.size(); ++ i) {
+    for (int i = 0; i < local_tids.size(); ++i) {
         EXPECT_EQ(local_tids[i], local_tids_res[i]);
     }
 }

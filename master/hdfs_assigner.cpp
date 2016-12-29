@@ -53,7 +53,7 @@ void HDFSBlockAssigner::master_main_handler() {
     zmq_sendmore_dummy(master_socket.get());
     zmq_send_binstream(master_socket.get(), stream);
 
-    base::log_info(host + " => " + ret.first + "@" + std::to_string(ret.second));
+    LOG_I << host << " => " << ret.first << "@" << std::to_string(ret.second);
 }
 
 void HDFSBlockAssigner::master_setup_handler() {
@@ -76,7 +76,7 @@ void HDFSBlockAssigner::init_hdfs(const std::string& node, const std::string& po
         is_valid_ = true;
         return;
     }
-    base::log_error("Failed to connect to HDFS " + node + ":" + port);
+    LOG_I << "Failed to connect to HDFS " << node << ":" << port;
 }
 
 void HDFSBlockAssigner::browse_hdfs(const std::string& url) {

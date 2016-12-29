@@ -18,6 +18,7 @@
 #include <string>
 #include <vector>
 
+#include "base/log.hpp"
 #include "core/utils.hpp"
 #include "lib/aggregator.hpp"
 #include "lib/aggregator_factory.hpp"
@@ -52,7 +53,7 @@ class ParameterBase {
         Vector<T, false> param = get_all_param();
         int idx = 0;
         for (T val : param) {
-            base::log_info("Parameter " + std::to_string(++idx) + ": " + std::to_string(val));
+            husky::LOG_I << "Parameter " << std::to_string(++idx) << ": " << std::to_string(val);
         }
     }
 

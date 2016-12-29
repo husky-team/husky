@@ -35,9 +35,9 @@ class BinStream {
    public:
     BinStream();
     explicit BinStream(size_t sz);
+    explicit BinStream(const std::vector<char>& v);
+    explicit BinStream(std::vector<char>&& v);
     BinStream(const char* src, size_t sz);
-    BinStream(const std::vector<char>& v);
-    BinStream(std::vector<char>&& v);
     BinStream(const BinStream& stream);
     BinStream(BinStream&& stream);
     virtual ~BinStream();

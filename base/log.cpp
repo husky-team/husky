@@ -41,7 +41,7 @@ bool log_to_dir(const std::string& dir) {
         } else {
             boost::filesystem::create_directories(dir_path);
         }
-        // TODO(legend: check permission.
+        // TODO(legend): check permission.
         // boost::filesystem::file_status result = boost::filesystem::status(dir_path);
         // printf("%o\n", result.permissions());
     } catch (boost::filesystem::filesystem_error& e) {
@@ -50,13 +50,14 @@ bool log_to_dir(const std::string& dir) {
     FLAGS_log_dir = dir;
 }
 
-void log_info(const std::string& msg) { LOG(INFO) << msg; }
+HuskyLogger::HuskyLogger(const char* file, int line, int severity)
+    : file_(file), line_(line), severity_(severity), log_stream_() {}
 
-void log_warning(const std::string& msg) { LOG(WARNING) << msg; }
+HuskyLogger::~HuskyLogger() { google::LogMessage(file_.c_str(), line_).stream() << log_stream_.str(); }
 
-void log_error(const std::string& msg) { LOG(ERROR) << msg; }
+std::stringstream& HuskyLogger::stream() { return log_stream_; }
 
-void log_fatal(const std::string& msg) { LOG(FATAL) << msg; }
+void log_msg(const std::string& msg) { husky::LOG_I << "Note: log_msg() is deprecated.\n " << msg; }
 
 }  // namespace base
 }  // namespace husky

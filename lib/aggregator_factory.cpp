@@ -43,9 +43,7 @@ size_t AggregatorFactory::get_num_machine() { return Context::get_num_processes(
 
 size_t AggregatorFactory::get_machine_id() { return Context::get_process_id(); }
 
-size_t AggregatorFactory::get_machine_id(size_t fid) {
-    return Context::get_worker_info().get_process_id(fid);
-}
+size_t AggregatorFactory::get_machine_id(size_t fid) { return Context::get_worker_info().get_process_id(fid); }
 
 void AggregatorFactory::send_local_update(std::vector<BinStream>& bins) { send(aggregator_channel_, bins); }
 
