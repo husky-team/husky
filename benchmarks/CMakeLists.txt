@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-include_directories(${PROJECT_SOURCE_DIR} ${EXTERNAL_INCLUDE})
+include_directories(${PROJECT_SOURCE_DIR} ${HUSKY_EXTERNAL_INCLUDE})
 
 set(husky husky-lib husky-io husky-core husky-base) 
 
@@ -21,5 +21,5 @@ set(husky husky-lib husky-io husky-core husky-base)
 # PageRank
 add_executable(BenchPageRank pagerank.cpp)
 target_link_libraries(BenchPageRank ${husky})
-target_link_libraries(BenchPageRank ${EXTERNAL_LIB})
+target_link_libraries(BenchPageRank ${HUSKY_EXTERNAL_LIB})
 husky_default_properties(BenchPageRank)
