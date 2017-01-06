@@ -27,23 +27,4 @@ namespace husky {
         }                                \
     } while (false)
 
-#ifdef HUSKY_DEBUG
-#define HUSKY_DEBUG_ON 1
-#else
-#define HUSKY_DEBUG_ON 0
-#endif
-
-#define debug_msg(msg)                     \
-    do {                                   \
-        if (HUSKY_DEBUG_ON)                \
-            Base::log_msg(msg, LOG_DEBUG); \
-    } while (0)
-
-#define ID(cls, type)                      \
-    typedef type KeyT;                     \
-    KeyT key;                              \
-    const KeyT& id() const { return key; } \
-    cls() {}                               \
-    cls(KeyT key) { this->key = key; }
-
 }  // namespace husky
