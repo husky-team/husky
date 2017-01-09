@@ -14,6 +14,7 @@
 
 #pragma once
 
+#include <algorithm>
 #include <cmath>
 #include <vector>
 
@@ -168,6 +169,8 @@ class Vector<T, false> {
 
     inline const T& operator[](int idx) const { return vec[idx]; }
 
+    inline void sort_asc() {}
+
     inline void resize(int size) {
         vec.resize(size);
         feature_num = size;
@@ -202,11 +205,20 @@ class Vector<T, false> {
     T dot_with_intcpt(const DenseVector<T>&) const;
     T dot_with_intcpt(const SparseVector<T>&) const;
 
+    inline T sorted_dot(const DenseVector<T>& b) const { return dot(b); }
+    inline T sorted_dot(const SparseVector<T>& b) const { return dot(b); }
+
+    inline T sorted_dot_with_intcpt(const DenseVector<T>& b) const { return dot_with_intcpt(b); }
+    inline T sorted_dot_with_intcpt(const SparseVector<T>& b) const { return dot_with_intcpt(b); }
+
     template <bool is_sparse>
     inline T euclid_dist(const Vector<T, is_sparse>& b) const {
         DenseVector<T> diff = *this - b;
         return std::sqrt(diff.dot(diff));
     }
+
+    inline T sorted_euclid_dist(const DenseVector<T>& b) const { return euclid_dist(b); }
+    T sorted_euclid_dist(const SparseVector<T>& b) const;
 
     friend husky::BinStream& operator<<(husky::BinStream& stream, const DenseVector<T>& b) {
         stream << b.feature_num;
@@ -351,6 +363,10 @@ class Vector<T, true> {
 
     inline ConstFeaValIterator end_feaval() const { return vec.end(); }
 
+    inline void sort_asc() {
+        std::sort(vec.begin(), vec.end(), [](const FeaValPair<T>& a, const FeaValPair<T>& b) { return a.fea < b.fea; });
+    }
+
     inline void resize(int size) { feature_num = size; }
 
     inline void set(int idx, const T& val) { vec.emplace_back(idx, val); }
@@ -377,11 +393,20 @@ class Vector<T, true> {
 
     T dot_with_intcpt(const DenseVector<T>& b) const;
 
-    template <bool is_sparse>
+    // should be used only when sparse vectors are sorted ascendingly according to feature number
+    inline T sorted_dot(const DenseVector<T>& b) const { return b.dot(*this); }
+    T sorted_dot(const SparseVector<T>& b) const;
+
+    T sorted_dot_with_intcpt(const DenseVector<T>& b) const;
+    T sorted_dot_with_intcpt(const SparseVector<T>& b) const;
+
     inline T euclid_dist(const DenseVector<T>& b) const {
         DenseVector<T> diff = b - *this;
         return std::sqrt(diff.dot(diff));
     }
+
+    inline T sorted_euclid_dist(const DenseVector<T>& b) const { return b.sorted_euclid_dist((*this)); }
+    T sorted_euclid_dist(const SparseVector<T>& b) const;
 
     friend husky::BinStream& operator<<(husky::BinStream& stream, const SparseVector<T>& b) {
         stream << b.feature_num << b.vec.size();

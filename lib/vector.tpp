@@ -216,6 +216,29 @@ T DenseVector<T>::dot_with_intcpt(const SparseVector<T>& b) const {
 }
 
 template <typename T>
+T DenseVector<T>::sorted_euclid_dist(const SparseVector<T>& b) const {
+    assert(feature_num == b.get_feature_num());
+
+    T res = 0;
+
+    auto b_it = b.begin();
+    int b_fea = b_it->fea;
+
+    for (int i = 0; i < feature_num; i++) {
+        if (i != b_fea) {
+            res += vec[i] * vec[i];
+        } else {
+            T diff = vec[i] - b_it->val;
+            res += diff * diff;
+            b_it++;
+            b_fea = b_it->fea;
+        }
+    }
+
+    return res;
+}
+
+template <typename T>
 SparseVector<T> SparseVector<T>::operator-() const {
     SparseVector<T> res(*this);
 
@@ -328,6 +351,137 @@ T SparseVector<T>::dot_with_intcpt(const DenseVector<T>& b) const {
             res += entry.val * vec[entry.fea];
         } else {
             res += entry.val;
+        }
+    }
+
+    return res;
+}
+
+template <typename T>
+T SparseVector<T>::sorted_dot(const SparseVector<T>& b) const {
+    assert(feature_num == b.get_feature_num());
+
+    T res = 0;
+
+    auto it = begin(), b_it = b.begin();
+    int fea = it->fea, b_fea = b_it->fea;
+
+    while (it != end() && b_it != b.end()) {
+        if (fea > b_fea) {
+            b_it++;
+            b_fea = b_it->fea;
+        } else if (fea < b_fea) {
+            it++;
+            fea = it->fea;
+        } else {
+            res += it->val * b_it->val;
+            it++;
+            fea = it->fea;
+            b_it++;
+            b_fea = b_it->fea;
+        }
+    }
+
+    return res;
+}
+
+template <typename T>
+T SparseVector<T>::sorted_dot_with_intcpt(const DenseVector<T>& b) const {
+    assert(feature_num == b.get_feature_num() + 1);
+
+    T res = 0;
+
+    auto it = begin();
+    auto b_it = b.begin_feaval();
+    int fea = it->fea;
+    int b_fea = (*b_it).fea;
+    while (it != end() && b_it != b.end_feaval()) {
+        if (fea == b_fea) {
+            res += it->val * (*b_it).val;
+            it++;
+            fea = it->fea;
+            b_it++;
+            b_fea = (*b_it).fea;
+        } else {
+            b_it++;
+            b_fea = (*b_it).fea;
+        }
+    }
+
+    while (it != end()) {
+        if (fea == feature_num - 1) {
+            res += it->val;
+            break;
+        }
+        it++;
+        fea = it->fea;
+    }
+    return res;
+}
+
+template <typename T>
+T SparseVector<T>::sorted_dot_with_intcpt(const SparseVector<T>& b) const {
+    assert(feature_num == b.get_feature_num() + 1);
+
+    T res = 0;
+
+    auto it = begin(), b_it = b.begin();
+    int fea = it->fea, b_fea = b_it->fea;
+    while (it != end() && b_it != b.end()) {
+        if (fea > b_fea) {
+            b_it++;
+            b_fea = b_it->fea;
+        } else if (fea < b_fea) {
+            it++;
+            fea = it->fea;
+        } else {
+            res += it->val * b_it->val;
+            it++;
+            fea = it->fea;
+            b_it++;
+            b_fea = b_it->fea;
+        }
+    }
+
+    while (it != end()) {
+        if (fea == feature_num - 1) {
+            res += it->val;
+            break;
+        }
+        it++;
+        fea = it->fea;
+    }
+
+    return res;
+}
+
+template <typename T>
+T SparseVector<T>::sorted_euclid_dist(const SparseVector<T>& b) const {
+    assert(feature_num == b.get_feature_num());
+
+    T res = 0;
+
+    auto it = begin(), b_it = b.begin();
+    int fea = it->fea, b_fea = b_it->fea;
+
+    while (it != end() && b_it != b.end()) {
+        if (fea > b_fea) {
+            res += b_it->val * b_it->val;
+            b_it++;
+            b_fea = b_it->fea;
+            continue;
+        } else if (fea < b_fea) {
+            res += it->val * it->val;
+            it++;
+            fea = it->fea;
+            continue;
+        } else {
+            T diff = it->val - b_it->val;
+            res += diff * diff;
+            it++;
+            fea = it->fea;
+            b_it++;
+            b_fea = b_it->fea;
         }
     }
 
