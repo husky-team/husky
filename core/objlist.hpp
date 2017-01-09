@@ -153,8 +153,7 @@ class ObjList : public ObjListBase {
         int r = this->sorted_size - 1;
         int l = 0;
         int m = (r + l) / 2;
-        if (working_list.size() == 0)
-            return nullptr;
+
         while (l <= r) {
 // __builtin_prefetch(start_addr+(m+1+r)/2, 0, 1);
 // __builtin_prefetch(start_addr+(l+m-1)/2, 0, 1);
