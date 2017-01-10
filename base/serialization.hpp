@@ -70,15 +70,64 @@ class BinStream {
     size_t front_;
 };
 
+template <typename T>
+class has_serialize {
+   private:
+    template <typename U>
+    static constexpr auto check(int) ->
+        typename std::is_same<decltype(std::declval<U>().serialize(*(new BinStream))), BinStream&>::type;
+
+    template <typename>
+    static constexpr std::false_type check(...);
+
+    typedef decltype(check<T>(0)) type;
+
+   public:
+    static constexpr bool value = type::value;
+};
+
+template <typename T>
+class has_deserialize {
+   private:
+    template <typename U>
+    static constexpr auto check(int) ->
+        typename std::is_same<decltype(std::declval<U>().deserialize(*(new BinStream))), BinStream&>::type;
+
+    template <typename>
+    static constexpr std::false_type check(...);
+
+    typedef decltype(check<T>(0)) type;
+
+   public:
+    static constexpr bool value = type::value;
+};
+
 template <typename InputT>
-BinStream& operator<<(BinStream& stream, const InputT& x) {
-    static_assert(IS_TRIVIALLY_COPYABLE(InputT), "For non trivially copyable type, serialization functions are needed");
+typename std::enable_if<has_serialize<InputT>::value, BinStream>::type& operator<<(BinStream& stream,
+                                                                                   const InputT& x) {
+    x.serialize(stream);
+    return stream;
+}
+
+template <typename OutputT>
+typename std::enable_if<has_deserialize<OutputT>::value, BinStream>::type& operator>>(BinStream& stream,
+                                                                                      OutputT& x) {
+    x.deserialize(stream);
+    return stream;
+}
+
+template <typename InputT>
+typename std::enable_if<!has_serialize<InputT>::value, BinStream>::type& operator<<(BinStream& stream,
+                                                                                    const InputT& x) {
+    static_assert(IS_TRIVIALLY_COPYABLE(InputT),
+                  "For non trivially copyable type, serialization functions are needed");
     stream.push_back_bytes((char*) &x, sizeof(InputT));
     return stream;
 }
 
 template <typename OutputT>
-BinStream& operator>>(BinStream& stream, OutputT& x) {
+typename std::enable_if<!has_deserialize<OutputT>::value, BinStream>::type& operator>>(BinStream& stream,
+                                                                                       OutputT& x) {
     static_assert(IS_TRIVIALLY_COPYABLE(OutputT),
                   "For non trivially copyable type, serialization functions are needed");
     x = *(OutputT*) (stream.pop_front_bytes(sizeof(OutputT)));

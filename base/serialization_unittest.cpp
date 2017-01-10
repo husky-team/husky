@@ -22,6 +22,31 @@ class TestSerialization : public testing::Test {
     void TearDown() {}
 };
 
+class TestSerializationWithInheritance {
+   public:
+    TestSerializationWithInheritance(int y) : x(y) {}
+
+    BinStream& serialize(BinStream& stream) const {
+        return stream << x;
+    }
+
+    BinStream& deserialize(BinStream& stream) {
+        return stream >> x;
+    }
+
+    bool operator==(const TestSerializationWithInheritance& rhs) const {
+        return x == rhs.x;
+    }
+
+   protected:
+    int x;
+};
+
+class TestSerializationWithInheritanceSubclass : public TestSerializationWithInheritance {
+   public:
+    TestSerializationWithInheritanceSubclass(int y) : TestSerializationWithInheritance(y) {}
+};
+
 TEST_F(TestSerialization, InitAndDelete) {
     BinStream* stream = new BinStream();
     ASSERT_TRUE(stream != NULL);
@@ -225,6 +250,24 @@ TEST_F(TestSerialization, Mixture) {
     EXPECT_STREQ(b.c_str(), bb.c_str());
     EXPECT_EQ(c, cc);
     EXPECT_EQ(d, dd);
+}
+
+TEST_F(TestSerialization, UsingMemberFunction) {
+    BinStream stream;
+    TestSerializationWithInheritance a(123);
+    stream << a;
+    TestSerializationWithInheritance b(0);
+    stream >> b;
+    EXPECT_EQ(a, b);
+}
+
+TEST_F(TestSerialization, WithInheritance) {
+    BinStream stream;
+    TestSerializationWithInheritanceSubclass a(123);
+    stream << a;
+    TestSerializationWithInheritanceSubclass b(0);
+    stream >> b;
+    EXPECT_EQ(a, b);
 }
 
 }  // namespace
