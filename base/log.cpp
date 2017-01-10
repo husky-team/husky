@@ -30,6 +30,8 @@ void log_init(const char* program_name) {
     // default is 2, which means only show error msg.
     // change it with 0, which makes all kinds of msg show up.
     FLAGS_stderrthreshold = 0;
+    // FLAGS_colorlogtostderr: support color in term.
+    FLAGS_colorlogtostderr = true;
 }
 
 bool log_to_dir(const std::string& dir) {
@@ -53,7 +55,7 @@ bool log_to_dir(const std::string& dir) {
 HuskyLogger::HuskyLogger(const char* file, int line, int severity)
     : file_(file), line_(line), severity_(severity), log_stream_() {}
 
-HuskyLogger::~HuskyLogger() { google::LogMessage(file_.c_str(), line_).stream() << log_stream_.str(); }
+HuskyLogger::~HuskyLogger() { google::LogMessage(file_.c_str(), line_, severity_).stream() << log_stream_.str(); }
 
 std::stringstream& HuskyLogger::stream() { return log_stream_; }
 

@@ -20,8 +20,12 @@ int main(int argc, char** argv) {
     husky::base::log_init(argv[0]);
     husky::base::log_to_dir("test-log-msg");
     husky::LOG_I << "Info Log";
+    husky::DLOG_I << "Info Log in debug mode";
     husky::LOG_W << "Warning Log";
+    husky::DLOG_W << "Warning Log in debug mode";
     husky::LOG_E << "Error Log";
+    husky::DLOG_E << "Error Log in debug mode";
     //husky::LOG_F << "Fatal Log";
+    //husky::DLOG_F << "Fatal Log";
     return 0;
 }

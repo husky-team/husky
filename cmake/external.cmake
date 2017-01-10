@@ -17,6 +17,8 @@ include(ExternalProject)
 
 ### GLOG ###
 
+set(GLOG_PATCH ${PROJECT_SOURCE_DIR}/third_party/patch/glog-customize-log-format-for-husky.patch)
+
 ExternalProject_Add(
     glog
     GIT_REPOSITORY "https://github.com/google/glog"
@@ -25,6 +27,7 @@ ExternalProject_Add(
     CMAKE_ARGS -DWITH_GFLAGS=OFF
     CMAKE_ARGS -DBUILD_TESTING=OFF
     UPDATE_COMMAND ""
+    PATCH_COMMAND patch -p1 -t -R < ${GLOG_PATCH}
 )
 set(GLOG_INCLUDE "${PROJECT_BINARY_DIR}/include")
 if(WIN32)

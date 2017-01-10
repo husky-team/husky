@@ -24,6 +24,18 @@ namespace husky {
 #define LOG_E base::HuskyLogger(__FILE__, __LINE__, 2).stream()
 #define LOG_F base::HuskyLogger(__FILE__, __LINE__, 3).stream()
 
+#ifdef HUSKY_DEBUG_MODE
+#define DLOG_I LOG_I
+#define DLOG_W LOG_W
+#define DLOG_E LOG_E
+#define DLOG_F LOG_F
+#else  // NDEBUG
+#define DLOG_I base::HuskyLoggerVoidify().void_stream
+#define DLOG_W base::HuskyLoggerVoidify().void_stream
+#define DLOG_E base::HuskyLoggerVoidify().void_stream
+#define DLOG_F base::HuskyLoggerVoidify().void_stream
+#endif  // NDEBUG
+
 namespace base {
 
 /// Not include glog/logging.h to avoid namespace pollution.
@@ -47,6 +59,11 @@ class HuskyLogger {
     int line_;
     int severity_;
     std::stringstream log_stream_;
+};
+
+class HuskyLoggerVoidify {
+   public:
+    std::stringstream void_stream;
 };
 
 // Deprecated. It would not show the real location of the calling.
