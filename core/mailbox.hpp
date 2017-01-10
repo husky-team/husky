@@ -54,6 +54,8 @@ class LocalMailbox {
     /// It will return true when there's available incoming communication.
     /// Return false when all incoming communication is received.
     ///
+    /// Please notice that the progress to poll should be strictly nondecreasing.
+    ///
     /// @param channel_id ID of the Channel in interest.
     /// @param progress Progress of the Channel in interest.
     /// @return True when there's available incoming communication. Otherwise
@@ -64,6 +66,8 @@ class LocalMailbox {
     ///
     /// Similar as the poll(int channel_id, int progress) method. However, It
     /// supports multiple Channel-Progress pairs.
+    ///
+    /// Please notice that the progress to poll should be strictly nondecreasing.
     ///
     /// @param[in] channel_progress_pairs Channel-Progress pairs to query.
     /// @param[out] active_idx The index of the pair that has incoming communication.

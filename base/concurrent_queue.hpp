@@ -57,6 +57,13 @@ class ConcurrentQueue {
         return element;
     }
 
+    void clear() {
+        operation_mutex_.lock();
+        std::queue<ElementT> tmp;
+        queue_.swap(tmp);
+        operation_mutex_.unlock();
+    }
+
    private:
     int size_ = 0;
     std::mutex operation_mutex_;

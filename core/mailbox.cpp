@@ -39,9 +39,6 @@ void LocalMailbox::set_thread_id(int thread_id) { thread_id_ = thread_id; }
 
 void LocalMailbox::set_process_id(int process_id) { process_id_ = process_id; }
 
-// TODO(fan) When messages are very fragmented, there may be
-// a lot of locking, since each arrival of message will trigger
-// a locking
 bool LocalMailbox::poll(int channel_id, int progress) {
     // step 1: check the queue size
     if (in_queue_.get(channel_id, progress).size() > 0)
@@ -69,8 +66,11 @@ bool LocalMailbox::poll(int channel_id, int progress) {
     // The following is to re-use cells in comm_completed_.
     // It's based on the assumption that Channel progress
     // won't decrease
-    if (progress - 1 >= 0) {
-        comm_completed_.get(channel_id, progress - 1) = false;
+    int prgs_to_reset = progress - 1;
+    while (prgs_to_reset >= 0 and comm_completed_.get(channel_id, prgs_to_reset)) {
+        comm_completed_.get(channel_id, prgs_to_reset) = false;
+        in_queue_.get(channel_id, prgs_to_reset).clear();
+        prgs_to_reset -= 1;
     }
 
     return false;
@@ -137,9 +137,14 @@ bool LocalMailbox::poll(const std::vector<std::pair<int, int>>& channel_progress
         }
     }
 
-    for (auto& chnl_prgs_pair : channel_progress_pairs)
-        if (chnl_prgs_pair.second - 1 >= 0)
-            comm_completed_.get(chnl_prgs_pair.first, chnl_prgs_pair.second - 1) = false;
+    for (auto& chnl_prgs_pair : channel_progress_pairs) {
+        int prgs_to_reset = chnl_prgs_pair.second - 1;
+        while (prgs_to_reset >= 0 and comm_completed_.get(chnl_prgs_pair.first, prgs_to_reset)) {
+            comm_completed_.get(chnl_prgs_pair.first, prgs_to_reset) = false;
+            in_queue_.get(chnl_prgs_pair.first, prgs_to_reset).clear();
+            prgs_to_reset -= 1;
+        }
+    }
 
     return false;
 }
