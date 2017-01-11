@@ -64,6 +64,9 @@ class Regression {
 
     // query parameters
     int get_num_param() { return param_list_.get_num_param(); }  // get parameter size
+
+    // TODO(GUOYuyong): add get_param function to return vector for bindings
+    inline const ParamT& get_param() { return param_list_; }
     void present_param() {                                       // print each parameter to log
         if (this->trained_ == true)
             param_list_.present();
