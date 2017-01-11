@@ -132,18 +132,40 @@ TEST_F(TestObjList, IndexOf) {
 
 TEST_F(TestObjList, WriteAndRead) {
     ObjList<Obj> list_to_write("TestObjList.WriteAndRead");
-    for (int i = 0; i < 10; ++i) {
+    for (int i = 10; i > 0; --i) {
         Obj obj(i);
         list_to_write.add_object(std::move(obj));
     }
+    list_to_write.sort();
+    list_to_write.add_object(std::move(Obj(13)));
+    list_to_write.add_object(std::move(Obj(12)));
+    list_to_write.add_object(std::move(Obj(11)));
+    std::vector<Obj>& v = list_to_write.get_data();
+    Obj* p = &v[0];
+    Obj* p2 = &v[10];
+    list_to_write.delete_object(p);   // rm 1
+    list_to_write.delete_object(p2);  // rm 13
+    size_t old_objlist_size = list_to_write.get_size();
+
     EXPECT_TRUE(list_to_write.write_to_disk());
+    size_t data_capacity_after_write = list_to_write.get_data().capacity();
+    size_t bitmap_capacity_after_write = list_to_write.get_del_bitmap().capacity();
+    EXPECT_EQ(data_capacity_after_write, 0);
+    EXPECT_EQ(bitmap_capacity_after_write, 0);
 
     ObjList<Obj> list_to_read("TestObjList.WriteAndRead");
     list_to_read.read_from_disk();
-    EXPECT_NE(list_to_read.get_size(), 0);
-    EXPECT_EQ(list_to_write.get_size(), list_to_read.get_size());
-    for (int i = 0; i < 10; i++)
-        EXPECT_EQ(list_to_write.get(i).id(), list_to_read.get(i).id());
+
+    EXPECT_EQ(list_to_read.get_size(), old_objlist_size);
+    EXPECT_EQ(list_to_read.get_size(), list_to_read.get_sorted_size());
+    EXPECT_EQ(list_to_read.get_size(), list_to_read.get_del_bitmap().size());
+    EXPECT_EQ(list_to_read.get_hashed_size(), 0);
+    EXPECT_EQ(list_to_read.get_num_del(), 0);
+
+    for (size_t i = 0; i < list_to_read.get_size() - 1; i++)
+        EXPECT_LE(list_to_read.get(i).id(), list_to_read.get(i + 1).id());
+    for (size_t i = 0; i < list_to_read.get_size() - 1; i++)
+        EXPECT_EQ(list_to_read.get_del(i), false);
 }
 
 }  // namespace
