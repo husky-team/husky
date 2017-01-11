@@ -27,7 +27,7 @@ class XMLInputFormat final : public FileInputFormatImpl {
    public:
     typedef boost::string_ref RecordT;
 
-    explicit XMLInputFormat(const std::string& start_pattern, const std::string& end_pattern);
+    XMLInputFormat(const std::string& start_pattern, const std::string& end_pattern);
     virtual ~XMLInputFormat();
 
     void set_input(const std::string& url);

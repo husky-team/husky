@@ -18,171 +18,112 @@
 #include <unordered_map>
 
 #include "base/session_local.hpp"
+#include "core/utils.hpp"
 
 namespace husky {
 namespace io {
 
-thread_local int InputFormatStore::default_inputformat_id = 0;
-thread_local std::unordered_map<std::string, InputFormatBase*> InputFormatStore::inputformat_map;
-const char* InputFormatStore::inputformat_name_prefix = "default_inputformat_";
+thread_local int g_default_inputformat_id = 0;
+thread_local InputFormatMap* InputFormatStore::s_inputformat_map = nullptr;
 
 // set finalize_all_inputformats priority to Level1, the higher the level the higher the priorty
 static thread_local base::RegSessionThreadFinalizer finalize_all_inputformats(base::SessionLocalPriority::Level1, []() {
     InputFormatStore::drop_all_inputformats();
+    InputFormatStore::free_inputformat_map();
 });
 
-LineInputFormat& InputFormatStore::create_line_inputformat(const std::string& name) {
-    std::string inputformat_name =
-        name.empty() ? inputformat_name_prefix + std::to_string(default_inputformat_id++) : name;
-    ASSERT_MSG(inputformat_map.find(inputformat_name) == inputformat_map.end(),
-               "InputFormatStore::create_inputformat: Inputformat name already exists");
+LineInputFormat& InputFormatStore::create_line_inputformat() {
+    InputFormatMap& inputformat_map = get_inputformat_map();
+    int id = g_default_inputformat_id++;
+    ASSERT_MSG(inputformat_map.find(id) == inputformat_map.end(), "Should not be reached");
     auto* line_input_format = new LineInputFormat();
-    inputformat_map.insert({inputformat_name, line_input_format});
+    inputformat_map.insert({id, line_input_format});
     return *line_input_format;
 }
 
-LineInputFormat& InputFormatStore::get_line_inputformat(const std::string& name) {
-    ASSERT_MSG(inputformat_map.find(name) != inputformat_map.end(),
-               "InputFormatStore::get_inputformat: Inputformat name doesn't exist");
-    auto* ret = dynamic_cast<LineInputFormat*>(inputformat_map[name]);
-    ASSERT_MSG(ret != nullptr, "InputFormatStore::get_line_inputformat: given name is not of type LineInputFormat");
-    return *ret;
-}
-
-ChunkInputFormat& InputFormatStore::create_chunk_inputformat(const int& chunk_size, const std::string& name) {
-    std::string inputformat_name =
-        name.empty() ? inputformat_name_prefix + std::to_string(default_inputformat_id++) : name;
-    ASSERT_MSG(inputformat_map.find(inputformat_name) == inputformat_map.end(),
-               "InputFormatStore::create_inputformat: Inputformat name already exists");
+ChunkInputFormat& InputFormatStore::create_chunk_inputformat(const int& chunk_size) {
+    InputFormatMap& inputformat_map = get_inputformat_map();
+    int id = g_default_inputformat_id++;
+    ASSERT_MSG(inputformat_map.find(id) == inputformat_map.end(), "Should not be reached");
     auto* chunk_input_format = new ChunkInputFormat(chunk_size);
-    inputformat_map.insert({inputformat_name, chunk_input_format});
+    inputformat_map.insert({id, chunk_input_format});
     return *chunk_input_format;
 }
 
-ChunkInputFormat& InputFormatStore::get_chunk_inputformat(const std::string& name) {
-    ASSERT_MSG(inputformat_map.find(name) != inputformat_map.end(),
-               "InputFormatStore::get_inputformat: Inputformat name doesn't exist");
-    auto* ret = dynamic_cast<ChunkInputFormat*>(inputformat_map[name]);
-    ASSERT_MSG(ret != nullptr, "InputFormatStore::get_chunk_inputformat: given name is not of type ChunkInputFormat");
-    return *ret;
-}
-
-SeparatorInputFormat& InputFormatStore::create_separator_inputformat(const std::string& pattern,
-                                                                     const std::string& name) {
-    std::string inputformat_name =
-        name.empty() ? inputformat_name_prefix + std::to_string(default_inputformat_id++) : name;
-    ASSERT_MSG(inputformat_map.find(inputformat_name) == inputformat_map.end(),
-               "InputFormatStore::create_inputformat: Inputformat name already exists");
+SeparatorInputFormat& InputFormatStore::create_separator_inputformat(const std::string& pattern) {
+    InputFormatMap& inputformat_map = get_inputformat_map();
+    int id = g_default_inputformat_id++;
+    ASSERT_MSG(inputformat_map.find(id) == inputformat_map.end(), "Should not be reached");
     auto* separator_input_format = new SeparatorInputFormat(pattern);
-    inputformat_map.insert({inputformat_name, separator_input_format});
+    inputformat_map.insert({id, separator_input_format});
     return *separator_input_format;
 }
 
-SeparatorInputFormat& InputFormatStore::get_separator_inputformat(const std::string& name) {
-    ASSERT_MSG(inputformat_map.find(name) != inputformat_map.end(),
-               "InputFormatStore::get_inputformat: Inputformat name doesn't exist");
-    auto* ret = dynamic_cast<SeparatorInputFormat*>(inputformat_map[name]);
-    ASSERT_MSG(ret != nullptr,
-               "InputFormatStore::get_separator_inputformat: given name is not of type SeparatorInputFormat");
-    return *ret;
-}
-
 XMLInputFormat& InputFormatStore::create_xml_inputformat(const std::string& start_pattern,
-                                                         const std::string& end_pattern, const std::string& name) {
-    std::string inputformat_name =
-        name.empty() ? inputformat_name_prefix + std::to_string(default_inputformat_id++) : name;
-    ASSERT_MSG(inputformat_map.find(inputformat_name) == inputformat_map.end(),
-               "InputFormatStore::create_inputformat: Inputformat name already exists");
+                                                         const std::string& end_pattern) {
+    InputFormatMap& inputformat_map = get_inputformat_map();
+    int id = g_default_inputformat_id++;
+    ASSERT_MSG(inputformat_map.find(id) == inputformat_map.end(), "Should not be reached");
     auto* xml_input_format = new XMLInputFormat(start_pattern, end_pattern);
-    inputformat_map.insert({inputformat_name, xml_input_format});
+    inputformat_map.insert({id, xml_input_format});
     return *xml_input_format;
 }
 
-XMLInputFormat& InputFormatStore::get_xml_inputformat(const std::string& name) {
-    ASSERT_MSG(inputformat_map.find(name) != inputformat_map.end(),
-               "InputFormatStore::get_inputformat: Inputformat name doesn't exist");
-    auto* ret = dynamic_cast<XMLInputFormat*>(inputformat_map[name]);
-    ASSERT_MSG(ret != nullptr, "InputFormatStore::get_xml_inputformat: given name is not of type XMLInputFormat");
-    return *ret;
-}
-
-BinaryInputFormat& InputFormatStore::create_binary_inputformat(const std::string& url, const std::string& filter,
-                                                               const std::string& name) {
-    std::string inputformat_name =
-        name.empty() ? inputformat_name_prefix + std::to_string(default_inputformat_id++) : name;
-    ASSERT_MSG(inputformat_map.find(inputformat_name) == inputformat_map.end(),
-               "InputFormatStore::create_inputformat: Inputformat name already exists");
+BinaryInputFormat& InputFormatStore::create_binary_inputformat(const std::string& url, const std::string& filter) {
+    InputFormatMap& inputformat_map = get_inputformat_map();
+    int id = g_default_inputformat_id++;
+    ASSERT_MSG(inputformat_map.find(id) == inputformat_map.end(), "Should not be reached");
     auto* binary_input_format = new BinaryInputFormat(url, filter);
-    inputformat_map.insert({inputformat_name, binary_input_format});
+    inputformat_map.insert({id, binary_input_format});
     return *binary_input_format;
 }
 
-BinaryInputFormat& InputFormatStore::get_binary_inputformat(const std::string& name) {
-    ASSERT_MSG(inputformat_map.find(name) != inputformat_map.end(),
-               "InputFormatStore::get_inputformat: Inputformat name doesn't exist");
-    auto* ret = dynamic_cast<BinaryInputFormat*>(inputformat_map[name]);
-    ASSERT_MSG(ret != nullptr, "InputFormatStore::get_binary_inputformat: given name is not of type BinaryInputFormat");
-    return *ret;
-}
-
 #ifdef WITH_THRIFT
-FlumeInputFormat& InputFormatStore::create_flume_inputformat(std::string rcv_host, int rcv_port,
-                                                             const std::string& name) {
-    std::string inputformat_name =
-        name.empty() ? inputformat_name_prefix + std::to_string(default_inputformat_id++) : name;
-    ASSERT_MSG(inputformat_map.find(inputformat_name) == inputformat_map.end(),
-               "InputFormatStore::create_inputformat: Inputformat name already exists");
+FlumeInputFormat& InputFormatStore::create_flume_inputformat(std::string rcv_host, int rcv_port) {
+    InputFormatMap& inputformat_map = get_inputformat_map();
+    int id = g_default_inputformat_id++;
+    ASSERT_MSG(inputformat_map.find(id) == inputformat_map.end(), "Should not be reached");
     auto* flume_input_format = new FlumeInputFormat(rcv_host, rcv_port);
-    inputformat_map.insert({inputformat_name, flume_input_format});
+    inputformat_map.insert({id, flume_input_format});
     return *flume_input_format;
-}
-
-FlumeInputFormat& InputFormatStore::get_flume_inputformat(const std::string& name) {
-    ASSERT_MSG(inputformat_map.find(name) != inputformat_map.end(),
-               "InputFormatStore::get_inputformat: Inputformat name doesn't exist");
-    auto* ret = dynamic_cast<FlumeInputFormat*>(inputformat_map[name]);
-    ASSERT_MSG(ret != nullptr, "InputFormatStore::get_flume_inputformat: given name is not of type FlumeInputFormat");
-    return *ret;
 }
 #endif
 
 #ifdef WITH_MONGODB
-MongoDBInputFormat& InputFormatStore::create_mongodb_inputformat(const std::string& name) {
-    std::string inputformat_name =
-        name.empty() ? inputformat_name_prefix + std::to_string(default_inputformat_id++) : name;
-    ASSERT_MSG(inputformat_map.find(inputformat_name) == inputformat_map.end(),
-               "InputFormatStore::create_inputformat: Inputformat name already exists");
+MongoDBInputFormat& InputFormatStore::create_mongodb_inputformat() {
+    InputFormatMap& inputformat_map = get_inputformat_map();
+    int id = g_default_inputformat_id++;
+    ASSERT_MSG(inputformat_map.find(id) == inputformat_map.end(), "Should not be reached");
     auto* mongodb_input_format = new MongoDBInputFormat();
-    inputformat_map.insert({inputformat_name, mongodb_input_format});
+    inputformat_map.insert({id, mongodb_input_format});
     return *mongodb_input_format;
-}
-
-MongoDBInputFormat& InputFormatStore::get_mongodb_inputformat(const std::string& name) {
-    ASSERT_MSG(inputformat_map.find(name) != inputformat_map.end(),
-               "InputFormatStore::get_inputformat: Inputformat name doesn't exist");
-    auto* ret = dynamic_cast<MongoDBInputFormat*>(inputformat_map[name]);
-    ASSERT_MSG(ret != nullptr,
-               "InputFormatStore::get_mongodb_inputformat: given name is not of type MongoDBInputFormat");
-    return *ret;
 }
 #endif
 
-void InputFormatStore::drop_inputformat(const std::string& name) {
-    ASSERT_MSG(inputformat_map.find(name) != inputformat_map.end(),
-               "InputFormatStore::drop_inputformat: InputFormat name doesn't exist");
-    delete inputformat_map[name];
-    inputformat_map.erase(name);
-}
-
 void InputFormatStore::drop_all_inputformats() {
-    for (auto& inputformat_pair : inputformat_map) {
-        delete inputformat_pair.second;
+    if (s_inputformat_map == nullptr)
+        return;
+
+    for (auto& inputformat_pair : (*s_inputformat_map)) {
+        if (inputformat_pair.second != nullptr)
+            delete inputformat_pair.second;
     }
-    inputformat_map.clear();
+    s_inputformat_map->clear();
 }
 
-bool InputFormatStore::has_inputformat(const std::string& name) {
-    return inputformat_map.find(name) != inputformat_map.end();
+void InputFormatStore::init_inputformat_map() {
+    if (s_inputformat_map == nullptr)
+        s_inputformat_map = new InputFormatMap();
+}
+
+void InputFormatStore::free_inputformat_map() {
+    delete s_inputformat_map;
+    s_inputformat_map = nullptr;
+}
+
+InputFormatMap& InputFormatStore::get_inputformat_map() {
+    init_inputformat_map();
+    return *s_inputformat_map;
 }
 
 }  // namespace io
