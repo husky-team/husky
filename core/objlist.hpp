@@ -20,6 +20,8 @@
 #include <unordered_map>
 #include <vector>
 
+#include "boost/random.hpp"
+
 #include "base/disk_store.hpp"
 #include "base/exception.hpp"
 #include "base/serialization.hpp"
@@ -279,6 +281,30 @@ class ObjList : public ObjListBase {
 
         std::vector<bool> tmp_bool;
         del_bitmap_.swap(tmp_bool);
+    }
+
+    size_t estimated_storage_size(const double sample_rate = 0.005) {
+        if (this->get_vector_size() == 0)
+            return 0;
+        const size_t sample_num = this->get_vector_size() * sample_rate + 1;
+        BinStream bs;
+
+        // sample
+        std::unordered_set<size_t> sample_container;
+        boost::random::mt19937 generator;
+        boost::random::uniform_real_distribution<double> distribution(0.0, 1.0);
+        while (sample_container.size() < sample_num) {
+            size_t index = distribution(generator) * objlist_data_.get_vector_size();
+            sample_container.insert(index);
+        }
+
+        // log the size
+        for (auto iter = sample_container.begin(); iter != sample_container.end(); ++iter)
+            bs << objlist_data_.data_[*iter];
+
+        std::vector<ObjT>& v = objlist_data_.data_;
+        size_t ret = bs.size() * sizeof(char) * v.capacity() / sample_num;
+        return ret;
     }
 
    protected:

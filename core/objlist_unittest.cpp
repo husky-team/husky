@@ -1,5 +1,6 @@
 #include "core/objlist.hpp"
 
+#include <algorithm>
 #include <string>
 #include <vector>
 
@@ -166,6 +167,22 @@ TEST_F(TestObjList, WriteAndRead) {
         EXPECT_LE(list_to_read.get(i).id(), list_to_read.get(i + 1).id());
     for (size_t i = 0; i < list_to_read.get_size() - 1; i++)
         EXPECT_EQ(list_to_read.get_del(i), false);
+}
+
+TEST_F(TestObjList, EstimatedStorage) {
+    const size_t len = 1000 * 1000 * 10;
+    ObjList<Obj> test_list;
+    for (size_t i = 0; i < len; ++i) {
+        Obj obj(i);
+        test_list.add_object(std::move(obj));
+    }
+
+    const double sample_rate = 0.005;
+    size_t estimated_storage = test_list.estimated_storage_size(sample_rate);
+    size_t real_storage = test_list.get_data().capacity() * sizeof(Obj);  // just in this class Obj case
+    double diff_time =
+        double(std::max(real_storage, estimated_storage)) / double(std::min(real_storage, estimated_storage));
+    EXPECT_EQ(diff_time, 1);
 }
 
 }  // namespace
