@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "lib/vector.hpp"
 #include "core/engine.hpp"
+#include "lib/vector.hpp"
 
 class Obj {
    public:
@@ -44,7 +44,7 @@ void vector_example() {
     husky::list_execute(obj_list, [&channel](Obj& obj) {
         if (obj.key == 0) {
             // should show <number of thread> * (<number of thread> - 1) / 2.0
-            husky::base::log_msg(std::to_string(channel.get(obj)[0]));
+            husky::LOG_I << channel.get(obj)[0];
         }
     });
 }

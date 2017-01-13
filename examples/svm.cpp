@@ -89,7 +89,7 @@ void svm() {
     husky::lib::ml::ParameterBucket<double> param_list(num_features + 1);  // scalar b and vector w
 
     if (husky::Context::get_global_tid() == 0) {
-        husky::base::log_msg("num of params: " + std::to_string(param_list.get_num_param()));
+        husky::LOG_I << "num of params: " << param_list.get_num_param();
     }
 
     // get the number of global records
@@ -98,7 +98,7 @@ void svm() {
     AggregatorFactory::sync();
     int num_samples = num_samples_agg.get_value();
     if (husky::Context::get_global_tid() == 0) {
-        husky::base::log_msg("Training set size = " + std::to_string(num_samples));
+        husky::LOG_I << "Training set size = " << num_samples;
     }
 
     // Aggregators for regulator, w square and loss
@@ -171,8 +171,8 @@ void svm() {
         regulator = regulator_agg.get_value() / num_samples;
         double loss = lambda / 2 * sqr_w + loss_agg.get_value() / num_samples;
         if (husky::Context::get_global_tid() == 0) {
-            husky::base::log_msg("Iteration " + std::to_string(i + 1) + ": ||w|| = " + std::to_string(sqrt(sqr_w)) +
-                                 ", loss = " + std::to_string(loss));
+            husky::LOG_I << "Iteration " << (i << 1) << ": ||w|| = " << sqrt(sqr_w)
+                         << ", loss = " << loss;
         }
     }
     auto end = std::chrono::steady_clock::now();
@@ -180,9 +180,8 @@ void svm() {
     // Show result
     if (husky::Context::get_global_tid() == 0) {
         param_list.present();
-        husky::base::log_msg(
-            "Time per iter: " +
-            std::to_string(std::chrono::duration_cast<std::chrono::duration<float>>(end - start).count() / num_iter));
+        husky::LOG_I << "Time per iter: "
+                     << std::chrono::duration_cast<std::chrono::duration<float>>(end - start).count() / num_iter;
     }
 
     // test
@@ -205,8 +204,8 @@ void svm() {
     });
 
     if (husky::Context::get_global_tid() == 0) {
-        husky::base::log_msg("Error rate on testing set: " +
-                             std::to_string(static_cast<double>(error_agg.get_value()) / num_test_agg.get_value()));
+        husky::LOG_I << "Error rate on testing set: "
+                     << static_cast<double>(error_agg.get_value()) / num_test_agg.get_value();
     }
 }
 

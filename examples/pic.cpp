@@ -107,7 +107,7 @@ void pic() {
     husky::globalize(node_list);
 
     int totDataPoints = dataCountAgg.get_value();
-    husky::base::log_msg("node_list size " + std::to_string(totDataPoints));
+    husky::LOG_I << "node_list size " << totDataPoints;
 
     // 2. Init guess as suggested by paper
     list_execute(node_list, [&](Node& n) {
@@ -163,9 +163,9 @@ void pic() {
         });
 
         if (husky::Context::get_global_tid() == 0) {
-            husky::base::log_msg("Iter " + std::to_string(iter) + " " + "MaxAcc " +
-                                 std::to_string(maxFloatAgg.get_value()) + " " + "log10(MaxAcc) " +
-                                 std::to_string(log10(maxFloatAgg.get_value())));
+            husky::LOG_I << "Iter " << std::to_string(iter) << " " << "MaxAcc "
+                         << maxFloatAgg.get_value() << " " << "log10(MaxAcc) "
+                         << log10(maxFloatAgg.get_value());
         }
 
         if (maxFloatAgg.get_value() < epsilon)

@@ -86,10 +86,10 @@ void aggregator() {
         });
 
         if (id == 0) {
-            base::log_msg("Average occurence of words in " + Context::get_param("input") + ": " +
-                    std::to_string((tot_occurence.get_value() + 0.) / tot_word.get_value()));
-            base::log_msg("Word with maximum occurence: (\"" + max_occurence.get_value().first + "\", " +
-                    std::to_string(max_occurence.get_value().second) + ")");
+            LOG_I << "Average occurence of words in " << Context::get_param("input") << ": "
+                  << (tot_occurence.get_value() + 0.) / tot_word.get_value();
+            LOG_I << "Word with maximum occurence: (\"" << max_occurence.get_value().first << "\", "
+                  << max_occurence.get_value().second << ")";
         }
     }
 }

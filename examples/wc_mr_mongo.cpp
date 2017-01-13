@@ -101,7 +101,7 @@ void wc() {
 
     if (husky::Context::get_global_tid() == 0) {
         for (auto& i : unique_topk.get_value())
-            husky::base::log_msg(i.second + " " + std::to_string(i.first));
+            husky::LOG_I << i.second << " " << i.first;
     }
 }
 

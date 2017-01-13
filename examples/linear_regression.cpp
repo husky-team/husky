@@ -60,9 +60,9 @@
 
 using husky::lib::ml::ParameterBucket;
 
-void report(std::string msg) {
+void report(const std::string& msg) {
     if (husky::Context::get_global_tid() == 0)
-        husky::base::log_msg(msg);
+        husky::LOG_I << msg;
 }
 
 template <bool is_sparse>
