@@ -17,6 +17,11 @@
 #include <string>
 
 #include "boost/filesystem.hpp"
+
+#ifdef _MSC_VER
+#define GOOGLE_GLOG_DLL_DECL
+#define GLOG_NO_ABBREVIATED_SEVERITIES
+#endif
 #include "glog/logging.h"
 
 #include "base/exception.hpp"

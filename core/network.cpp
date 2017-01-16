@@ -69,7 +69,7 @@ std::set<std::string> get_local_ips() {
     struct hostent* phe = gethostbyname(get_hostname().c_str());
     for (int i = 0; phe->h_addr_list[i] != 0; i++) {
         struct in_addr addr;
-        memcpy(&addr, phe->h_addr_list[i], sizeof(struct inaddr));
+        memcpy(&addr, phe->h_addr_list[i], sizeof(struct in_addr));
         ips.insert(inet_ntoa(addr));
     }
 #endif

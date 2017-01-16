@@ -19,6 +19,18 @@ include(ExternalProject)
 
 set(GLOG_PATCH ${PROJECT_SOURCE_DIR}/third_party/patch/glog-customize-log-format-for-husky.patch)
 
+if(WIN32)
+ExternalProject_Add(
+    glog
+    GIT_REPOSITORY "https://github.com/google/glog"
+    PREFIX ${PROJECT_BINARY_DIR}/glog
+    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:PATH=${PROJECT_BINARY_DIR}
+    CMAKE_ARGS -DWITH_GFLAGS=OFF
+    CMAKE_ARGS -DBUILD_TESTING=OFF
+    UPDATE_COMMAND ""
+    PATCH_COMMAND ""
+)
+else(WIN32)
 ExternalProject_Add(
     glog
     GIT_REPOSITORY "https://github.com/google/glog"
@@ -29,9 +41,12 @@ ExternalProject_Add(
     UPDATE_COMMAND ""
     PATCH_COMMAND patch -p1 -t -R < ${GLOG_PATCH}
 )
+endif(WIN32)
+
+
 set(GLOG_INCLUDE "${PROJECT_BINARY_DIR}/include")
 if(WIN32)
-set(GLOG_LIBRARY "${PROJECT_BINARY_DIR}/lib/libglog.lib")
+set(GLOG_LIBRARY "${PROJECT_BINARY_DIR}/lib/glog.lib")
 else(WIN32)
 set(GLOG_LIBRARY "${PROJECT_BINARY_DIR}/lib/libglog.a")
 endif(WIN32)
