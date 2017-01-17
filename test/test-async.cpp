@@ -41,20 +41,19 @@ void test_async_push() {
     }
 
     globalize(async_list);
-    list_execute_async(
-        async_list,
-        [&](Obj& obj) {
-            auto& msgs = async_ch.get(obj);
-            if (obj.id() == 0) {
-                if (msgs.size() > 0)
-                    LOG_I << "msg content: " << msgs.at(0) << ", " << msgs.at(1);
-                else
-                    LOG_I << "No msg";
-            }
-            async_ch.push(obj.id(), (obj.id() + 1) % num_obj);
-            async_ch.push(obj.id(), (obj.id() + 2) % num_obj);
-        },
-        4, 0.5);
+    list_execute_async(async_list,
+                       [&](Obj& obj) {
+                           auto& msgs = async_ch.get(obj);
+                           if (obj.id() == 0) {
+                               if (msgs.size() > 0)
+                                   LOG_I << "msg content: " << msgs.at(0) << ", " << msgs.at(1);
+                               else
+                                   LOG_I << "No msg";
+                           }
+                           async_ch.push(obj.id(), (obj.id() + 1) % num_obj);
+                           async_ch.push(obj.id(), (obj.id() + 2) % num_obj);
+                       },
+                       4, 0.5);
 }
 
 void test_async_mig() {
@@ -68,14 +67,13 @@ void test_async_mig() {
     }
 
     globalize(async_list);
-    list_execute_async(
-        async_list,
-        [&async_ch](Obj& obj) {
-            int tid = Context::get_global_tid();
-            LOG_I << "obj_id: " << obj.id() << " is in thread " << tid;
-            async_ch.migrate(obj, 0);
-        },
-        3);
+    list_execute_async(async_list,
+                       [&async_ch](Obj& obj) {
+                           int tid = Context::get_global_tid();
+                           LOG_I << "obj_id: " << obj.id() << " is in thread " << tid;
+                           async_ch.migrate(obj, 0);
+                       },
+                       3);
 }
 
 int main(int argc, char** argv) {

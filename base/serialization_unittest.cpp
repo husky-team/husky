@@ -26,17 +26,11 @@ class TestSerializationWithInheritance {
    public:
     TestSerializationWithInheritance(int y) : x(y) {}
 
-    BinStream& serialize(BinStream& stream) const {
-        return stream << x;
-    }
+    BinStream& serialize(BinStream& stream) const { return stream << x; }
 
-    BinStream& deserialize(BinStream& stream) {
-        return stream >> x;
-    }
+    BinStream& deserialize(BinStream& stream) { return stream >> x; }
 
-    bool operator==(const TestSerializationWithInheritance& rhs) const {
-        return x == rhs.x;
-    }
+    bool operator==(const TestSerializationWithInheritance& rhs) const { return x == rhs.x; }
 
    protected:
     int x;

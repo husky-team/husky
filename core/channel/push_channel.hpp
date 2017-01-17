@@ -80,19 +80,27 @@ class PushChannel : public Source2ObjListChannel<DstObjT> {
 
     void out() override { flush(); }
 
-    /// This method is only useful without list_execute
-    void flush() {
-        this->inc_progress();
+    void send() {
         int start = this->global_id_;
         for (int i = 0; i < send_buffer_.size(); ++i) {
             int dst = (start + i) % send_buffer_.size();
             if (send_buffer_[dst].size() == 0)
                 continue;
-            this->mailbox_->send(dst, this->channel_id_, this->progress_, send_buffer_[dst]);
+            this->mailbox_->send(dst, this->channel_id_, this->progress_ + 1, send_buffer_[dst]);
             send_buffer_[dst].purge();
         }
+    }
+
+    void send_complete() {
+        this->inc_progress();
         this->mailbox_->send_complete(this->channel_id_, this->progress_, this->worker_info_->get_local_tids(),
                                       this->worker_info_->get_pids());
+    }
+
+    /// This method is only useful without list_execute
+    void flush() {
+        send();
+        send_complete();
     }
 
     /// This method is only useful without list_execute
