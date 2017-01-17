@@ -74,7 +74,7 @@ class WorkerInfo {
 
     inline std::vector<int> get_global_tids() const { return {workers_.begin(), workers_.end()}; }
 
-    inline const HashRing& get_hash_ring() { return hash_ring_; }
+    inline const HashRing& get_hash_ring() const { return hash_ring_; }
 
     inline int local_to_global_id(int process_id, int local_worker_id) const {
         auto p_local = local_to_global_.find(process_id);
