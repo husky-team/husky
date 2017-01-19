@@ -45,6 +45,23 @@ size_t AggregatorFactory::get_machine_id() { return Context::get_process_id(); }
 
 size_t AggregatorFactory::get_machine_id(size_t fid) { return Context::get_worker_info().get_process_id(fid); }
 
+std::unordered_map<size_t, std::vector<size_t> > AggregatorFactory::get_all_factory() {
+    std::unordered_map<size_t, std::vector<size_t> > all_factory;
+    for (auto i : Context::get_worker_info().get_global_tids()) {
+        all_factory[get_machine_id(i)].push_back(i);
+    }
+    return all_factory;
+}
+
+std::vector<size_t> AggregatorFactory::get_all_machine_id() {
+    std::vector<size_t> machine_id;
+    machine_id.reserve(get_num_machine());
+    for (auto i : Context::get_worker_info().get_pids()) {
+        machine_id.push_back(i);
+    }
+    return machine_id;
+}
+
 void AggregatorFactory::send_local_update(std::vector<BinStream>& bins) { send(aggregator_channel_, bins); }
 
 void AggregatorFactory::on_recv_local_update(const std::function<void(BinStream&)>& recv) {

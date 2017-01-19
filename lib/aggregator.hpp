@@ -73,6 +73,8 @@ class AggregatorFactoryBase {
     // get the mch id of the factory with id `fid`, should be [0, get_num_machine())
     virtual size_t get_machine_id(size_t fid) = 0;
     virtual size_t get_num_machine() = 0;
+    virtual std::unordered_map<size_t, std::vector<size_t> > get_all_factory() = 0;
+    virtual std::vector<size_t> get_all_machine_id() = 0;
 
    protected:
     static AggregatorFactoryBase& get_factory() {
@@ -115,7 +117,7 @@ class AggregatorFactoryBase {
         virtual void initialize(AggregatorFactoryBase*);
         virtual ~InnerSharedData();
         std::vector<AggregatorInfo*> global_aggs;
-        std::vector<std::vector<size_t>> all_factory;
+        std::unordered_map<size_t, std::vector<size_t>> all_factory;
         std::vector<size_t> global_centers;
         std::vector<size_t> local_centers;
         std::atomic_uint num_holder{0};

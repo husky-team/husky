@@ -60,10 +60,33 @@ class MultiMachineAggregatorFactory : public AggregatorFactoryBase {
 
     virtual size_t get_num_machine() { return factory_info_.size(); }
 
-    virtual size_t get_machine_id() { return mid; }
+    // Double the value here to simulate inconsecutive id
+    virtual size_t get_machine_id() { return mid * 2; }
 
     virtual size_t get_machine_id(size_t fid) {
-        return std::upper_bound(info_size_.begin(), info_size_.end(), fid) - info_size_.begin();
+        // Double the value here to simulate inconsecutive id
+        return (std::upper_bound(info_size_.begin(), info_size_.end(), fid) - info_size_.begin()) * 2;
+    }
+
+    virtual std::unordered_map<size_t, std::vector<size_t> > get_all_factory() {
+        std::unordered_map<size_t, std::vector<size_t> > all_factory;
+        int j = 0;
+        for (int m = 0; m < factory_info_.size(); ++m) {
+            for (int n = 0; n < factory_info_[m]; ++n) {
+                all_factory[get_machine_id(j)].push_back(j);
+                ++j;
+            }
+        }
+        return all_factory;
+    }
+
+    virtual std::vector<size_t> get_all_machine_id() {
+        std::vector<size_t> all_machine;
+        all_machine.reserve(factory_info_.size());
+        // Double the value here to simulate inconsecutive id
+        for (int i = 0; i < factory_info_.size(); ++i)
+            all_machine.push_back(i * 2);
+        return all_machine;
     }
 
     void send(ConcurrentQueue<BinStream>* queue, std::vector<BinStream>& bin) {
@@ -126,7 +149,7 @@ class MultiMachineAggregatorFactory : public AggregatorFactoryBase {
 
     virtual void wait_for_others() { shared_->barrier_.wait(get_num_local_factory()); }
 
-    virtual void call_once(const std::function<void()>& lambda) { call_onces_[get_machine_id()](lambda); }
+    virtual void call_once(const std::function<void()>& lambda) { call_onces_[mid](lambda); }
 
     virtual void init_factory() {
         AggregatorFactoryBase::init_factory();

@@ -170,7 +170,7 @@ void AggregatorFactoryBase::synchronize() {
         AggregatorState* value = shared_data_->global_aggs[i]->value;
         if (value->is_updated()) {
             // printf("%lld %s\n", i, value->to_string().c_str());  // debug purpose
-            for (size_t m = 0; m < get_num_machine(); ++m) {
+            for (size_t m : get_all_machine_id()) {
                 size_t peer = get_local_center(m, i);  // global factory id
                 if (!same_machine(peer)) {
                     auto& bin = agg_bins[peer];
@@ -212,8 +212,8 @@ void AggregatorFactoryBase::synchronize() {
 bool AggregatorFactoryBase::same_machine(size_t fid) { return get_machine_id() == get_machine_id(fid); }
 
 size_t AggregatorFactoryBase::get_local_center(size_t machine_id, size_t agg_idx) {
-    auto& all_factory = shared_data_->all_factory[machine_id];
-    return all_factory[agg_idx % all_factory.size()];
+    auto& factory = shared_data_->all_factory.at(machine_id);
+    return factory[agg_idx % factory.size()];
 }
 
 // local and global_info->value will be invalid after calling remove_aggregator
@@ -245,23 +245,19 @@ void AggregatorFactoryBase::InnerSharedData::initialize(AggregatorFactoryBase* f
     size_t num_local_factory = factory->get_num_local_factory();
     size_t num_global_factory = factory->get_num_global_factory();
     num_holder.store(static_cast<uint32_t>(num_local_factory));
-    std::vector<std::vector<size_t>>& fids = all_factory;
-    fids.resize(factory->get_num_machine());
-    for (size_t i = 0; i < num_global_factory; i++) {
-        fids[factory->get_machine_id(i)].push_back(i);
-    }
-    local_centers = fids[factory->get_machine_id()];
+    all_factory = factory->get_all_factory();
+    local_centers = all_factory.at(factory->get_machine_id());
     global_centers.reserve(num_global_factory);
     // Complexity: O(num_machine * max(num_local_factory))
-    // It can be reduced to O(num_global_factory) by sorting fids by size
+    // It can be reduced to O(num_global_factory) by sorting all_factory by size
     size_t max_size = 0;
-    for (auto& fid : fids) {
-        max_size = std::max(max_size, fid.size());
+    for (auto& fid : all_factory) {
+        max_size = std::max(max_size, fid.second.size());
     }
     for (size_t i = 0; i < max_size; i++) {
-        for (size_t j = 0; j < fids.size(); j++) {
-            if (i < fids[j].size()) {
-                global_centers.push_back(fids[j][i]);
+        for (auto& pair : all_factory) {
+            if (i < pair.second.size()) {
+                global_centers.push_back(pair.second[i]);
             }
         }
     }
