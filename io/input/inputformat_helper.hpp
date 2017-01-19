@@ -25,6 +25,9 @@ namespace helper {
 /// A helper function to find the next 'c' starting from index 'l'
 size_t find_next(boost::string_ref sref, size_t l, char c);
 
+/// A helper function to find the last 'c' from the end
+size_t find_last(boost::string_ref sref, char c);
+
 /// A helper function to find the next 'str' starting from index 'l'
 size_t find_next(boost::string_ref sref, size_t l, const std::string& str);
 

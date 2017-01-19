@@ -77,9 +77,9 @@ class ChannelBase {
 
     void inc_progress();
 
-    virtual void send(){};
+    virtual void send() {};
 
-    virtual void send_complete(){};
+    virtual void send_complete() {};
 
    protected:
     ChannelBase();

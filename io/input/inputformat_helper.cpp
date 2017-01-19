@@ -32,6 +32,17 @@ size_t find_next(boost::string_ref sref, size_t l, char c) {
     return r;
 }
 
+/// A helper function to find the last 'c' from the end
+size_t find_last(boost::string_ref sref, char c) {
+    size_t pos = sref.size() - 1;
+    while (pos != 0 && sref[pos] != c)
+        --pos;
+    if (pos == 0 && sref[pos] != c)
+        return boost::string_ref::npos;
+    return pos;
+}
+
+
 /// A helper function to find the next 'str' starting from index 'l'
 size_t find_next(boost::string_ref sref, size_t l, const std::string& str) {
     auto start = sref.substr(l);
