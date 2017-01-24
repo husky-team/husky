@@ -27,9 +27,9 @@ class Obj {
     Obj() {}
     explicit Obj(const KeyT& k) : key(k) {}
 
-    friend BinStream& operator<<(BinStream& stream, Obj& obj) { stream << obj.key; }
+    friend BinStream& operator<<(BinStream& stream, Obj& obj) { return stream << obj.key; }
 
-    friend BinStream& operator>>(BinStream& stream, Obj& obj) { stream >> obj.key; }
+    friend BinStream& operator>>(BinStream& stream, Obj& obj) { return stream >> obj.key; }
 };
 
 TEST_F(TestObjList, InitAndDelete) {

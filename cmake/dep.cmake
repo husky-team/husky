@@ -37,6 +37,7 @@ endif(ZMQ_FOUND)
 
 ### TCMalloc ###
 set(TCMALLOC_FIND_REQUIRED true)
+find_path(TCMALLOC_INCLUDE_DIR NAMES gperftools/malloc_extension.h)
 find_library(TCMALLOC_LIBRARY NAMES tcmalloc)
 if(TCMALLOC_LIBRARY)
     set(TCMALLOC_FOUND true)

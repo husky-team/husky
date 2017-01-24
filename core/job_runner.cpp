@@ -28,6 +28,7 @@
 #include "core/context.hpp"
 #include "core/coordinator.hpp"
 #include "core/mailbox.hpp"
+#include "core/memory_checker.hpp"
 #include "core/worker_info.hpp"
 
 namespace husky {
@@ -60,6 +61,9 @@ void run_job(const std::function<void()>& job) {
     Context::create_mailbox_env();
     // Initialize coordinator
     Context::get_coordinator()->serve();
+
+    // Initialize memory_checker
+    Context::get_memory_checker()->serve();
 
     base::SessionLocal::initialize();
     // Initialize worker threads

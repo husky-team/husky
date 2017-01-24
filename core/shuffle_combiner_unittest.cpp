@@ -39,7 +39,7 @@ TEST_F(TestShuffleCombiner, ShuffleCombiner) {
         workers[i].init(num_global_workers, num_local_workers, 0, i);
     }
     for (int i = 0; i < num_local_workers; i++) {
-        threads[i] = new std::thread([&workers, i, max_time, &done, total_sum]() {
+        threads[i] = new std::thread([&workers, i, max_time, &done, total_sum, num_local_workers]() {
             boost::random::mt19937 gen;
             boost::random::uniform_int_distribution<> random{1, max_time};
             int sum = 0;

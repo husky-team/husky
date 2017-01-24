@@ -27,6 +27,7 @@ add_library(core-objs OBJECT
     hash_ring.cpp
     job_runner.cpp
     mailbox.cpp
+    memory_checker.cpp
     network.cpp
     objlist_store.cpp
     shuffle_combiner_store.cpp

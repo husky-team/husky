@@ -48,9 +48,13 @@ class ObjListData {
         return idx;
     }
 
-    friend BinStream& operator<<(BinStream& stream, ObjListData<ObjT>& obj_list_data) { stream << obj_list_data.data_; }
+    friend BinStream& operator<<(BinStream& stream, ObjListData<ObjT>& obj_list_data) {
+        return stream << obj_list_data.data_;
+    }
 
-    friend BinStream& operator>>(BinStream& stream, ObjListData<ObjT>& obj_list_data) { stream >> obj_list_data.data_; }
+    friend BinStream& operator>>(BinStream& stream, ObjListData<ObjT>& obj_list_data) {
+        return stream >> obj_list_data.data_;
+    }
 
    private:
     std::vector<ObjT> data_;
