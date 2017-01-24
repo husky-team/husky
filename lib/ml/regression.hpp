@@ -98,7 +98,7 @@ class Regression {
     }
 
     // train model
-    template <template <typename, typename, bool> typename GD>
+    template <template <typename, typename, bool> class GD>
     void train(ObjL& data, int iters, double learning_rate) {
         // check conditions
         ASSERT_MSG(param_list_.get_num_param() > 0, "The number of parameters is 0.");
@@ -143,7 +143,7 @@ class Regression {
     }  // end of train
 
     // train and test model with early stopping
-    template <template <typename, typename, bool> typename GD>
+    template <template <typename, typename, bool> class GD>
     void train_test(ObjL& data, ObjL& Test, int iters, double learning_rate) {
         // check conditions
         ASSERT_MSG(param_list_.get_num_param() > 0, "The number of parameters is 0.");
