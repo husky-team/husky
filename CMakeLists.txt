@@ -36,7 +36,7 @@ find_package(Threads)
 find_package(Boost 1.58.0 COMPONENTS system filesystem regex thread program_options date_time chrono)
 
 # External Includes
-set(HUSKY_EXTERNAL_INCLUDE ${Boost_INCLUDE_DIRS} ${TCMALLOC_INCLUDE_DIR} ${ZMQ_INCLUDE_DIR} ${GLOG_INCLUDE})
+set(HUSKY_EXTERNAL_INCLUDE ${Boost_INCLUDE_DIRS} ${TCMALLOC_INCLUDE_DIR} ${ZMQ_INCLUDE_DIR} ${GLOG_INCLUDE} ${EIGEN_INCLUDE_DIR})
 
 # External Libraries
 set(HUSKY_EXTERNAL_LIB ${ZMQ_LIBRARY} ${TCMALLOC_LIBRARY} ${CMAKE_THREAD_LIBS_INIT} ${Boost_LIBRARIES} ${GLOG_LIBRARY})

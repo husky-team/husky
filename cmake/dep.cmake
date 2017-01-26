@@ -13,6 +13,28 @@
 # limitations under the License.
 
 
+### Eigen ###
+
+# TODO: Check the version of Eigen
+set(EIGEN_FIND_REQUIRED true)
+find_path(EIGEN_INCLUDE_DIR NAMES eigen3/Eigen/Dense)
+set(EIGEN_INCLUDE_DIR ${EIGEN_INCLUDE_DIR}/eigen3)
+if(EIGEN_INCLUDE_DIR)
+    set(EIGEN_FOUND true)
+endif(EIGEN_INCLUDE_DIR)
+if(EIGEN_FOUND)
+    set(DEP_FOUND true)
+    if(NOT EIGEN_FIND_QUIETLY)
+        message (STATUS "Found Eigen:")
+        message (STATUS "  (Headers)       ${EIGEN_INCLUDE_DIR}")
+    endif(NOT EIGEN_FIND_QUIETLY)
+else(EIGEN_FOUND)
+    set(DEP_FOUND false)
+    if(EIGEN_FIND_REQUIRED)
+        message(FATAL_ERROR "Could NOT find Eigen")
+    endif(EIGEN_FIND_REQUIRED)
+endif(EIGEN_FOUND)
+
 ### ZeroMQ ###
 
 set(ZMQ_FIND_REQUIRED true)

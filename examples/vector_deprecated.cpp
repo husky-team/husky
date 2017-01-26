@@ -32,10 +32,10 @@ void vector_example() {
     husky::globalize(obj_list);
 
     auto& channel =
-        husky::ChannelStore::create_push_combined_channel<husky::lib::VectorXd,
-                                                          husky::SumCombiner<husky::lib::VectorXd>>(
+        husky::ChannelStore::create_push_combined_channel<husky::lib::DenseVector<double>,
+                                                          husky::SumCombiner<husky::lib::DenseVector<double>>>(
             obj_list, obj_list);
-    husky::lib::VectorXd vec1 = husky::lib::VectorXd::Constant(5, 1, husky::Context::get_global_tid());
+    husky::lib::DenseVector<double> vec1(5, husky::Context::get_global_tid());
 
     channel.prepare_messages();
     channel.push(vec1, 0);

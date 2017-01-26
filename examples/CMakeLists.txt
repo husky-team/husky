@@ -31,6 +31,12 @@ target_link_libraries(Vector ${husky})
 target_link_libraries(Vector ${HUSKY_EXTERNAL_LIB})
 husky_default_properties(Vector)
 
+# VectorDeprecated
+add_executable(VectorDeprecated vector_deprecated.cpp)
+target_link_libraries(VectorDeprecated ${husky})
+target_link_libraries(VectorDeprecated ${HUSKY_EXTERNAL_LIB})
+husky_default_properties(VectorDeprecated)
+
 # LabeledPoint
 add_executable(LabeledPoint labeled_point.cpp)
 target_link_libraries(LabeledPoint ${husky})
