@@ -28,8 +28,8 @@ using base::BinStream;
 
 // Create a new copy of b and assign the copy to a
 // Especially useful when ValueType is smart pointer, like std::shared_ptr
-template <typename ValueType>
-void copy_assign(ValueType& a, const ValueType& b) {
+template <typename ValueTypeA, typename ValueTypeB>
+void copy_assign(ValueTypeA& a, const ValueTypeB& b) {
     a = b;
 }
 
