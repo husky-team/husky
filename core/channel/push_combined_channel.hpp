@@ -107,7 +107,7 @@ class PushCombinedChannel : public Source2ObjListChannel<DstObjT> {
             int dst = (start + i) % send_buffer_.size();
             if (send_buffer_[dst].size() == 0)
                 continue;
-            this->mailbox_->send(dst, this->channel_id_, this->progress_+1, send_buffer_[dst]);
+            this->mailbox_->send(dst, this->channel_id_, this->progress_ + 1, send_buffer_[dst]);
             send_buffer_[dst].purge();
         }
     }
@@ -139,11 +139,9 @@ class PushCombinedChannel : public Source2ObjListChannel<DstObjT> {
 
     ShuffleCombiner<std::pair<typename DstObjT::KeyT, MsgT>>& get_shuffle_combiner(int tid) {
         return (*shuffle_combiner_)[tid];
-    }   
-
-    std::vector<BinStream>& get_send_buffer() {
-        return send_buffer_;
     }
+
+    std::vector<BinStream>& get_send_buffer() { return send_buffer_; }
 
    protected:
     void clear_recv_buffer_() { std::fill(recv_flag_.begin(), recv_flag_.end(), false); }

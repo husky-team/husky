@@ -41,7 +41,7 @@ class AggregatorFactory : public AggregatorFactoryBase {
     virtual size_t get_num_machine();
     virtual size_t get_machine_id();
     virtual size_t get_machine_id(size_t fid);
-    virtual std::unordered_map<size_t, std::vector<size_t> > get_all_factory();
+    virtual std::unordered_map<size_t, std::vector<size_t>> get_all_factory();
     virtual std::vector<size_t> get_all_machine_id();
     virtual void send_local_update(std::vector<BinStream>& bins);
     virtual void on_recv_local_update(const std::function<void(BinStream&)>& recv);

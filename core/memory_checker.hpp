@@ -17,7 +17,6 @@
 #include <atomic>
 #include <thread>
 
-
 namespace husky {
 
 class MemoryChecker {

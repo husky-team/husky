@@ -24,7 +24,7 @@ class TestSerialization : public testing::Test {
 
 class TestSerializationWithInheritance {
    public:
-    TestSerializationWithInheritance(int y) : x(y) {}
+    explicit TestSerializationWithInheritance(int y) : x(y) {}
 
     BinStream& serialize(BinStream& stream) const { return stream << x; }
 
@@ -38,7 +38,7 @@ class TestSerializationWithInheritance {
 
 class TestSerializationWithInheritanceSubclass : public TestSerializationWithInheritance {
    public:
-    TestSerializationWithInheritanceSubclass(int y) : TestSerializationWithInheritance(y) {}
+    explicit TestSerializationWithInheritanceSubclass(int y) : TestSerializationWithInheritance(y) {}
 };
 
 TEST_F(TestSerialization, InitAndDelete) {

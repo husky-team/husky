@@ -31,7 +31,7 @@ class ObjListStore {
     template <typename ObjT>
     static ObjList<ObjT>& create_objlist(const std::string& name = "") {
         std::string list_name = name.empty() ? objlist_name_prefix + std::to_string(default_objlist_id++) : name;
-        if(objlist_map.find(name) != objlist_map.end())
+        if (objlist_map.find(name) != objlist_map.end())
             throw base::HuskyException("ObjListStore::create_objlist: ObjList name already exists");
         auto* objlist = new ObjList<ObjT>();
         objlist_map.insert({list_name, objlist});
@@ -40,14 +40,14 @@ class ObjListStore {
 
     template <typename ObjT>
     static ObjList<ObjT>& get_objlist(const std::string& name) {
-        if(objlist_map.find(name) == objlist_map.end())
+        if (objlist_map.find(name) == objlist_map.end())
             throw base::HuskyException("ObjListStore::get_objlist: ObjList name doesn't exist");
         auto* objlist = objlist_map[name];
         return *static_cast<ObjList<ObjT>*>(objlist);
     }
 
     static void drop_objlist(const std::string& name) {
-        if(objlist_map.find(name) == objlist_map.end())
+        if (objlist_map.find(name) == objlist_map.end())
             throw base::HuskyException("ObjListStore::drop_objlist: ObjList name doesn't exist");
         delete objlist_map[name];
         objlist_map.erase(name);

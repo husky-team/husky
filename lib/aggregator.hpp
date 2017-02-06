@@ -73,7 +73,7 @@ class AggregatorFactoryBase {
     // get the mch id of the factory with id `fid`, should be [0, get_num_machine())
     virtual size_t get_machine_id(size_t fid) = 0;
     virtual size_t get_num_machine() = 0;
-    virtual std::unordered_map<size_t, std::vector<size_t> > get_all_factory() = 0;
+    virtual std::unordered_map<size_t, std::vector<size_t>> get_all_factory() = 0;
     virtual std::vector<size_t> get_all_machine_id() = 0;
 
    protected:

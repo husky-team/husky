@@ -42,7 +42,6 @@ size_t find_last(boost::string_ref sref, char c) {
     return pos;
 }
 
-
 /// A helper function to find the next 'str' starting from index 'l'
 size_t find_next(boost::string_ref sref, size_t l, const std::string& str) {
     auto start = sref.substr(l);

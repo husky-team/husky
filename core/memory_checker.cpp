@@ -20,18 +20,13 @@
 
 #include "base/log.hpp"
 
-
 namespace husky {
 
 const char* k_property_name[7] = {
-     "generic.current_allocated_bytes",
-     "generic.heap_size",
-     "tcmalloc.pageheap_free_bytes",
-     "tcmalloc.pageheap_unmapped_bytes",
-     "tcmalloc.slack_bytes",
-     "tcmalloc.max_total_thread_cache_bytes",
-     "tcmalloc.current_total_thread_cache_bytes",
- };
+    "generic.current_allocated_bytes",           "generic.heap_size",    "tcmalloc.pageheap_free_bytes",
+    "tcmalloc.pageheap_unmapped_bytes",          "tcmalloc.slack_bytes", "tcmalloc.max_total_thread_cache_bytes",
+    "tcmalloc.current_total_thread_cache_bytes",
+};
 
 void MemoryChecker::exec_memory_query_per_second() {
     while (!stop_thread_) {
@@ -47,8 +42,6 @@ size_t MemoryChecker::get_tcmalloc_query(enum MemoryChecker::QueryType key) {
     return cur_bytes;
 }
 
-void MemoryChecker::serve() {
-    checker_ = std::thread(&MemoryChecker::exec_memory_query_per_second, this);
-}
+void MemoryChecker::serve() { checker_ = std::thread(&MemoryChecker::exec_memory_query_per_second, this); }
 
 }  // namespace husky

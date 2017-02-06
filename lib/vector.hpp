@@ -16,12 +16,13 @@
 
 #define EIGEN_MATRIXBASE_PLUGIN "lib/eigen_matrix_base_plugin.hpp"
 
+#include <algorithm>
 #include <cmath>
 #include <vector>
 
-#include "Eigen/Sparse"
-#include "Eigen/Dense"
 #include "Eigen/Core"
+#include "Eigen/Dense"
+#include "Eigen/Sparse"
 
 #include "core/engine.hpp"
 
@@ -38,19 +39,21 @@ template <typename XprType, int, typename>
 class InnerIterator : public Eigen::InnerIterator<XprType> {
    protected:
     typedef typename Eigen::internal::traits<XprType>::Scalar Scalar;
+
    public:
-    InnerIterator(const XprType &xpr, const Eigen::Index &outerId) : Eigen::InnerIterator<XprType>(xpr, outerId) {}
-    EIGEN_STRONG_INLINE Scalar& valueRef() {
-        return this->m_eval.coeffRef(this->row(), this->col());
-    }
+    InnerIterator(const XprType& xpr, const Eigen::Index& outerId) : Eigen::InnerIterator<XprType>(xpr, outerId) {}
+    EIGEN_STRONG_INLINE Scalar& valueRef() { return this->m_eval.coeffRef(this->row(), this->col()); }
 };
 
 template <typename _Scalar, int _Flags, typename _StorageIndex>
-class InnerIterator<Eigen::SparseVector<_Scalar, _Flags, _StorageIndex>> : public Eigen::SparseVector<_Scalar, _Flags, _StorageIndex>::InnerIterator {
- protected:
+class InnerIterator<Eigen::SparseVector<_Scalar, _Flags, _StorageIndex>>
+    : public Eigen::SparseVector<_Scalar, _Flags, _StorageIndex>::InnerIterator {
+   protected:
     typedef Eigen::SparseVector<_Scalar> XprType;
- public:
-    InnerIterator(const XprType &xpr, const Eigen::Index &outerId) : Eigen::SparseVector<_Scalar, _Flags, _StorageIndex>::InnerIterator(xpr, outerId) {}
+
+   public:
+    InnerIterator(const XprType& xpr, const Eigen::Index& outerId)
+        : Eigen::SparseVector<_Scalar, _Flags, _StorageIndex>::InnerIterator(xpr, outerId) {}
 };
 
 template <typename T, typename U>
@@ -76,7 +79,7 @@ struct LabeledPoint {
 }  // namespace lib
 
 BinStream& operator<<(BinStream& stream, const lib::VectorXd& vec) {
-    stream << (size_t)vec.rows();
+    stream << (size_t) vec.rows();
     for (lib::VectorXd::InnerIterator it(vec, 0); it; ++it) {
         stream << it.value();
     }
@@ -96,10 +99,9 @@ BinStream& operator>>(BinStream& stream, lib::VectorXd& vec) {
 }
 
 BinStream& operator<<(BinStream& stream, const lib::SparseVectorXd& vec) {
-    stream << (size_t)vec.rows()
-           << (size_t)vec.nonZeros();
+    stream << (size_t) vec.rows() << (size_t) vec.nonZeros();
     for (lib::SparseVectorXd::InnerIterator it(vec, 0); it; ++it) {
-        stream << (size_t)it.index();
+        stream << (size_t) it.index();
         stream << it.value();
     }
 

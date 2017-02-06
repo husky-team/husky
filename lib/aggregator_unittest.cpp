@@ -68,8 +68,8 @@ class MultiMachineAggregatorFactory : public AggregatorFactoryBase {
         return (std::upper_bound(info_size_.begin(), info_size_.end(), fid) - info_size_.begin()) * 2;
     }
 
-    virtual std::unordered_map<size_t, std::vector<size_t> > get_all_factory() {
-        std::unordered_map<size_t, std::vector<size_t> > all_factory;
+    virtual std::unordered_map<size_t, std::vector<size_t>> get_all_factory() {
+        std::unordered_map<size_t, std::vector<size_t>> all_factory;
         int j = 0;
         for (int m = 0; m < factory_info_.size(); ++m) {
             for (int n = 0; n < factory_info_[m]; ++n) {
