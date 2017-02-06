@@ -35,29 +35,8 @@ else(EIGEN_FOUND)
     endif(EIGEN_FIND_REQUIRED)
 endif(EIGEN_FOUND)
 
-### ZeroMQ ###
-
-set(ZMQ_FIND_REQUIRED true)
-find_path(ZMQ_INCLUDE_DIR NAMES zmq.hpp)
-find_library(ZMQ_LIBRARY NAMES zmq)
-if(ZMQ_INCLUDE_DIR AND ZMQ_LIBRARY)
-    set(ZMQ_FOUND true)
-endif(ZMQ_INCLUDE_DIR AND ZMQ_LIBRARY)
-if(ZMQ_FOUND)
-    set(DEP_FOUND true)
-    if(NOT ZMQ_FIND_QUIETLY)
-        message (STATUS "Found ZeroMQ:")
-        message (STATUS "  (Headers)       ${ZMQ_INCLUDE_DIR}")
-        message (STATUS "  (Library)       ${ZMQ_LIBRARY}")
-    endif(NOT ZMQ_FIND_QUIETLY)
-else(ZMQ_FOUND)
-    set(DEP_FOUND false)
-    if(ZMQ_FIND_REQUIRED)
-        message(FATAL_ERROR "Could NOT find ZeroMQ")
-    endif(ZMQ_FIND_REQUIRED)
-endif(ZMQ_FOUND)
-
 ### TCMalloc ###
+
 set(TCMALLOC_FIND_REQUIRED true)
 find_path(TCMALLOC_INCLUDE_DIR NAMES gperftools/malloc_extension.h)
 find_library(TCMALLOC_LIBRARY NAMES tcmalloc)

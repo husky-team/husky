@@ -21,7 +21,7 @@ set(husky husky-lib husky-io husky-core husky-base)
 
 file(GLOB_RECURSE UNITTEST_FILES ${PROJECT_SOURCE_DIR}/*_unittest.cpp) 
 remove_definitions(-DWITH_THRIFT)  # Workaround for namespace collisions between gtest and flume.
-include_directories(${GTEST_INCLUDE})
+include_directories(${GTEST_INCLUDE_DIR})
 add_executable(HuskyUnitTest ${UNITTEST_FILES} unittest_main.cpp)
 add_dependencies(HuskyUnitTest gtest)
 target_link_libraries(HuskyUnitTest ${husky})

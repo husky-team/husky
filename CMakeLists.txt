@@ -26,20 +26,22 @@ if(CMAKE_COMPILER_IS_GNUCXX)
     set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-Wno-deprecated-declarations")
 endif()
 
-# Dependencies
-include(cmake/dep.cmake)
-include(cmake/utils.cmake)
-include(cmake/external.cmake)
-
 # Boost Libraries
 find_package(Threads)
 find_package(Boost 1.58.0 COMPONENTS system filesystem regex thread program_options date_time chrono)
 
+# External Dependencies
+include(cmake/modules/glog.cmake)
+include(cmake/modules/gtest.cmake)
+include(cmake/modules/zeromq.cmake)
+include(cmake/dep.cmake)
+include(cmake/utils.cmake)
+
 # External Includes
-set(HUSKY_EXTERNAL_INCLUDE ${Boost_INCLUDE_DIRS} ${TCMALLOC_INCLUDE_DIR} ${ZMQ_INCLUDE_DIR} ${GLOG_INCLUDE} ${EIGEN_INCLUDE_DIR})
+set(HUSKY_EXTERNAL_INCLUDE ${Boost_INCLUDE_DIRS} ${TCMALLOC_INCLUDE_DIR} ${ZMQ_INCLUDE_DIR} ${GLOG_INCLUDE_DIR} ${EIGEN_INCLUDE_DIR})
 
 # External Libraries
-set(HUSKY_EXTERNAL_LIB ${ZMQ_LIBRARY} ${TCMALLOC_LIBRARY} ${CMAKE_THREAD_LIBS_INIT} ${Boost_LIBRARIES} ${GLOG_LIBRARY})
+set(HUSKY_EXTERNAL_LIB ${GLOG_LIBRARY} ${ZMQ_LIBRARY} ${TCMALLOC_LIBRARY} ${CMAKE_THREAD_LIBS_INIT} ${Boost_LIBRARIES})
 
 # External Definitions
 set(HUSKY_EXTERNAL_DEFINITION "")
