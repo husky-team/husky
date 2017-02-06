@@ -78,6 +78,8 @@ struct LabeledPoint {
 
 }  // namespace lib
 
+namespace base {
+
 BinStream& operator<<(BinStream& stream, const lib::VectorXd& vec) {
     stream << (size_t) vec.rows();
     for (lib::VectorXd::InnerIterator it(vec, 0); it; ++it) {
@@ -120,6 +122,8 @@ BinStream& operator>>(BinStream& stream, lib::SparseVectorXd& vec) {
 
     return stream;
 }
+
+}  // namespace base
 
 namespace lib {
 
