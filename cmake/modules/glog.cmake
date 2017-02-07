@@ -33,7 +33,7 @@ else(GLOG_SEARCH_PATH)
         CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:PATH=${PROJECT_BINARY_DIR}
         CMAKE_ARGS -DWITH_GFLAGS=OFF
         CMAKE_ARGS -DBUILD_TESTING=OFF
-        CMAKE_ARGS -DBUILD_SHARED_LIBS=ON
+        CMAKE_ARGS -DBUILD_SHARED_LIBS=OFF
         UPDATE_COMMAND ""
         PATCH_COMMAND patch -p1 -t -R < ${GLOG_PATCH}
     )
@@ -42,7 +42,7 @@ else(GLOG_SEARCH_PATH)
     if(WIN32)
         set(GLOG_LIBRARY "${PROJECT_BINARY_DIR}/lib/libglog.lib")
     else(WIN32)
-        set(GLOG_LIBRARY "${PROJECT_BINARY_DIR}/lib/libglog.so")
+        set(GLOG_LIBRARY "${PROJECT_BINARY_DIR}/lib/libglog.a")
     endif(WIN32)
     message(STATUS "GLog will be built as a third party")
     message(STATUS "  (Headers should be)       ${GLOG_INCLUDE_DIR}")
