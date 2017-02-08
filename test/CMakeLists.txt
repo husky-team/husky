@@ -55,3 +55,9 @@ add_executable(TestMongoDBOutputFormat test-mongodb-outputformat.cpp)
 target_link_libraries(TestMongoDBOutputFormat ${husky})
 target_link_libraries(TestMongoDBOutputFormat ${HUSKY_EXTERNAL_LIB})
 husky_default_properties(TestMongoDBOutputFormat)
+
+# TestMemoryChecker
+add_executable(TestMemoryChecker test-memory-checker.cpp)
+target_link_libraries(TestMemoryChecker ${husky})
+target_link_libraries(TestMemoryChecker ${HUSKY_EXTERNAL_LIB})
+husky_default_properties(TestMemoryChecker)

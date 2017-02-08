@@ -14,34 +14,56 @@
 
 #include "core/memory_checker.hpp"
 
+#include <functional>
 #include <thread>
 
+// TODO(legend): check if tcmalloc is included.
 #include "gperftools/malloc_extension.h"
-
-#include "base/log.hpp"
 
 namespace husky {
 
-const char* k_property_name[7] = {
-    "generic.current_allocated_bytes",           "generic.heap_size",    "tcmalloc.pageheap_free_bytes",
-    "tcmalloc.pageheap_unmapped_bytes",          "tcmalloc.slack_bytes", "tcmalloc.max_total_thread_cache_bytes",
-    "tcmalloc.current_total_thread_cache_bytes",
-};
+const char* k_alloccated_bytes_str = "generic.current_allocated_bytes";
+const char* k_heap_size_str = "generic.heap_size";
 
-void MemoryChecker::exec_memory_query_per_second() {
+MemoryChecker::MemoryChecker(int seconds)
+    : sleep_duration_(seconds), stop_thread_(false), checker_(), update_handler_(nullptr) {}
+
+MemoryChecker::~MemoryChecker() {
+    if (!stop_thread_)
+        stop();
+}
+
+void MemoryChecker::serve() { checker_ = std::thread(&MemoryChecker::loop, this); }
+
+void MemoryChecker::stop() {
+    stop_thread_ = true;
+    if (checker_.joinable())
+        checker_.join();
+}
+
+void MemoryChecker::register_update_handler(const std::function<void()>& handler) { update_handler_ = handler; }
+
+void MemoryChecker::loop() {
     while (!stop_thread_) {
-        size_t cur_bytes = get_tcmalloc_query(MemoryChecker::gen_allocated);
-        LOG_I << cur_bytes << " Bytes";
-        std::this_thread::sleep_for(std::chrono::seconds(1));
+        update();
+
+        if (update_handler_ != nullptr)
+            update_handler_();
+
+        std::this_thread::sleep_for(sleep_duration_);
     }
 }
 
-size_t MemoryChecker::get_tcmalloc_query(enum MemoryChecker::QueryType key) {
-    size_t cur_bytes;
-    MallocExtension::instance()->GetNumericProperty(k_property_name[key], &cur_bytes);
-    return cur_bytes;
-}
+void MemoryChecker::update() {
+    MemoryInfo& info = get_memory_info();
 
-void MemoryChecker::serve() { checker_ = std::thread(&MemoryChecker::exec_memory_query_per_second, this); }
+    size_t allocated_bytes;
+    MallocExtension::instance()->GetNumericProperty(k_alloccated_bytes_str, &allocated_bytes);
+    size_t heap_size;
+    MallocExtension::instance()->GetNumericProperty(k_heap_size_str, &heap_size);
+
+    info.allocated_bytes = allocated_bytes;
+    info.heap_size = heap_size;
+}
 
 }  // namespace husky

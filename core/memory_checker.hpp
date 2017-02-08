@@ -15,42 +15,40 @@
 #pragma once
 
 #include <atomic>
+#include <chrono>
+#include <functional>
 #include <thread>
 
 namespace husky {
 
+struct MemoryInfo {
+    size_t allocated_bytes = 0;
+    size_t heap_size = 0;
+};
+
 class MemoryChecker {
    public:
-    enum QueryType {
-        /// gen -- generic, tcm -- tcmalloc
-        gen_allocated,
-        gen_heap_size,
-        tcm_pageheap_free,
-        tcm_pageheap_unmapped,
-        tcm_slack,
-        tcm_max_total_thread_cache,
-        tcm_current_total_thread_cache,
-    };
-
-    MemoryChecker() : stop_thread_(false), checker_() {}
-
-    ~MemoryChecker() {
-        stop_thread_ = true;
-        if (checker_.joinable())
-            checker_.join();
-    }
-
-    /// this query function will return byte(s) value as the unit
-    size_t get_tcmalloc_query(enum MemoryChecker::QueryType key);
+    explicit MemoryChecker(int seconds = 1);
+    virtual ~MemoryChecker();
 
     void serve();
+    void stop();
+    void register_update_handler(const std::function<void()>& handler);
+
+    static MemoryInfo& get_memory_info() {
+        static MemoryInfo memory_info;
+        return memory_info;
+    }
 
    protected:
-    void exec_memory_query_per_second();
+    void loop();
+    void update();
 
    private:
+    std::chrono::seconds sleep_duration_;
     std::atomic_bool stop_thread_;
     std::thread checker_;
+    std::function<void()> update_handler_;
 };
 
 }  // namespace husky
