@@ -32,7 +32,8 @@ void read_bin_file(const std::string& path) {
 }
 
 int main(int argc, char** argv) {
-    ASSERT_MSG(husky::init_with_args(argc, argv, {"path", "hdfs_namenode", "hdfs_namenode_port"}),
-               "Argument `path` is not provided.");
+    if (!husky::init_with_args(argc, argv, {"path", "hdfs_namenode", "hdfs_namenode_port"}))
+        return 1;
     husky::run_job(std::bind(read_bin_file, husky::Context::get_param("path")));
+    return 0;
 }

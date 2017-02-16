@@ -12,25 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <string>
-
-#include "base/log.hpp"
 #include "core/utils.hpp"
 
-int main(int argc, char** argv) {
-    husky::base::log_init(argv[0]);
-    husky::base::log_to_dir("test-log-msg");
-    husky::LOG_I << "Info Log";
-    husky::DLOG_I << "Info Log in debug mode";
-    husky::LOG_W << "Warning Log";
-    husky::DLOG_W << "Warning Log in debug mode";
-    husky::LOG_E << "Error Log";
-    husky::DLOG_E << "Error Log in debug mode";
-    //husky::LOG_F << "Fatal Log";
-    //husky::DLOG_F << "Fatal Log";
-    //husky::ASSERT(0);
-    //husky::ASSERT_MSG(0, "abc");
-    //husky::DASSERT(0);
-    husky::DASSERT_MSG(0, "abc");
-    return 0;
-}
+namespace husky {
+
+bool assert_check(bool condition) { return (__builtin_expect(condition, 0)); }
+
+}  // namespace husky

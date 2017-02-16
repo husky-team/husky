@@ -25,16 +25,20 @@ namespace husky {
 #define LOG_F base::HuskyLogger(__FILE__, __LINE__, 3).stream()
 
 #ifdef HUSKY_DEBUG_MODE
+
 #define DLOG_I LOG_I
 #define DLOG_W LOG_W
 #define DLOG_E LOG_E
 #define DLOG_F LOG_F
-#else  // NDEBUG
+
+#else  // HUSKY_DEBUG_MODE
+
 #define DLOG_I base::HuskyLoggerVoidify().void_stream
 #define DLOG_W base::HuskyLoggerVoidify().void_stream
 #define DLOG_E base::HuskyLoggerVoidify().void_stream
 #define DLOG_F base::HuskyLoggerVoidify().void_stream
-#endif  // NDEBUG
+
+#endif  // HUSKY_DEBUG_MODE
 
 namespace base {
 
@@ -64,6 +68,7 @@ class HuskyLogger {
 class HuskyLoggerVoidify {
    public:
     std::stringstream void_stream;
+    void operator&(std::ostream&) {}
 };
 
 // Deprecated. It would not show the real location of the calling.

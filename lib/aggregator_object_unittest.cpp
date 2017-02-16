@@ -1,7 +1,8 @@
-#include "base/serialization.hpp"
 #include "lib/aggregator_object.hpp"
 
 #include "gtest/gtest.h"
+
+#include "base/serialization.hpp"
 
 class TestCopyAssign : public testing::Test {
    public:
@@ -33,13 +34,10 @@ class TestAggregatorObject : public testing::Test {
     void TearDown() {}
 };
 
-
 class SameType {
    public:
-    explicit SameType(int val = 0): some_mem(val) {}
-    friend SameType operator+(SameType a, SameType b) {
-        return SameType(a.some_mem + b.some_mem);
-    }
+    explicit SameType(int val = 0) : some_mem(val) {}
+    friend SameType operator+(SameType a, SameType b) { return SameType(a.some_mem + b.some_mem); }
     SameType& operator=(SameType c) {
         some_mem = c.some_mem;
         return *this;
@@ -52,7 +50,7 @@ class DiffType;
 
 class DiffSumType {
    public:
-    DiffSumType(const DiffType* x, const DiffType* y): a(x), b(y) {}
+    DiffSumType(const DiffType* x, const DiffType* y) : a(x), b(y) {}
 
     const DiffType* a;
     const DiffType* b;
@@ -60,16 +58,14 @@ class DiffSumType {
 
 class DiffType {
    public:
-    explicit DiffType(int val = 0): some_mem(val) {}
-    friend DiffSumType operator+(const DiffType& a, const DiffType& b) {
-        return DiffSumType(&a, &b);
-    }
+    explicit DiffType(int val = 0) : some_mem(val) {}
+    friend DiffSumType operator+(const DiffType& a, const DiffType& b) { return DiffSumType(&a, &b); }
     DiffType& operator=(DiffSumType x) {
         some_mem = x.a->some_mem + x.b->some_mem;
         return *this;
     }
 
-   int some_mem;
+    int some_mem;
 };
 
 TEST_F(TestCopyAssign, SameTypeTest) {
@@ -84,7 +80,7 @@ TEST_F(TestCopyAssign, DiffTypeTest) {
     EXPECT_EQ(a.some_mem + b.some_mem, c.some_mem);
 }
 
-class SomeAggregatorState: public husky::lib::AggregatorState {
+class SomeAggregatorState : public husky::lib::AggregatorState {
    public:
     void load(husky::base::BinStream& in) {}
     void save(husky::base::BinStream& out) {}

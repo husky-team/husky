@@ -12,19 +12,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <cassert>
+#pragma once
+
+#include <string>
 
 #include "base/log.hpp"
 
 namespace husky {
 
-#define ASSERT_MSG(condition, message)   \
-    do {                                 \
-        bool cond = (condition);         \
-        if (!cond) {                     \
-            printf("%s\n", (message));   \
-            assert(cond && (condition)); \
-        }                                \
-    } while (false)
+bool assert_check(bool condition);
+
+#define CHECK(condition) assert_check(!(condition)) ? (void) 0 : husky::base::HuskyLoggerVoidify() & husky::LOG_F
+
+#define DCHECK(condition) assert_check(!(condition)) ? (void) 0 : husky::base::HuskyLoggerVoidify() & husky::DLOG_F
+
+#define ASSERT(condition) CHECK(!(condition)) << "Assert failed: " #condition
+
+#define ASSERT_MSG(condition, message) CHECK(!(condition)) << "Assert failed: " #condition "\n" #message
+
+#define DASSERT(condition) DCHECK(!(condition)) << "Assert failed: " #condition
+
+#define DASSERT_MSG(condition, message) DCHECK(!(condition)) << "Assert failed: " #condition "\n" #message
 
 }  // namespace husky
