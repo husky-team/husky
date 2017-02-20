@@ -23,51 +23,50 @@
 
 namespace husky {
 
-/// 3 APIs are provided
-/// create_objlist(), get_objlist(), drop_objlist()
-/// See the unittest for the usages
+typedef std::unordered_map<std::string, ObjListBase*> ObjListMap;
+
 class ObjListStore {
    public:
     template <typename ObjT>
-    static ObjList<ObjT>& create_objlist(const std::string& name = "") {
-        std::string list_name = name.empty() ? objlist_name_prefix + std::to_string(default_objlist_id++) : name;
-        if (objlist_map.find(name) != objlist_map.end())
-            throw base::HuskyException("ObjListStore::create_objlist: ObjList name already exists");
+    static ObjList<ObjT>& create_objlist() {
+        ObjListMap& objlist_map = get_objlist_map();
+        std::string id = std::to_string(s_gen_objlist_id++);
+        if (objlist_map.find(id) != objlist_map.end())
+            throw base::HuskyException("ObjListStore::create_objlist: ObjList id already exists");
+
+        // TODO(legend): will store id into a objlist like `new ObjList<ObjT>(id)`.
         auto* objlist = new ObjList<ObjT>();
-        objlist_map.insert({list_name, objlist});
+        objlist_map.insert({id, objlist});
         return *objlist;
     }
 
     template <typename ObjT>
-    static ObjList<ObjT>& get_objlist(const std::string& name) {
-        if (objlist_map.find(name) == objlist_map.end())
-            throw base::HuskyException("ObjListStore::get_objlist: ObjList name doesn't exist");
-        auto* objlist = objlist_map[name];
+    static ObjList<ObjT>& get_objlist(const std::string& id) {
+        ObjListMap& objlist_map = get_objlist_map();
+        if (objlist_map.find(id) == objlist_map.end())
+            throw base::HuskyException("ObjListStore::get_objlist: ObjList id doesn't exist");
+
+        auto* objlist = objlist_map[id];
         return *static_cast<ObjList<ObjT>*>(objlist);
     }
 
-    static void drop_objlist(const std::string& name) {
-        if (objlist_map.find(name) == objlist_map.end())
-            throw base::HuskyException("ObjListStore::drop_objlist: ObjList name doesn't exist");
-        delete objlist_map[name];
-        objlist_map.erase(name);
-    }
+    static bool has_objlist(const std::string& id);
+    static void drop_objlist(const std::string& id);
 
-    static bool has_objlist(const std::string& name) { return objlist_map.find(name) != objlist_map.end(); }
+    static void drop_all_objlists();
+    static void init_objlist_map();
+    static void free_objlist_map();
+    static ObjListMap& get_objlist_map();
 
-    static size_t size() { return objlist_map.size(); }
-
-    static void drop_all_objlists() {
-        for (auto& objlist_pair : objlist_map) {
-            delete objlist_pair.second;
-        }
-        objlist_map.clear();
+    static inline size_t size() {
+        if (s_objlist_map == nullptr)
+            return 0;
+        return s_objlist_map->size();
     }
 
    protected:
-    static thread_local std::unordered_map<std::string, ObjListBase*> objlist_map;
-    static thread_local int default_objlist_id;
-    static const char* objlist_name_prefix;
+    static thread_local ObjListMap* s_objlist_map;
+    static thread_local unsigned int s_gen_objlist_id;
 };
 
 }  // namespace husky

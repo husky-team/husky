@@ -66,8 +66,8 @@ using husky::lib::AggregatorFactory;
 template <bool is_sparse>
 void svm() {
     using ObjT = husky::lib::ml::LabeledPointHObj<double, double, is_sparse>;
-    auto& train_set = husky::ObjListStore::create_objlist<ObjT>("train_set");
-    auto& test_set = husky::ObjListStore::create_objlist<ObjT>("test_set");
+    auto& train_set = husky::ObjListStore::create_objlist<ObjT>();
+    auto& test_set = husky::ObjListStore::create_objlist<ObjT>();
 
     auto format_str = husky::Context::get_param("format");
     husky::lib::ml::DataFormat format;

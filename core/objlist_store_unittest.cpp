@@ -2,6 +2,7 @@
 
 #include "gtest/gtest.h"
 
+#include "base/session_local.hpp"
 #include "core/objlist.hpp"
 
 namespace husky {
@@ -14,7 +15,7 @@ class TestObjListStore : public testing::Test {
 
    protected:
     void SetUp() {}
-    void TearDown() {}
+    void TearDown() { husky::base::SessionLocal::get_thread_finalizers().clear(); }
 };
 
 class Obj {
@@ -26,30 +27,27 @@ class Obj {
     explicit Obj(const KeyT& k) : key(k) {}
 };
 
-TEST_F(TestObjListStore, Create) {
-    // Normal Create
-    ObjList<Obj> obj_list_normal1;
-
-    // Create
-    ObjList<Obj>& obj_list = ObjListStore::create_objlist<Obj>();
+TEST_F(TestObjListStore, Functional) {
+    ObjList<Obj>& obj_list_0 = ObjListStore::create_objlist<Obj>();
     EXPECT_EQ(ObjListStore::size(), 1);
-    ObjList<Obj>& obj_list2 = ObjListStore::create_objlist<Obj>();
+    ObjList<Obj>& obj_list_1 = ObjListStore::create_objlist<Obj>();
     EXPECT_EQ(ObjListStore::size(), 2);
-    ObjList<Obj>& obj_list3 = ObjListStore::create_objlist<Obj>("abc");
+    ObjList<Obj>& obj_list_2 = ObjListStore::create_objlist<Obj>();
     EXPECT_EQ(ObjListStore::size(), 3);
 
-    // Get
-    auto& obj_list4 = ObjListStore::get_objlist<Obj>("abc");
-    EXPECT_EQ(&obj_list3, &obj_list4);
-    auto& obj_list5 = ObjListStore::get_objlist<Obj>("default_objlist_1");
-    EXPECT_EQ(&obj_list2, &obj_list5);
+    auto& obj_list_3 = ObjListStore::get_objlist<Obj>("0");
+    EXPECT_EQ(&obj_list_0, &obj_list_3);
+    auto& obj_list_4 = ObjListStore::get_objlist<Obj>("2");
+    EXPECT_EQ(&obj_list_2, &obj_list_4);
 
-    // Drop
-    ObjListStore::drop_objlist("abc");
+    ObjListStore::drop_objlist("2");
+    EXPECT_FALSE(ObjListStore::has_objlist("2"));
     EXPECT_EQ(ObjListStore::size(), 2);
-    ObjListStore::drop_objlist("default_objlist_1");
+    ObjListStore::drop_objlist("1");
+    EXPECT_FALSE(ObjListStore::has_objlist("1"));
     EXPECT_EQ(ObjListStore::size(), 1);
-    ObjListStore::drop_objlist("default_objlist_0");
+    ObjListStore::drop_objlist("0");
+    EXPECT_FALSE(ObjListStore::has_objlist("0"));
     EXPECT_EQ(ObjListStore::size(), 0);
 }
 

@@ -21,11 +21,54 @@
 
 namespace husky {
 
-thread_local int ObjListStore::default_objlist_id = 0;
-thread_local std::unordered_map<std::string, ObjListBase*> ObjListStore::objlist_map;
-const char* ObjListStore::objlist_name_prefix = "default_objlist_";
+thread_local unsigned int ObjListStore::s_gen_objlist_id = 0;
+thread_local ObjListMap* ObjListStore::s_objlist_map = nullptr;
+
 // set finalize_all_objlists priority to Level1, the higher the level, the higher the priority
-static thread_local base::RegSessionThreadFinalizer finalize_all_objlists(base::SessionLocalPriority::Level1,
-                                                                          []() { ObjListStore::drop_all_objlists(); });
+static thread_local base::RegSessionThreadFinalizer finalize_all_objlists(base::SessionLocalPriority::Level1, []() {
+    ObjListStore::drop_all_objlists();
+    ObjListStore::free_objlist_map();
+});
+
+void ObjListStore::drop_objlist(const std::string& id) {
+    ObjListMap& objlist_map = get_objlist_map();
+    if (objlist_map.find(id) == objlist_map.end())
+        throw base::HuskyException("ObjListStore::drop_objlist: ObjList id doesn't exist");
+
+    delete objlist_map[id];
+    objlist_map.erase(id);
+}
+
+bool ObjListStore::has_objlist(const std::string& id) {
+    ObjListMap& objlist_map = get_objlist_map();
+    return objlist_map.find(id) != objlist_map.end();
+}
+
+void ObjListStore::drop_all_objlists() {
+    if (s_objlist_map == nullptr)
+        return;
+
+    for (auto& objlist_pair : (*s_objlist_map)) {
+        if (objlist_pair.second != nullptr)
+            delete objlist_pair.second;
+    }
+
+    s_objlist_map->clear();
+}
+
+void ObjListStore::init_objlist_map() {
+    if (s_objlist_map == nullptr)
+        s_objlist_map = new ObjListMap();
+}
+
+void ObjListStore::free_objlist_map() {
+    delete s_objlist_map;
+    s_objlist_map = nullptr;
+}
+
+ObjListMap& ObjListStore::get_objlist_map() {
+    init_objlist_map();
+    return *s_objlist_map;
+}
 
 }  // namespace husky

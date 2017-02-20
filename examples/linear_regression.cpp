@@ -79,8 +79,8 @@ void linear_regression() {
     }
 
     using LabeledPointHObj = husky::lib::ml::LabeledPointHObj<double, double, is_sparse>;
-    auto& train_set = husky::ObjListStore::create_objlist<LabeledPointHObj>("train_set");
-    auto& test_set = husky::ObjListStore::create_objlist<LabeledPointHObj>("test_set");
+    auto& train_set = husky::ObjListStore::create_objlist<LabeledPointHObj>();
+    auto& test_set = husky::ObjListStore::create_objlist<LabeledPointHObj>();
 
     // load data
     int num_features = husky::lib::ml::load_data(husky::Context::get_param("train"), train_set, data_format);

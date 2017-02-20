@@ -62,8 +62,8 @@ using husky::lib::ml::ParameterBucket;
 template <bool is_sparse>
 void logistic_regression() {
     using LabeledPointHObj = husky::lib::ml::LabeledPointHObj<double, double, is_sparse>;
-    auto& train_set = husky::ObjListStore::create_objlist<LabeledPointHObj>("train_set");
-    auto& test_set = husky::ObjListStore::create_objlist<LabeledPointHObj>("test_set");
+    auto& train_set = husky::ObjListStore::create_objlist<LabeledPointHObj>();
+    auto& test_set = husky::ObjListStore::create_objlist<LabeledPointHObj>();
 
     // load data
     auto format_str = husky::Context::get_param("format");
