@@ -22,62 +22,47 @@
 
 namespace husky {
 
-/// 3 types of APIs are provided
-/// create_xxx_channel(), get_xxx_channel(), drop_channel()
-/// ChannelStore serves as a decorator for ChannelStoreBase::create_xxx_channel.
 class ChannelStore : public ChannelStoreBase {
    public:
-    // Create PushChannel
     template <typename MsgT, typename DstObjT>
-    static PushChannel<MsgT, DstObjT>& create_push_channel(ChannelSource& src_list, ObjList<DstObjT>& dst_list,
-                                                           const std::string& name = "") {
-        auto& ch = ChannelStoreBase::create_push_channel<MsgT>(src_list, dst_list, name);
+    static PushChannel<MsgT, DstObjT>& create_push_channel(ChannelSource& src_list, ObjList<DstObjT>& dst_list) {
+        auto& ch = ChannelStoreBase::create_push_channel<MsgT>(src_list, dst_list);
         setup(ch);
         return ch;
     }
 
-    // Create PushCombinedChannel
     template <typename MsgT, typename CombineT, typename DstObjT>
     static PushCombinedChannel<MsgT, DstObjT, CombineT>& create_push_combined_channel(ChannelSource& src_list,
-                                                                                      ObjList<DstObjT>& dst_list,
-                                                                                      const std::string& name = "") {
-        auto& ch = ChannelStoreBase::create_push_combined_channel<MsgT, CombineT>(src_list, dst_list, name);
+                                                                                      ObjList<DstObjT>& dst_list) {
+        auto& ch = ChannelStoreBase::create_push_combined_channel<MsgT, CombineT>(src_list, dst_list);
         setup(ch);
         return ch;
     }
 
-    // Create MigrateChannel
     template <typename ObjT>
-    static MigrateChannel<ObjT>& create_migrate_channel(ObjList<ObjT>& src_list, ObjList<ObjT>& dst_list,
-                                                        const std::string& name = "") {
-        auto& ch = ChannelStoreBase::create_migrate_channel<ObjT>(src_list, dst_list, name);
+    static MigrateChannel<ObjT>& create_migrate_channel(ObjList<ObjT>& src_list, ObjList<ObjT>& dst_list) {
+        auto& ch = ChannelStoreBase::create_migrate_channel<ObjT>(src_list, dst_list);
         setup(ch);
         return ch;
     }
 
-    // Create BroadcastChannel
     template <typename KeyT, typename MsgT>
-    static BroadcastChannel<KeyT, MsgT>& create_broadcast_channel(ChannelSource& src_list,
-                                                                  const std::string& name = "") {
-        auto& ch = ChannelStoreBase::create_broadcast_channel<KeyT, MsgT>(src_list, name);
+    static BroadcastChannel<KeyT, MsgT>& create_broadcast_channel(ChannelSource& src_list) {
+        auto& ch = ChannelStoreBase::create_broadcast_channel<KeyT, MsgT>(src_list);
         setup(ch);
         return ch;
     }
 
-    // Create PushAsyncChannel
     template <typename MsgT, typename ObjT>
-    static AsyncPushChannel<MsgT, ObjT>& create_async_push_channel(ObjList<ObjT>& obj_list,
-                                                                   const std::string& name = "") {
-        auto& ch = ChannelStoreBase::create_async_push_channel<MsgT>(obj_list, name);
+    static AsyncPushChannel<MsgT, ObjT>& create_async_push_channel(ObjList<ObjT>& obj_list) {
+        auto& ch = ChannelStoreBase::create_async_push_channel<MsgT>(obj_list);
         setup(ch);
         return ch;
     }
 
-    // Create MigrateAsyncChannel
     template <typename ObjT>
-    static AsyncMigrateChannel<ObjT>& create_async_migrate_channel(ObjList<ObjT>& obj_list,
-                                                                   const std::string& name = "") {
-        auto& ch = ChannelStoreBase::create_async_migrate_channel<ObjT>(obj_list, name);
+    static AsyncMigrateChannel<ObjT>& create_async_migrate_channel(ObjList<ObjT>& obj_list) {
+        auto& ch = ChannelStoreBase::create_async_migrate_channel<ObjT>(obj_list);
         setup(ch);
         return ch;
     }

@@ -20,10 +20,10 @@
 
 namespace husky {
 
-thread_local size_t ChannelBase::counter = 0;
+thread_local size_t ChannelBase::s_counter = 0;
 
-ChannelBase::ChannelBase() : channel_id_(counter), progress_(0) {
-    counter += 1;
+ChannelBase::ChannelBase() : channel_id_(s_counter), progress_(0) {
+    s_counter += 1;
     set_as_sync_channel();
 }
 

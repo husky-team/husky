@@ -17,6 +17,7 @@
 #include <string>
 #include <unordered_map>
 
+#include "base/exception.hpp"
 #include "core/context.hpp"
 #include "core/objlist.hpp"
 #include "core/utils.hpp"
@@ -52,8 +53,8 @@ class ObjListStore {
 
     static bool has_objlist(const std::string& id);
     static void drop_objlist(const std::string& id);
-
     static void drop_all_objlists();
+
     static void init_objlist_map();
     static void free_objlist_map();
     static ObjListMap& get_objlist_map();

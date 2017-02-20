@@ -30,6 +30,11 @@ static thread_local base::RegSessionThreadFinalizer finalize_all_objlists(base::
     ObjListStore::free_objlist_map();
 });
 
+bool ObjListStore::has_objlist(const std::string& id) {
+    ObjListMap& objlist_map = get_objlist_map();
+    return objlist_map.find(id) != objlist_map.end();
+}
+
 void ObjListStore::drop_objlist(const std::string& id) {
     ObjListMap& objlist_map = get_objlist_map();
     if (objlist_map.find(id) == objlist_map.end())
@@ -39,19 +44,12 @@ void ObjListStore::drop_objlist(const std::string& id) {
     objlist_map.erase(id);
 }
 
-bool ObjListStore::has_objlist(const std::string& id) {
-    ObjListMap& objlist_map = get_objlist_map();
-    return objlist_map.find(id) != objlist_map.end();
-}
-
 void ObjListStore::drop_all_objlists() {
     if (s_objlist_map == nullptr)
         return;
 
-    for (auto& objlist_pair : (*s_objlist_map)) {
-        if (objlist_pair.second != nullptr)
-            delete objlist_pair.second;
-    }
+    for (auto& objlist_pair : (*s_objlist_map))
+        delete objlist_pair.second;
 
     s_objlist_map->clear();
 }

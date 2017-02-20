@@ -33,7 +33,7 @@ class ChannelBase {
     virtual ~ChannelBase() = default;
 
     /// Getter
-    inline static size_t get_num_channel() { return counter; }
+    inline static size_t get_num_channel() { return s_counter; }
     inline LocalMailbox* get_mailbox() const { return mailbox_; }
     inline size_t get_channel_id() const { return channel_id_; }
     inline size_t get_global_id() const { return global_id_; }
@@ -103,7 +103,7 @@ class ChannelBase {
     LocalMailbox* mailbox_ = nullptr;
     const HashRing* hash_ring_ = nullptr;
 
-    static thread_local size_t counter;
+    static thread_local size_t s_counter;
 };
 
 }  // namespace husky

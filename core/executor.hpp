@@ -36,11 +36,11 @@ namespace husky {
 // and second element is an int for the number of objects this current thread should send to 'global_tid'.
 template <typename ObjT, typename Algo>
 void balance(ObjList<ObjT>& obj_list, Algo algo) {
-    auto& migrate_channel = ChannelStore::create_migrate_channel(obj_list, obj_list, "tmp_balance_migrate");
+    auto& migrate_channel = ChannelStore::create_migrate_channel(obj_list, obj_list);
 
     // key: global_tid
     // value: number of objects in obj_list in current thread
-    auto& broadcast_channel = ChannelStore::create_broadcast_channel<int, int>(obj_list, "tmp_balance_broadcast");
+    auto& broadcast_channel = ChannelStore::create_broadcast_channel<int, int>(obj_list);
 
     broadcast_channel.broadcast(Context::get_global_tid(), obj_list.get_size());
     broadcast_channel.flush();
@@ -72,8 +72,8 @@ void balance(ObjList<ObjT>& obj_list, Algo algo) {
     migrate_channel.prepare_immigrants();
     obj_list.sort();
 
-    ChannelStore::drop_channel("tmp_balance_broadcast");
-    ChannelStore::drop_channel("tmp_balance_migrate");
+    ChannelStore::drop_channel(broadcast_channel.get_channel_id());
+    ChannelStore::drop_channel(migrate_channel.get_channel_id());
 }
 
 // default balance method use default algorithm
@@ -85,7 +85,7 @@ void balance(ObjList<ObjT>& obj_list) {
 template <typename ObjT>
 void globalize(ObjList<ObjT>& obj_list) {
     // create a migrate channel for globalize
-    auto& migrate_channel = ChannelStore::create_migrate_channel(obj_list, obj_list, "tmp_globalize");
+    auto& migrate_channel = ChannelStore::create_migrate_channel(obj_list, obj_list);
 
     for (auto& obj : obj_list.get_data()) {
         int dst_thread_id = Context::get_hash_ring().hash_lookup(obj.id());
@@ -97,7 +97,7 @@ void globalize(ObjList<ObjT>& obj_list) {
     migrate_channel.prepare_immigrants();
     obj_list.sort();
 
-    ChannelStore::drop_channel("tmp_globalize");
+    ChannelStore::drop_channel(migrate_channel.get_channel_id());
     // TODO(all): Maybe we can skip using unordered_map to index obj since in the end we need to sort them
 }
 

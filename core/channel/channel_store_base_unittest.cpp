@@ -32,22 +32,20 @@ TEST_F(TestChannelStoreBase, CreatePushChannel) {
     ObjList<Obj> src_list;
     ObjList<Obj> dst_list;
 
-    // Create
-    auto& ch1 = ChannelStoreBase::create_push_channel<int>(src_list, dst_list, "ch1");
+    auto& ch1 = ChannelStoreBase::create_push_channel<int>(src_list, dst_list);
+    size_t ch1_id = ch1.get_channel_id();
+    EXPECT_TRUE(ChannelStoreBase::has_channel(ch1_id));
     EXPECT_EQ(ChannelStoreBase::size(), 1);
-    auto& ch2 = ChannelStoreBase::create_push_channel<int>(src_list, dst_list, "ch2");
+    auto& ch2 = ChannelStoreBase::create_push_channel<int>(src_list, dst_list);
+    size_t ch2_id = ch2.get_channel_id();
+    EXPECT_TRUE(ChannelStoreBase::has_channel(ch2_id));
     EXPECT_EQ(ChannelStoreBase::size(), 2);
 
-    // Get
-    auto& ch3 = ChannelStoreBase::get_push_channel<int, Obj>("ch1");
-    EXPECT_EQ(&ch3, &ch1);
-    auto& ch4 = ChannelStoreBase::get_push_channel<int, Obj>("ch2");
-    EXPECT_EQ(&ch4, &ch2);
-
-    // Drop
-    ChannelStoreBase::drop_channel("ch1");
+    ChannelStoreBase::drop_channel(ch2_id);
+    EXPECT_FALSE(ChannelStoreBase::has_channel(ch2_id));
     EXPECT_EQ(ChannelStoreBase::size(), 1);
-    ChannelStoreBase::drop_channel("ch2");
+    ChannelStoreBase::drop_channel(ch1_id);
+    EXPECT_FALSE(ChannelStoreBase::has_channel(ch1_id));
     EXPECT_EQ(ChannelStoreBase::size(), 0);
 }
 
@@ -55,22 +53,20 @@ TEST_F(TestChannelStoreBase, CreatePushCombinedChannel) {
     ObjList<Obj> src_list;
     ObjList<Obj> dst_list;
 
-    // Create
-    auto& ch1 = ChannelStoreBase::create_push_combined_channel<int, SumCombiner<int>>(src_list, dst_list, "ch1");
+    auto& ch1 = ChannelStoreBase::create_push_combined_channel<int, SumCombiner<int>>(src_list, dst_list);
+    size_t ch1_id = ch1.get_channel_id();
+    EXPECT_TRUE(ChannelStoreBase::has_channel(ch1_id));
     EXPECT_EQ(ChannelStoreBase::size(), 1);
-    auto& ch2 = ChannelStoreBase::create_push_combined_channel<int, SumCombiner<int>>(src_list, dst_list, "ch2");
+    auto& ch2 = ChannelStoreBase::create_push_combined_channel<int, SumCombiner<int>>(src_list, dst_list);
+    size_t ch2_id = ch2.get_channel_id();
+    EXPECT_TRUE(ChannelStoreBase::has_channel(ch2_id));
     EXPECT_EQ(ChannelStoreBase::size(), 2);
 
-    // Get
-    auto& ch3 = ChannelStoreBase::get_push_combined_channel<int, SumCombiner<int>, Obj>("ch1");
-    EXPECT_EQ(&ch3, &ch1);
-    auto& ch4 = ChannelStoreBase::get_push_combined_channel<int, SumCombiner<int>, Obj>("ch2");
-    EXPECT_EQ(&ch4, &ch2);
-
-    // Drop
-    ChannelStoreBase::drop_channel("ch1");
+    ChannelStoreBase::drop_channel(ch2_id);
+    EXPECT_FALSE(ChannelStoreBase::has_channel(ch2_id));
     EXPECT_EQ(ChannelStoreBase::size(), 1);
-    ChannelStoreBase::drop_channel("ch2");
+    ChannelStoreBase::drop_channel(ch1_id);
+    EXPECT_FALSE(ChannelStoreBase::has_channel(ch1_id));
     EXPECT_EQ(ChannelStoreBase::size(), 0);
 }
 
@@ -78,45 +74,96 @@ TEST_F(TestChannelStoreBase, CreateMigrateChannel) {
     ObjList<Obj> src_list;
     ObjList<Obj> dst_list;
 
-    // Create
-    auto& ch1 = ChannelStoreBase::create_migrate_channel<Obj>(src_list, dst_list, "ch1");
+    auto& ch1 = ChannelStoreBase::create_migrate_channel<Obj>(src_list, dst_list);
+    size_t ch1_id = ch1.get_channel_id();
+    EXPECT_TRUE(ChannelStoreBase::has_channel(ch1_id));
     EXPECT_EQ(ChannelStoreBase::size(), 1);
-    auto& ch2 = ChannelStoreBase::create_migrate_channel<Obj>(src_list, dst_list, "ch2");
+    auto& ch2 = ChannelStoreBase::create_migrate_channel<Obj>(src_list, dst_list);
+    size_t ch2_id = ch2.get_channel_id();
+    EXPECT_TRUE(ChannelStoreBase::has_channel(ch2_id));
     EXPECT_EQ(ChannelStoreBase::size(), 2);
 
-    // Get
-    auto& ch3 = ChannelStoreBase::get_migrate_channel<Obj>("ch1");
-    EXPECT_EQ(&ch3, &ch1);
-    auto& ch4 = ChannelStoreBase::get_migrate_channel<Obj>("ch2");
-    EXPECT_EQ(&ch4, &ch2);
-
-    // Drop
-    ChannelStoreBase::drop_channel("ch1");
+    ChannelStoreBase::drop_channel(ch2_id);
+    EXPECT_FALSE(ChannelStoreBase::has_channel(ch2_id));
     EXPECT_EQ(ChannelStoreBase::size(), 1);
-    ChannelStoreBase::drop_channel("ch2");
+    ChannelStoreBase::drop_channel(ch1_id);
+    EXPECT_FALSE(ChannelStoreBase::has_channel(ch1_id));
     EXPECT_EQ(ChannelStoreBase::size(), 0);
 }
 
 TEST_F(TestChannelStoreBase, CreateBroacastChannel) {
     ObjList<Obj> src_list;
-    ObjList<Obj> dst_list;
 
-    // Create
-    auto& ch1 = ChannelStoreBase::create_broadcast_channel<int, int>(src_list, "ch1");
+    auto& ch1 = ChannelStoreBase::create_broadcast_channel<int, int>(src_list);
+    size_t ch1_id = ch1.get_channel_id();
+    EXPECT_TRUE(ChannelStoreBase::has_channel(ch1_id));
     EXPECT_EQ(ChannelStoreBase::size(), 1);
-    auto& ch2 = ChannelStoreBase::create_broadcast_channel<int, int>(src_list, "ch2");
+    auto& ch2 = ChannelStoreBase::create_broadcast_channel<int, int>(src_list);
+    size_t ch2_id = ch2.get_channel_id();
+    EXPECT_TRUE(ChannelStoreBase::has_channel(ch2_id));
     EXPECT_EQ(ChannelStoreBase::size(), 2);
 
-    // Get
-    auto& ch3 = ChannelStoreBase::get_broadcast_channel<int, int>("ch1");
-    EXPECT_EQ(&ch3, &ch1);
-    auto& ch4 = ChannelStoreBase::get_broadcast_channel<int, int>("ch2");
-    EXPECT_EQ(&ch4, &ch2);
-
-    // Drop
-    ChannelStoreBase::drop_channel("ch1");
+    ChannelStoreBase::drop_channel(ch2_id);
+    EXPECT_FALSE(ChannelStoreBase::has_channel(ch2_id));
     EXPECT_EQ(ChannelStoreBase::size(), 1);
-    ChannelStoreBase::drop_channel("ch2");
+    ChannelStoreBase::drop_channel(ch1_id);
+    EXPECT_FALSE(ChannelStoreBase::has_channel(ch1_id));
+    EXPECT_EQ(ChannelStoreBase::size(), 0);
+}
+
+TEST_F(TestChannelStoreBase, CreateAsyncPushChannel) {
+    ObjList<Obj> src_list;
+
+    auto& ch1 = ChannelStoreBase::create_async_push_channel<int, Obj>(src_list);
+    size_t ch1_id = ch1.get_channel_id();
+    EXPECT_TRUE(ChannelStoreBase::has_channel(ch1_id));
+    EXPECT_EQ(ChannelStoreBase::size(), 1);
+    auto& ch2 = ChannelStoreBase::create_async_push_channel<int, Obj>(src_list);
+    size_t ch2_id = ch2.get_channel_id();
+    EXPECT_TRUE(ChannelStoreBase::has_channel(ch2_id));
+    EXPECT_EQ(ChannelStoreBase::size(), 2);
+
+    ChannelStoreBase::drop_channel(ch2_id);
+    EXPECT_FALSE(ChannelStoreBase::has_channel(ch2_id));
+    EXPECT_EQ(ChannelStoreBase::size(), 1);
+    ChannelStoreBase::drop_channel(ch1_id);
+    EXPECT_FALSE(ChannelStoreBase::has_channel(ch1_id));
+    EXPECT_EQ(ChannelStoreBase::size(), 0);
+}
+
+TEST_F(TestChannelStoreBase, CreateAsyncMigrateChannel) {
+    ObjList<Obj> src_list;
+
+    auto& ch1 = ChannelStoreBase::create_async_migrate_channel<Obj>(src_list);
+    size_t ch1_id = ch1.get_channel_id();
+    EXPECT_TRUE(ChannelStoreBase::has_channel(ch1_id));
+    EXPECT_EQ(ChannelStoreBase::size(), 1);
+    auto& ch2 = ChannelStoreBase::create_async_migrate_channel<Obj>(src_list);
+    size_t ch2_id = ch2.get_channel_id();
+    EXPECT_TRUE(ChannelStoreBase::has_channel(ch2_id));
+    EXPECT_EQ(ChannelStoreBase::size(), 2);
+
+    ChannelStoreBase::drop_channel(ch2_id);
+    EXPECT_FALSE(ChannelStoreBase::has_channel(ch2_id));
+    EXPECT_EQ(ChannelStoreBase::size(), 1);
+    ChannelStoreBase::drop_channel(ch1_id);
+    EXPECT_FALSE(ChannelStoreBase::has_channel(ch1_id));
+    EXPECT_EQ(ChannelStoreBase::size(), 0);
+}
+
+TEST_F(TestChannelStoreBase, Functional) {
+    ObjList<Obj> src_list;
+    ObjList<Obj> dst_list;
+
+    ChannelStoreBase::create_push_channel<int>(src_list, dst_list);
+    ChannelStoreBase::create_push_combined_channel<int, SumCombiner<int>>(src_list, dst_list);
+    ChannelStoreBase::create_migrate_channel<Obj>(src_list, dst_list);
+    ChannelStoreBase::create_broadcast_channel<int, int>(src_list);
+    ChannelStoreBase::create_async_push_channel<int, Obj>(src_list);
+    ChannelStoreBase::create_async_migrate_channel<Obj>(src_list);
+    EXPECT_EQ(ChannelStoreBase::size(), 6);
+
+    ChannelStoreBase::drop_all_channels();
     EXPECT_EQ(ChannelStoreBase::size(), 0);
 }
 
