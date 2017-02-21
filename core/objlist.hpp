@@ -37,7 +37,8 @@ using base::DiskStore;
 
 class ObjListBase : public ChannelSource, public ChannelDestination {
    public:
-    ObjListBase() = default;
+    ObjListBase() : id_(s_counter) { s_counter++; }
+
     virtual ~ObjListBase() = default;
 
     ObjListBase(const ObjListBase&) = delete;
@@ -46,7 +47,17 @@ class ObjListBase : public ChannelSource, public ChannelDestination {
     ObjListBase(ObjListBase&&) = delete;
     ObjListBase& operator=(ObjListBase&&) = delete;
 
+    // TODO(legend): Consider how to add the index of thread_id.
+    inline std::string id2str() const { return "ObjList-" + std::to_string(id_); }
+
+    inline size_t get_id() const { return id_; }
+
     virtual size_t get_size() const = 0;
+
+   private:
+    size_t id_;
+
+    static thread_local size_t s_counter;
 };
 
 template <typename ObjT>
@@ -55,12 +66,9 @@ class ObjList : public ObjListBase {
     // TODO(all): should be protected. The list should be constructed by possibly Context
     ObjList() = default;
 
-    explicit ObjList(const std::string& name) : list_name_(name) {}
-
     virtual ~ObjList() {
-        for (auto& it : this->attrlist_map) {
+        for (auto& it : this->attrlist_map)
             delete it.second;
-        }
         this->attrlist_map.clear();
     }
 
@@ -79,16 +87,14 @@ class ObjList : public ObjListBase {
         if (data.size() == 0)
             return;
         std::vector<int> order(this->get_size());
-        for (int i = 0; i < order.size(); ++i) {
+        for (int i = 0; i < order.size(); ++i)
             order[i] = i;
-        }
         // sort the permutation
         std::sort(order.begin(), order.end(),
                   [&](const size_t a, const size_t b) { return data[a].id() < data[b].id(); });
         // apply the permutation on all the attribute lists
-        for (auto& it : this->attrlist_map) {
+        for (auto& it : this->attrlist_map)
             it.second->reorder(order);
-        }
         std::sort(data.begin(), data.end(), [](const ObjT& a, const ObjT& b) { return a.id() < b.id(); });
         hashed_objs_.clear();
         sorted_size_ = data.size();
@@ -111,9 +117,8 @@ class ObjList : public ObjListBase {
             if (!del_bitmap_[j]) {
                 data[i] = std::move(data[j]);
                 // move j_th attribute to i_th for all attr lists
-                for (auto& it : this->attrlist_map) {
+                for (auto& it : this->attrlist_map)
                     it.second->move(i, j);
-                }
                 i += 1;
                 // move i to the next empty place
                 while (i < data.size() && !del_bitmap_[i])
@@ -124,9 +129,8 @@ class ObjList : public ObjListBase {
         }
         data.resize(j);
         del_bitmap_.resize(j);
-        for (auto& it : this->attrlist_map) {
+        for (auto& it : this->attrlist_map)
             it.second->resize(j);
-        }
         objlist_data_.num_del_ = 0;
         std::fill(del_bitmap_.begin(), del_bitmap_.end(), 0);
     }
@@ -167,20 +171,18 @@ class ObjList : public ObjListBase {
             // __builtin_prefetch(&working_list[(m+1+r)/2], 0, 1);
             // __builtin_prefetch(&working_list[(l+m-1)/2], 0, 1);
             auto tmp = start_addr[m].id();
-            if (tmp == key) {
+            if (tmp == key)
                 return &working_list[m];
-            } else if (tmp < key) {
+            else if (tmp < key)
                 l = m + 1;
-            } else {
+            else
                 r = m - 1;
-            }
             m = (r + l) / 2;
         }
 
         // The object to find is not in the sorted part
-        if ((sorted_size_ < objlist_data_.data_.size()) && (hashed_objs_.find(key) != hashed_objs_.end())) {
+        if ((sorted_size_ < objlist_data_.data_.size()) && (hashed_objs_.find(key) != hashed_objs_.end()))
             return &(objlist_data_.data_[hashed_objs_[key]]);
-        }
         return nullptr;
     }
 
@@ -252,8 +254,7 @@ class ObjList : public ObjListBase {
     inline ObjT& get(size_t i) { return objlist_data_.data_[i]; }
 
     bool write_to_disk() {
-        ASSERT_MSG(!list_name_.empty(), "Must have list name before writing to disk!");
-        DiskStore ds(list_name_);
+        DiskStore ds(id2str());
         BinStream bs;
         deletion_finalize();
         sort();
@@ -262,9 +263,8 @@ class ObjList : public ObjListBase {
         return ds.write(std::move(bs));
     }
 
-    void read_from_disk() {
-        ASSERT_MSG(!list_name_.empty(), "Must have list name before reading from disk!");
-        DiskStore ds(list_name_);
+    void read_from_disk(const std::string& objlist_path) {
+        DiskStore ds(objlist_path);
         BinStream bs = ds.read();
         objlist_data_.clear();
         bs >> objlist_data_;
@@ -310,7 +310,6 @@ class ObjList : public ObjListBase {
    protected:
     ObjListData<ObjT> objlist_data_;
     size_t sorted_size_ = 0;
-    std::string list_name_;
     std::vector<bool> del_bitmap_;
     std::unordered_map<typename ObjT::KeyT, size_t> hashed_objs_;
     std::unordered_map<std::string, AttrListBase*> attrlist_map;

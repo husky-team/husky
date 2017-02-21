@@ -29,6 +29,7 @@ add_library(core-objs OBJECT
     mailbox.cpp
     memory_checker.cpp
     network.cpp
+    objlist.cpp
     objlist_store.cpp
     shuffle_combiner_store.cpp
     worker_info.cpp

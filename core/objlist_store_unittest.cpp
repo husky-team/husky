@@ -28,26 +28,29 @@ class Obj {
 };
 
 TEST_F(TestObjListStore, Functional) {
-    ObjList<Obj>& obj_list_0 = ObjListStore::create_objlist<Obj>();
+    ObjList<Obj>& objlist_0 = ObjListStore::create_objlist<Obj>();
+    size_t objlist_0_id = objlist_0.get_id();
     EXPECT_EQ(ObjListStore::size(), 1);
-    ObjList<Obj>& obj_list_1 = ObjListStore::create_objlist<Obj>();
+    ObjList<Obj>& objlist_1 = ObjListStore::create_objlist<Obj>();
+    size_t objlist_1_id = objlist_1.get_id();
     EXPECT_EQ(ObjListStore::size(), 2);
-    ObjList<Obj>& obj_list_2 = ObjListStore::create_objlist<Obj>();
+    ObjList<Obj>& objlist_2 = ObjListStore::create_objlist<Obj>();
+    size_t objlist_2_id = objlist_2.get_id();
     EXPECT_EQ(ObjListStore::size(), 3);
 
-    auto& obj_list_3 = ObjListStore::get_objlist<Obj>("0");
-    EXPECT_EQ(&obj_list_0, &obj_list_3);
-    auto& obj_list_4 = ObjListStore::get_objlist<Obj>("2");
-    EXPECT_EQ(&obj_list_2, &obj_list_4);
+    auto& objlist_3 = ObjListStore::get_objlist<Obj>(objlist_0_id);
+    EXPECT_EQ(&objlist_0, &objlist_3);
+    auto& objlist_4 = ObjListStore::get_objlist<Obj>(objlist_2_id);
+    EXPECT_EQ(&objlist_2, &objlist_4);
 
-    ObjListStore::drop_objlist("2");
-    EXPECT_FALSE(ObjListStore::has_objlist("2"));
+    ObjListStore::drop_objlist(objlist_2_id);
+    EXPECT_FALSE(ObjListStore::has_objlist(objlist_2_id));
     EXPECT_EQ(ObjListStore::size(), 2);
-    ObjListStore::drop_objlist("1");
-    EXPECT_FALSE(ObjListStore::has_objlist("1"));
+    ObjListStore::drop_objlist(objlist_0_id);
+    EXPECT_FALSE(ObjListStore::has_objlist(objlist_0_id));
     EXPECT_EQ(ObjListStore::size(), 1);
-    ObjListStore::drop_objlist("0");
-    EXPECT_FALSE(ObjListStore::has_objlist("0"));
+    ObjListStore::drop_objlist(objlist_1_id);
+    EXPECT_FALSE(ObjListStore::has_objlist(objlist_1_id));
     EXPECT_EQ(ObjListStore::size(), 0);
 }
 

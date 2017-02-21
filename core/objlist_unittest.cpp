@@ -132,7 +132,7 @@ TEST_F(TestObjList, IndexOf) {
 }
 
 TEST_F(TestObjList, WriteAndRead) {
-    ObjList<Obj> list_to_write("TestObjList.WriteAndRead");
+    ObjList<Obj> list_to_write;
     for (int i = 10; i > 0; --i) {
         Obj obj(i);
         list_to_write.add_object(std::move(obj));
@@ -154,8 +154,9 @@ TEST_F(TestObjList, WriteAndRead) {
     EXPECT_EQ(data_capacity_after_write, 0);
     EXPECT_EQ(bitmap_capacity_after_write, 0);
 
-    ObjList<Obj> list_to_read("TestObjList.WriteAndRead");
-    list_to_read.read_from_disk();
+    std::string list_to_write_path = list_to_write.id2str();
+    ObjList<Obj> list_to_read;
+    list_to_read.read_from_disk(list_to_write_path);
 
     EXPECT_EQ(list_to_read.get_size(), old_objlist_size);
     EXPECT_EQ(list_to_read.get_size(), list_to_read.get_sorted_size());
