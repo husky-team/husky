@@ -13,6 +13,24 @@
 # limitations under the License.
 
 
+# Short command for debugging messages
+# Usage:
+#   dmsg(<message>)
+function(dmsg)
+    message(STATUS ${ARGN})
+endfunction()
+
+# Short command for caching cmake variable
+# Usage:
+#   husky_cache_variable(<var> <value>:[arg1, arg2, ...])
+function(husky_cache_variable var)
+    set(__list "")
+    foreach(value ${ARGN})
+        list(APPEND __list ${value})
+    endforeach()
+    set(${var} ${__list} CACHE INTERNAL "")
+endfunction()
+
 # Short command for setting default properties
 # Usage:
 #   husky_default_properties(<target>)

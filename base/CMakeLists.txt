@@ -15,7 +15,7 @@
 
 include_directories(${PROJECT_SOURCE_DIR} ${HUSKY_EXTERNAL_INCLUDE})
 
-add_library(base-objs OBJECT
+file(GLOB base-src-files
     counter_barrier.cpp
     generation_lock.cpp
     hash.cpp
@@ -25,6 +25,9 @@ add_library(base-objs OBJECT
     serialization.cpp
     session_local.cpp
     thread_support.cpp)
+husky_cache_variable(base-src-files ${base-src-files})
+
+add_library(base-objs OBJECT ${base-src-files})
 husky_default_properties(base-objs)
 
 add_library(husky-base STATIC $<TARGET_OBJECTS:base-objs>)

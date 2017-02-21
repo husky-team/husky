@@ -15,11 +15,14 @@
 
 include_directories(${PROJECT_SOURCE_DIR} ${EXTERNAL_INCLUDE})
 
-set(output_cpps outputformat_base.cpp)
+file(GLOB io-output-src-file outputformat_base.cpp)
 
 if(MONGOCLIENT_FOUND)
-    list(APPEND output_cpps mongodb_outputformat.cpp)
+    file(GLOB io-output-mongo-src-file mongodb_outputformat.cpp)
+    list(APPEND io-output-src-file ${io-output-mongo-src-file})
 endif(MONGOCLIENT_FOUND)
 
-add_library(output-objs OBJECT ${output_cpps})
+husky_cache_variable(io-output-src-file ${io-output-src-file})
+
+add_library(output-objs OBJECT ${io-output-src-file})
 husky_default_properties(output-objs)

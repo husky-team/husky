@@ -18,12 +18,14 @@ include_directories(${PROJECT_SOURCE_DIR} ${HUSKY_EXTERNAL_INCLUDE})
 add_subdirectory(input)
 add_subdirectory(output)
 
-add_library(hdfs-objs OBJECT hdfs_manager.cpp)
+file(GLOB io-src-files hdfs_manager.cpp)
+husky_cache_variable(io-src-files ${io-src-files})
+
+add_library(hdfs-objs OBJECT ${io-src-files})
 husky_default_properties(hdfs-objs)
 
 # Combine io_objs
 set(io-objs $<TARGET_OBJECTS:hdfs-objs> $<TARGET_OBJECTS:input-objs> $<TARGET_OBJECTS:output-objs>)
-
 # Visible to parent directory
 set(io-objs ${io-objs} PARENT_SCOPE)
 

@@ -15,15 +15,17 @@
 
 include_directories(${PROJECT_SOURCE_DIR} ${HUSKY_EXTERNAL_INCLUDE})
 
-add_library(aggregator-objs OBJECT
+file(GLOB lib-src-files
     aggregator.cpp
     aggregator_object.cpp
     aggregator_factory.cpp)
+husky_cache_variable(lib-src-files ${lib-src-files})
+
+add_library(aggregator-objs OBJECT ${lib-src-files})
 husky_default_properties(aggregator-objs)
 
 # Combine lib-objs
 set(lib-objs $<TARGET_OBJECTS:aggregator-objs>)
-
 # Visible to parent directory
 set(lib-objs ${lib-objs} PARENT_SCOPE)
 

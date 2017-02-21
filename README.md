@@ -34,17 +34,23 @@ Build
 
 Download the Husky source code:
 
-    git clone https://github.com/husky-team/husky.git
+    $ git clone https://github.com/husky-team/husky.git
 
 We assume the root directory of Husky is `$HUSKY_ROOT`. Go to `$HUSKY_ROOT` and do a out-of-source build using CMake:
 
-    cd $HUSKY_ROOT
-    mkdir release
-    cd release
-    cmake -DCMAKE_BUILD_TYPE=Release ..
-    make help               # List all build target
-    make -j8 Master         # Build the Husky master
-    make $ApplicationName   # Build the Husky application
+    $ cd $HUSKY_ROOT
+    $ mkdir release
+    $ cd release
+    $ cmake -DCMAKE_BUILD_TYPE=Release ..
+    $ make help               # List all build target
+    $ make -j{N} Master         # Build the Husky master
+    $ make $ApplicationName   # Build the Husky application
+
+It is available to compile static or shared library for those projects based on Husky.
+
+    $ make -j{N} husky  # static library for default
+    $ cmake .. -DBUILD_SHARED_LIBRARY
+    $ make -j{N} husky-shared  # shared library
 
 Configuration
 -------------
@@ -79,19 +85,19 @@ Run `./Master --help` for helps. Check the examples in `examples` directory.
 
 First make sure that the master is running. Use the following to start the master
 
-    ./Master --conf /path/to/your/conf
+    $ ./Master --conf /path/to/your/conf
 
 In the single-machine environment, use the following,
 
-    ./<executable> --conf /path/to/your/conf
+    $ ./<executable> --conf /path/to/your/conf
 
 In the distributed environment, use the following to execute workers on all machines,
 
-    ./exec.sh <executable> --conf /path/to/your/conf
+    $ ./exec.sh <executable> --conf /path/to/your/conf
 
 If MPI has been installed in the distributed environment, you may use the following alternatively,
 
-    ./mpiexec.sh <executable> --conf /path/to/your/conf
+    $ ./mpiexec.sh <executable> --conf /path/to/your/conf
 
 Run Husky Unit Test
 --------------------
@@ -110,13 +116,13 @@ Do the following to generate API documentation,
 
 Or use the provided script,
 
-    ./scripts/doxygen.py --gen
+    $ ./scripts/doxygen.py --gen
 
 Then go to `html/` for HTML documentation, and `latex/` for LaTeX documentation
 
 Start a http server to view the documentation by browser,
 
-    ./scripts/doxygen.py --server
+    $ ./scripts/doxygen.py --server
 
 License
 ---------------

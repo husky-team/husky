@@ -26,16 +26,20 @@ if(CMAKE_COMPILER_IS_GNUCXX)
     set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-Wno-deprecated-declarations")
 endif()
 
+option(BUILD_SHARED_LIBRARY "Build shared library" OFF)
+
 # Boost Libraries
 find_package(Threads)
 find_package(Boost 1.58.0 COMPONENTS system filesystem regex thread program_options date_time chrono)
+
+# CMake Utilities
+include(cmake/utils.cmake)
 
 # External Dependencies
 include(cmake/modules/glog.cmake)
 include(cmake/modules/gtest.cmake)
 include(cmake/modules/zeromq.cmake)
 include(cmake/dep.cmake)
-include(cmake/utils.cmake)
 
 # External Includes
 set(HUSKY_EXTERNAL_INCLUDE ${Boost_INCLUDE_DIRS} ${TCMALLOC_INCLUDE_DIR} ${ZMQ_INCLUDE_DIR} ${GLOG_INCLUDE_DIR} ${EIGEN_INCLUDE_DIR})
@@ -71,11 +75,11 @@ if(WIN32)
     list(APPEND HUSKY_EXTERNAL_LIB wsock32 ws2_32)
 endif()
 
-add_definitions(${HUSKY_EXTERNAL_DEFINITION})
+husky_cache_variable(HUSKY_EXTERNAL_INCLUDE ${HUSKY_EXTERNAL_INCLUDE})
+husky_cache_variable(HUSKY_EXTERNAL_LIB ${HUSKY_EXTERNAL_LIB})
+husky_cache_variable(HUSKY_EXTERNAL_DEFINITION ${HUSKY_EXTERNAL_DEFINITION})
 
-set(HUSKY_EXTERNAL_INCLUDE ${HUSKY_EXTERNAL_INCLUDE} CACHE INTERNAL "")
-set(HUSKY_EXTERNAL_LIB ${HUSKY_EXTERNAL_LIB} CACHE INTERNAL "")
-set(HUSKY_EXTERNAL_DEFINITION ${HUSKY_EXTERNAL_DEFINITION} CACHE INTERNAL "")
+add_definitions(${HUSKY_EXTERNAL_DEFINITION})
 
 add_subdirectory(base)
 add_subdirectory(core)
@@ -89,3 +93,10 @@ add_subdirectory(benchmarks)
 # libhusky.a
 set(husky-objs $<TARGET_OBJECTS:channel-objs> $<TARGET_OBJECTS:base-objs> $<TARGET_OBJECTS:core-objs> ${io-objs} ${lib-objs})
 add_library(husky STATIC ${husky-objs})
+
+if(BUILD_SHARED_LIBRARY)
+    include_directories(${PROJECT_SOURCE_DIR} ${HUSKY_EXTERNAL_INCLUDE})
+    set(husky-src-files ${base-src-files} ${core-src-files} ${core-channel-src-files}
+        ${io-src-files} ${io-input-src-files} ${io-output-src-files} ${lib-src-files})
+    add_library(husky-shared SHARED ${husky-src-files})
+endif(BUILD_SHARED_LIBRARY)

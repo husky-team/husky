@@ -17,7 +17,7 @@ include_directories(${PROJECT_SOURCE_DIR} ${HUSKY_EXTERNAL_INCLUDE})
 
 add_subdirectory(channel)
 
-add_library(core-objs OBJECT
+file(GLOB core-src-files
     accessor.cpp
     accessor_store.cpp
     combiner.cpp
@@ -34,6 +34,9 @@ add_library(core-objs OBJECT
     shuffle_combiner_store.cpp
     worker_info.cpp
     balance.cpp)
+husky_cache_variable(core-src-files ${core-src-files})
+
+add_library(core-objs OBJECT ${core-src-files})
 husky_default_properties(core-objs)
 
 add_library(husky-core STATIC $<TARGET_OBJECTS:core-objs> $<TARGET_OBJECTS:channel-objs>)

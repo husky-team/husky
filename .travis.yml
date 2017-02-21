@@ -51,8 +51,9 @@ matrix:
 script:
   - mkdir release
   - cd release
-  - cmake -DCMAKE_BUILD_TYPE=release ..
+  - cmake -DCMAKE_BUILD_TYPE=release -DBUILD_SHARED_LIBRARY=on ..
   - make -j4 Master
   - make -j4 PI
   - make -j4 HuskyUnitTest
   - ./HuskyUnitTest --gtest_shuffle  # To check if the order causes some time-out failures.
+  - make -j4 husky-shared
