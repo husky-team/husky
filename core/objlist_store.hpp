@@ -17,10 +17,10 @@
 #include <string>
 #include <unordered_map>
 
+#include "base/assert.hpp"
 #include "base/exception.hpp"
 #include "core/context.hpp"
 #include "core/objlist.hpp"
-#include "core/utils.hpp"
 
 namespace husky {
 

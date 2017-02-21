@@ -18,10 +18,10 @@
 #include <utility>
 #include <vector>
 
+#include "base/assert.hpp"
 #include "base/log.hpp"
 #include "core/constants.hpp"
 #include "core/network.hpp"
-#include "core/utils.hpp"
 #include "core/zmq_helpers.hpp"
 
 namespace husky {

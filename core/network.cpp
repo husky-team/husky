@@ -24,7 +24,7 @@
 
 #include "boost/asio.hpp"
 
-#include "core/utils.hpp"
+#include "base/assert.hpp"
 
 namespace husky {
 

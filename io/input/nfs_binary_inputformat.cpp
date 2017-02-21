@@ -17,11 +17,11 @@
 #include <fstream>
 #include <string>
 
+#include "base/assert.hpp"
 #include "base/serialization.hpp"
 #include "core/constants.hpp"
 #include "core/context.hpp"
 #include "core/network.hpp"
-#include "core/utils.hpp"
 #include "io/input/binary_inputformat_impl.hpp"
 
 namespace husky {

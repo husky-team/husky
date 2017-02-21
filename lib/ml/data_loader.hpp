@@ -20,9 +20,9 @@
 
 #include "boost/tokenizer.hpp"
 
+#include "base/assert.hpp"
 #include "core/executor.hpp"
 #include "core/objlist.hpp"
-#include "core/utils.hpp"
 #include "io/input/inputformat_store.hpp"
 #include "lib/aggregator_factory.hpp"
 #include "lib/ml/feature_label.hpp"

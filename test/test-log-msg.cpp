@@ -14,8 +14,8 @@
 
 #include <string>
 
+#include "base/assert.hpp"
 #include "base/log.hpp"
-#include "core/utils.hpp"
 
 int main(int argc, char** argv) {
     husky::base::log_init(argv[0]);

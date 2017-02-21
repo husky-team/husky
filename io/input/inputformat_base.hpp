@@ -18,8 +18,8 @@
 
 #include "boost/utility/string_ref.hpp"
 
+#include "base/assert.hpp"
 #include "core/channel/channel_source.hpp"
-#include "core/utils.hpp"
 
 namespace husky {
 namespace io {

@@ -18,8 +18,8 @@
 #include <sstream>
 #include <string>
 
+#include "base/assert.hpp"
 #include "base/serialization.hpp"
-#include "core/utils.hpp"
 
 namespace husky {
 namespace lib {

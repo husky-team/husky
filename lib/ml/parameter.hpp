@@ -18,8 +18,8 @@
 #include <string>
 #include <vector>
 
+#include "base/assert.hpp"
 #include "base/log.hpp"
-#include "core/utils.hpp"
 #include "lib/aggregator.hpp"
 #include "lib/aggregator_factory.hpp"
 #include "lib/vector.hpp"

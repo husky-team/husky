@@ -17,11 +17,11 @@
 #include <functional>
 #include <vector>
 
+#include "base/assert.hpp"
 #include "base/log.hpp"
 #include "base/serialization.hpp"
 #include "core/context.hpp"
 #include "core/mailbox.hpp"
-#include "core/utils.hpp"
 
 namespace husky {
 

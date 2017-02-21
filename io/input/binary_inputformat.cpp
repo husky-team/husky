@@ -16,7 +16,7 @@
 
 #include <string>
 
-#include "core/utils.hpp"
+#include "base/assert.hpp"
 #include "io/input/binary_inputformat_impl.hpp"
 #ifdef WITH_HDFS
 #include "io/input/hdfs_binary_inputformat.hpp"

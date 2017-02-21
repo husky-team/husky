@@ -18,8 +18,8 @@
 
 #include <string>
 
+#include "base/assert.hpp"
 #include "base/exception.hpp"
-#include "core/utils.hpp"
 
 namespace husky {
 namespace io {

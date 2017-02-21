@@ -17,8 +17,8 @@
 #include <string>
 #include <unordered_map>
 
+#include "base/assert.hpp"
 #include "base/session_local.hpp"
-#include "core/utils.hpp"
 
 namespace husky {
 namespace io {

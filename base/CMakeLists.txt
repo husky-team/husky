@@ -20,6 +20,7 @@ add_library(base-objs OBJECT
     generation_lock.cpp
     hash.cpp
     log.cpp
+    assert.cpp
     disk_store.cpp
     serialization.cpp
     session_local.cpp

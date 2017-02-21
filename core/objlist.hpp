@@ -22,13 +22,13 @@
 
 #include "boost/random.hpp"
 
+#include "base/assert.hpp"
 #include "base/disk_store.hpp"
 #include "base/exception.hpp"
 #include "base/serialization.hpp"
 #include "core/attrlist.hpp"
 #include "core/channel/channel_destination.hpp"
 #include "core/channel/channel_source.hpp"
-#include "core/utils.hpp"
 
 namespace husky {
 

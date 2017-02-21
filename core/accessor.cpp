@@ -17,7 +17,7 @@
 #include <string>
 #include <unordered_set>
 
-#include "core/utils.hpp"
+#include "base/assert.hpp"
 
 namespace husky {
 

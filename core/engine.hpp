@@ -16,6 +16,7 @@
 
 // Include all components in Husky.
 
+#include "base/assert.hpp"
 #include "base/hash.hpp"
 #include "base/log.hpp"
 #include "base/serialization.hpp"
@@ -26,4 +27,3 @@
 #include "core/job_runner.hpp"
 #include "core/mailbox.hpp"
 #include "core/objlist_store.hpp"
-#include "core/utils.hpp"

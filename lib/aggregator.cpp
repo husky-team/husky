@@ -20,8 +20,8 @@
 #include <numeric>
 #include <vector>
 
+#include "base/assert.hpp"
 #include "base/serialization.hpp"
-#include "core/utils.hpp"
 #include "lib/aggregator_factory.hpp"
 #include "lib/aggregator_object.hpp"
 

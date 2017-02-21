@@ -18,10 +18,10 @@
 #include <utility>
 #include <vector>
 
+#include "base/assert.hpp"
 #include "base/exception.hpp"
 #include "base/serialization.hpp"
 #include "core/objlist_data.hpp"
-#include "core/utils.hpp"
 
 namespace husky {
 

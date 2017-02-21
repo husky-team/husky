@@ -16,9 +16,9 @@
 
 #include <functional>
 
+#include "base/assert.hpp"
 #include "core/executor.hpp"
 #include "core/objlist.hpp"
-#include "core/utils.hpp"
 #include "lib/ml/feature_label.hpp"
 #include "lib/ml/gradient_descent.hpp"
 #include "lib/ml/parameter.hpp"

@@ -17,9 +17,9 @@
 #include <string>
 #include <vector>
 
+#include "base/assert.hpp"
 #include "base/exception.hpp"
 #include "core/hash_ring.hpp"
-#include "core/utils.hpp"
 
 namespace husky {
 

@@ -18,7 +18,7 @@
 
 #include "boost/utility/string_ref.hpp"
 
-#include "core/utils.hpp"
+#include "base/assert.hpp"
 
 #include "io/input/file_splitter_base.hpp"
 #ifdef WITH_HDFS

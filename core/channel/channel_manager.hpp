@@ -17,9 +17,9 @@
 #include <utility>
 #include <vector>
 
+#include "base/assert.hpp"
 #include "core/channel/channel_base.hpp"
 #include "core/mailbox.hpp"
-#include "core/utils.hpp"
 
 namespace husky {
 

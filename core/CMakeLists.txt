@@ -33,7 +33,6 @@ add_library(core-objs OBJECT
     objlist_store.cpp
     shuffle_combiner_store.cpp
     worker_info.cpp
-    utils.cpp
     balance.cpp)
 husky_default_properties(core-objs)
 

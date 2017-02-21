@@ -18,8 +18,8 @@
 #include <string>
 #include <vector>
 
+#include "base/assert.hpp"
 #include "base/serialization.hpp"
-#include "core/utils.hpp"
 #include "io/input/inputformat_base.hpp"
 
 namespace husky {

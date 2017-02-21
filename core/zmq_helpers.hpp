@@ -18,9 +18,9 @@
 
 #include "zmq.hpp"
 
+#include "base/assert.hpp"
 #include "base/exception.hpp"
 #include "base/serialization.hpp"
-#include "core/utils.hpp"
 
 namespace husky {
 

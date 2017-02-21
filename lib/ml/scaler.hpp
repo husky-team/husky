@@ -16,9 +16,9 @@
 
 #include <algorithm>
 
+#include "base/assert.hpp"
 #include "core/executor.hpp"
 #include "core/objlist.hpp"
-#include "core/utils.hpp"
 #include "lib/aggregator.hpp"
 #include "lib/aggregator_factory.hpp"
 #include "lib/vector.hpp"

@@ -22,9 +22,17 @@ namespace husky {
 
 bool assert_check(bool condition);
 
-#define CHECK(condition) assert_check(!(condition)) ? (void) 0 : husky::base::HuskyLoggerVoidify() & husky::LOG_F
+/// Usage:
+///     husky::ASSERT(a == b);
+///     husky::ASSERT_MSG(a == b, "a != b so fail");
+///     husky::DASSERT(a == b);  // for debug mode
+///     husky::DASSERT_MSG(a == b, "a != b so fail");  // for debug mode
 
-#define DCHECK(condition) assert_check(!(condition)) ? (void) 0 : husky::base::HuskyLoggerVoidify() & husky::DLOG_F
+#define CHECK(condition) \
+    assert_check(!(condition)) ? (void) 0 : husky::base::HuskyLoggerVoidify() & husky::LOG_F
+
+#define DCHECK(condition) \
+    assert_check(!(condition)) ? (void) 0 : husky::base::HuskyLoggerVoidify() & husky::DLOG_F
 
 #define ASSERT(condition) CHECK(!(condition)) << "Assert failed: " #condition
 

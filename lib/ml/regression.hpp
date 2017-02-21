@@ -17,10 +17,10 @@
 #include <algorithm>
 #include <functional>
 
+#include "base/assert.hpp"
 #include "base/log.hpp"
 #include "core/context.hpp"
 #include "core/objlist.hpp"
-#include "core/utils.hpp"
 #include "lib/aggregator.hpp"
 #include "lib/aggregator_factory.hpp"
 #include "lib/ml/feature_label.hpp"
