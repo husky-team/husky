@@ -26,7 +26,7 @@
 namespace husky {
 namespace io {
 
-class HDFSFileSplitter final : public FileSplitterBase {
+class HDFSFileSplitter : public FileSplitterBase {
    public:
     HDFSFileSplitter();
     virtual ~HDFSFileSplitter();

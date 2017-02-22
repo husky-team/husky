@@ -25,7 +25,7 @@
 namespace husky {
 namespace io {
 
-class LineInputFormat final : public FileInputFormatImpl {
+class LineInputFormat : public FileInputFormatImpl {
    public:
     typedef boost::string_ref RecordT;
 
