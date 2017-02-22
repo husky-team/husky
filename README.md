@@ -104,15 +104,15 @@ Run Husky Unit Test
 
 Husky provides a set unit tests (based on [gtest 1.7.0](https://github.com/google/googletest)) in `core/`. Run it with:
 
-    make HuskyUnitTest
-    ./HuskyUnitTest
+    $ make HuskyUnitTest
+    $ ./HuskyUnitTest
 
 Documentation
 ---------------
 
 Do the following to generate API documentation,
 
-    doxygen doxygen.config
+    $ doxygen doxygen.config
 
 Or use the provided script,
 
