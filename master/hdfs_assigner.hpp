@@ -52,7 +52,7 @@ class HDFSBlockAssigner {
 
     int num_workers_alive;
 
-   private:
+   protected:
     bool is_valid_ = false;
     hdfsFS fs_ = NULL;
     std::map<std::string, int> finish_dict;
