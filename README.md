@@ -76,7 +76,7 @@ Husky is supposed to run on any platform. Configurations can be stored in a conf
 
 For single-machine environment, use the hostname of the machine as both the master and the (only) worker.
 
-For distributed environment, first copy and modify `$HUSKY_ROOT/exec.sh` according to actual configuration. `exec.sh` depends on `pssh`.
+For distributed environment, first copy and modify `$HUSKY_ROOT/scripts/exec.sh` according to actual configuration. `scripts/exec.sh` depends on `pssh`.
 
 Run a Husky Program
 --------------------
@@ -93,11 +93,13 @@ In the single-machine environment, use the following,
 
 In the distributed environment, use the following to execute workers on all machines,
 
+    $ cp $HUSKY_ROOT/scripts/exec.sh .
     $ ./exec.sh <executable> --conf /path/to/your/conf
 
 If MPI has been installed in the distributed environment, you may use the following alternatively,
 
-    $ ./mpiexec.sh <executable> --conf /path/to/your/conf
+    $ cp $HUSKY_ROOT/scripts/mpi-exec.sh .
+    $ ./mpi-exec.sh <executable> --conf /path/to/your/conf
 
 Run Husky Unit Test
 --------------------
