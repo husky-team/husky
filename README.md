@@ -41,16 +41,16 @@ We assume the root directory of Husky is `$HUSKY_ROOT`. Go to `$HUSKY_ROOT` and 
     $ cd $HUSKY_ROOT
     $ mkdir release
     $ cd release
-    $ cmake -DCMAKE_BUILD_TYPE=Release ..
-    $ make help               # List all build target
-    $ make -j{N} Master         # Build the Husky master
-    $ make $ApplicationName   # Build the Husky application
+    $ cmake -DCMAKE_BUILD_TYPE=Release ..  # CMAKE_BUILD_TYPE: Release, Debug, RelWithDebInfo
+    $ make help                            # List all build target
+    $ make -j{N} Master                    # Build the Husky master
+    $ make $ApplicationName                # Build the Husky application
 
 It is available to compile static or shared library for those projects based on Husky.
 
-    $ make -j{N} husky  # static library for default
+    $ make -j{N} husky                     # Build static library for default
     $ cmake .. -DBUILD_SHARED_LIBRARY
-    $ make -j{N} husky-shared  # shared library
+    $ make -j{N} husky-shared              # Build shared library
 
 Configuration
 -------------
