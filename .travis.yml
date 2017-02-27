@@ -52,8 +52,11 @@ script:
   - mkdir release
   - cd release
   - cmake -DCMAKE_BUILD_TYPE=release -DBUILD_SHARED_LIBRARY=on ..
+  # Target list to check if succeed to compile.
   - make -j4 Master
   - make -j4 PI
+  - make -j4 Aggregator
+  - make -j4 husky-shared
+  # Run unit test.
   - make -j4 HuskyUnitTest
   - ./HuskyUnitTest --gtest_shuffle  # To check if the order causes some time-out failures.
-  - make -j4 husky-shared
