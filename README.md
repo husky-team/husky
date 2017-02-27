@@ -32,9 +32,11 @@ Some optional dependencies:
 Build
 -----
 
-Download the Husky source code:
+Download the latest source code of Husky:
 
     $ git clone https://github.com/husky-team/husky.git
+
+Or download latest release in [Releases Notes](https://github.com/husky-team/husky/releases).
 
 We assume the root directory of Husky is `$HUSKY_ROOT`. Go to `$HUSKY_ROOT` and do a out-of-source build using CMake:
 
@@ -63,6 +65,7 @@ Husky is supposed to run on any platform. Configurations can be stored in a conf
     comm_port=yyyyy
 
     # Optional
+    log_dir=path/to/log
     hdfs_namenode=xxx.xxx.xxx.xxx
     hdfs_namenode_port=yyyyy
 
