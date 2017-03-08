@@ -107,9 +107,18 @@ bool Config::init_with_args(int ac, char** av, const std::vector<std::string>& c
             LOG_E << "Can not open config file: " << config_file_path;
             return false;
         }
-        // The configure in config_file would be overwritten by cmdline.
-        po::store(po::parse_config_file(config_file, config_options, true), vm);
+        // The configure in config_file would be overwritten by cmdline as parsing order.
+        // For details, the interface is:
+        //     parse_config_file(const char * filename, const options_description &,
+        //                       bool allow_unregistered = false)
+        auto parsed_config_options = po::parse_config_file(config_file, config_options, true);
+        po::store(parsed_config_options, vm);
         po::notify(vm);
+
+        // Store what is not registered in customized_options.
+        for (const auto& o : parsed_config_options.options)
+            if (vm.find(o.string_key) == vm.end())
+                set_param(o.string_key, o.value.front());  // Only accept `key=value`.
     }
 
     int setup_all = 0;

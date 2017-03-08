@@ -42,10 +42,10 @@ class Config {
     inline std::set<std::string> get_machines() { return machines_; }
     inline std::string get_log_dir() const { return log_dir_; }
 
-    inline std::string get_param(const std::string& key) {
+    inline std::string get_param(const std::string& key, const std::string& default_value = "") {
         std::map<std::string, std::string>::iterator ret = params_.find(key);
         if (ret == params_.end())
-            return "";
+            return default_value;
         return ret->second;
     }
 
