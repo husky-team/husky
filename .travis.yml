@@ -60,3 +60,5 @@ script:
   # Run unit test.
   - make -j4 HuskyUnitTest
   - ./HuskyUnitTest --gtest_shuffle  # To check if the order causes some time-out failures.
+  # Test if example PI succeeds to run
+  - ./PI --master_host localhost --master_port 10086 --comm_port 10010 --worker.info localhost:4
