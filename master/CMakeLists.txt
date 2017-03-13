@@ -25,6 +25,10 @@ if(MONGOCLIENT_FOUND)
     list(APPEND master_plugins mongodb_assigner.cpp)
 endif(MONGOCLIENT_FOUND)
 
+if(ORC_FOUND)
+    list(APPEND master_plugins orc_assigner.cpp)
+endif(ORC_FOUND)
+
 add_library(husky-master-objs OBJECT master.cpp ${master_plugins})
 husky_default_properties(husky-master-objs)
 

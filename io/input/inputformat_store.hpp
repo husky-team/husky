@@ -28,6 +28,9 @@
 #endif
 #include "io/input/separator_inputformat.hpp"
 #include "io/input/xml_inputformat.hpp"
+#ifdef WITH_ORC
+#include "io/input/orc_inputformat.hpp"
+#endif
 
 namespace husky {
 namespace io {
@@ -41,6 +44,9 @@ class InputFormatStore {
     static SeparatorInputFormat& create_separator_inputformat(const std::string& pattern);
     static XMLInputFormat& create_xml_inputformat(const std::string& start_pattern, const std::string& end_pattern);
     static BinaryInputFormat& create_binary_inputformat(const std::string& url, const std::string& filter = "");
+#ifdef WITH_ORC
+    static ORCInputFormat& create_orc_inputformat();
+#endif
 #ifdef WITH_THRIFT
     static FlumeInputFormat& create_flume_inputformat(std::string rcv_host, int rcv_port);
 #endif

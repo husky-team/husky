@@ -135,3 +135,36 @@ if(WITHOUT_THRIFT)
     unset(THRIFT_FOUND)
     message(STATUS "Not using Thrift due to WITHOUT_THRIFT option")
 endif(WITHOUT_THRIFT)
+
+### ORC ###
+
+#NAMES liblz4.a liborc.a libprotobuf.a libsnappy.a libz.a 
+#NAMES ColumnPrinter.hh Int128.hh MemoryPool.hh orc-config.hh OrcFile.hh Reader.hh Type.hh  Vector.hh
+find_path(ORC_INCLUDE_DIR NAMES orc/OrcFile.hh)
+find_library(ORC_L0 NAMES protobuf NO_CMAKE_ENVIRONMENT_PATH NO_CMAKE_SYSTEM_PATH NO_SYSTEM_ENVIRONMENT_PATH)
+find_library(ORC_L1 NAMES z NO_CMAKE_ENVIRONMENT_PATH NO_CMAKE_SYSTEM_PATH NO_SYSTEM_ENVIRONMENT_PATH)
+find_library(ORC_L2 NAMES lz4 NO_CMAKE_ENVIRONMENT_PATH NO_CMAKE_SYSTEM_PATH NO_SYSTEM_ENVIRONMENT_PATH)
+find_library(ORC_L3 NAMES snappy NO_CMAKE_ENVIRONMENT_PATH NO_CMAKE_SYSTEM_PATH NO_SYSTEM_ENVIRONMENT_PATH)
+find_library(ORC_L4 NAMES orc)
+
+if (ORC_INCLUDE_DIR AND ORC_L1 AND ORC_L0 AND ORC_L2 AND ORC_L3 AND ORC_L4)
+    set(ORC_FOUND true)
+endif (ORC_INCLUDE_DIR AND ORC_L1 AND ORC_L0 AND ORC_L2 AND ORC_L3 AND ORC_L4)
+if (ORC_FOUND)
+    set(ORC_DEFINITION "-DWITH_ORC")
+    # The order is important for dependencies.
+    set(ORC_LIBRARY ${ORC_L4} ${ORC_L3} ${ORC_L2} ${ORC_L1} ${ORC_L0})
+    message (STATUS "Found ORC:")
+    message (STATUS "  (Headers)       ${ORC_INCLUDE_DIR}")
+    message (STATUS "  (Library)       ${ORC_L0}")
+    message (STATUS "  (Library)       ${ORC_L1}")
+    message (STATUS "  (Library)       ${ORC_L2}")
+    message (STATUS "  (Library)       ${ORC_L3}")
+    message (STATUS "  (Library)       ${ORC_L4}")
+else(ORC_FOUND)
+    message (STATUS "Could NOT find ORC")
+endif(ORC_FOUND)
+if(WITHOUT_ORC)
+    unset(ORC_FOUND)
+    message(STATUS "Not using ORC due to WITHOUT_ORC option")
+endif(WITHOUT_ORC)

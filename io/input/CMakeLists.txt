@@ -47,6 +47,11 @@ if(THRIFT_FOUND)
     list(APPEND io-input-src-files ${io-input-flume-src-files})
 endif(THRIFT_FOUND)
 
+if(ORC_FOUND)
+    file(GLOB io-input-orc-src-files orc_file_splitter.cpp orc_inputformat.cpp)
+    list(APPEND io-input-src-files ${io-input-orc-src-files})
+endif(ORC_FOUND)
+
 husky_cache_variable(io-input-src-files ${io-input-src-files})
 
 add_library(input-objs OBJECT ${io-input-src-files})
