@@ -126,3 +126,9 @@ add_executable(TriangleCounting triangle_counting.cpp)
 target_link_libraries(TriangleCounting ${husky})
 target_link_libraries(TriangleCounting ${HUSKY_EXTERNAL_LIB})
 husky_default_properties(TriangleCounting)
+
+# Neuron Network for MNIST
+add_executable(NN_MNIST nn_mnist.cpp)
+target_link_libraries(NN_MNIST ${husky})
+target_link_libraries(NN_MNIST ${HUSKY_EXTERNAL_LIB})
+husky_default_properties(NN_MNIST)
