@@ -14,13 +14,14 @@
 
 #pragma once
 
-// Include all components in Husky.
+// Include all necessary components in Husky.
 
 #include "base/assert.hpp"
 #include "base/hash.hpp"
 #include "base/log.hpp"
 #include "base/serialization.hpp"
 #include "base/thread_support.hpp"
+#include "core/channel/channel_store.hpp"
 #include "core/combiner.hpp"
 #include "core/context.hpp"
 #include "core/executor.hpp"
