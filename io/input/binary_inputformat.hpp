@@ -22,7 +22,7 @@
 namespace husky {
 namespace io {
 
-class BinaryInputFormat final : public InputFormatBase {
+class BinaryInputFormat : public InputFormatBase {
    public:
     typedef BinaryInputFormatImpl::RecordT RecordT;
     typedef BinaryInputFormatImpl::CastRecordT CastRecordT;
@@ -40,7 +40,7 @@ class BinaryInputFormat final : public InputFormatBase {
 
     static inline CastRecordT& recast(RecordT& t) { return BinaryInputFormatImpl::recast(t); }
 
-   private:
+   protected:
     BinaryInputFormatImpl* infmt_impl_ = nullptr;
 };
 

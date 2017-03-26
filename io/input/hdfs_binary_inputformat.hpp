@@ -58,7 +58,7 @@ class HDFSBinaryInputFormat : public BinaryInputFormatImpl {
     // Should not used by user
     bool next(BinaryInputFormatImpl::RecordT& record) override;
 
-   private:
+   protected:
     hdfsFS fs_;
     HDFSFileAsker asker_;
 };
