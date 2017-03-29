@@ -19,9 +19,10 @@
 #include <string>
 #include <vector>
 
+#include "boost/tokenizer.hpp"
+
 #include "Eigen/Dense"
 #include "Eigen/Sparse"
-#include "boost/tokenizer.hpp"
 
 #include "core/engine.hpp"
 #include "io/input/inputformat_store.hpp"

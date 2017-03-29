@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <algorithm>
 #include <string>
 #include <vector>
 
@@ -78,7 +79,7 @@ void triangle_counting() {
     for (int iter = 0; iter < numIters; ++iter) {
         husky::list_execute(vertex_list, {}, {&ch}, [&ch, &vertex_list, iter, batch_size](Vertex& u) {
             size_t idx = vertex_list.index_of(&u);
-            if (idx >= iter * batch_size and idx < (iter + 1) * batch_size) {
+            if (idx >= iter * batch_size && idx < (iter + 1) * batch_size) {
                 int id = u.id();
                 size_t u_adj_size = u.adj.size();
                 size_t j = 0;
@@ -96,7 +97,7 @@ void triangle_counting() {
         });
         husky::list_execute(vertex_list, {&ch}, {&agg_ch}, [&ch, &count](Vertex& u) {
             auto& msgs = ch.get(u);
-            if (not msgs.empty()) {
+            if (!msgs.empty()) {
                 for (auto& msg : msgs) {
                     if (std::binary_search(u.adj.begin(), u.adj.end(), msg)) {
                         count.update(1);
