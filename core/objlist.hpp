@@ -100,6 +100,9 @@ class ObjList : public ObjListBase {
         sorted_size_ = data.size();
     }
 
+    // Shuffle the objlist, only shuffle the locations of objects
+    void shuffle() { objlist_data_.shuffle(); }
+
     // TODO(Fan): This will invalidate the object dict
     void deletion_finalize() {
         auto& data = objlist_data_.data_;

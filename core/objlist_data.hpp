@@ -14,7 +14,11 @@
 
 #pragma once
 
+#include <algorithm>
+#include <random>
 #include <vector>
+
+#include "boost/random.hpp"
 
 #include "base/exception.hpp"
 #include "base/serialization.hpp"
@@ -39,6 +43,12 @@ class ObjListData {
     inline size_t get_vector_size() const { return data_.size(); }
 
     void clear() { data_.clear(); }
+
+    void shuffle() {
+        std::random_device rd;
+        boost::random::mt19937 gen(rd());
+        std::shuffle(data_.begin(), data_.end(), gen);
+    }
 
     // Find the index of an obj
     size_t index_of(const ObjT* const obj_ptr) const {

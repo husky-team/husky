@@ -79,6 +79,25 @@ TEST_F(TestObjList, Sort) {
     }
 }
 
+TEST_F(TestObjList, Shuffle) {
+    std::vector<int> v;
+    ObjList<Obj> obj_list;
+    for (int i = 0; i < 10; ++i) {
+        Obj obj(i);
+        obj_list.add_object(std::move(obj));
+        v.push_back(i);
+    }
+    obj_list.shuffle();
+    EXPECT_EQ(obj_list.get_sorted_size(), 0);
+    EXPECT_EQ(obj_list.get_num_del(), 0);
+    EXPECT_EQ(obj_list.get_hashed_size(), 10);
+    EXPECT_EQ(obj_list.get_size(), 10);
+    int sum = 0;
+    for (int i = 0; i < 10; ++i)
+        sum += obj_list.get(i).key;
+    EXPECT_EQ(sum, 45);
+}
+
 TEST_F(TestObjList, Delete) {
     ObjList<Obj> obj_list;
     for (int i = 0; i < 10; ++i) {

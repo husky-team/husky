@@ -168,9 +168,8 @@ class Network {
         test_samples_agg.to_reset_each_iter();
         errors_agg.to_reset_each_iter();
 
-        auto shuffle_engine = std::default_random_engine{};
         for (int epoch = 0; epoch < epochs; epoch++) {
-            std::shuffle(std::begin(data.get_data()), std::end(data.get_data()), shuffle_engine);
+            data.shuffle();
             int sample = 0;
             list_execute(data, {}, {}, [&](Image& img) {
                 backprop(img.feature, img.label);
