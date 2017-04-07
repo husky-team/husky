@@ -54,6 +54,8 @@ It is available to compile static or shared library for those projects based on 
     $ cmake .. -DBUILD_SHARED_LIBRARY
     $ make -j{N} husky-shared              # Build shared library
 
+By the way, we provide a docker of Husky, which have already installed the dependencies. Try it in [docker hub](https://hub.docker.com/u/huskyteam/).
+
 Configuration
 -------------
 
