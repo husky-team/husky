@@ -117,7 +117,7 @@ endif(RT_FOUND)
 
 ### Thrift ###
 
-find_path(THRIFT_INCLUDE_DIR NAMES thrift)
+find_path(THRIFT_INCLUDE_DIR NAMES thrift/Thrift.h)
 find_library(THRIFT_LIBRARY NAMES thrift)
 if (THRIFT_INCLUDE_DIR AND THRIFT_LIBRARY)
     set(THRIFT_FOUND true)
