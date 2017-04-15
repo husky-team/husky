@@ -134,11 +134,15 @@ class Network {
     }
 
     void sgd_train(ObjList<Image>& data, ObjList<Image>& test, int epochs, int mini_batch, double learning_rate) {
+        std::vector<VectorT> zero_biases(num_layers_);
+        std::vector<MatrixT> zero_weights(num_layers_);
         for (int i = 1; i < num_layers_; i++) {
             int layer_in = layer_sizes_[i - 1];
             int layer_out = layer_sizes_[i];
             delta_biases_[i] = Eigen::VectorXd::Zero(layer_out);
             delta_weights_[i] = Eigen::MatrixXd::Zero(layer_out, layer_in);
+            zero_biases[i] = Eigen::VectorXd::Zero(layer_out);
+            zero_weights[i] = Eigen::MatrixXd::Zero(layer_out, layer_in);
         }
 
         auto& sync_list = ObjListStore::create_objlist<Image>();
@@ -149,18 +153,31 @@ class Network {
         list_execute(data, {}, {&ac}, [&](Image& this_obj) { num_samples_agg.update(1); });
         int num_samples = num_samples_agg.get_value();
 
-        lib::Aggregator<std::vector<VectorT>> biases_agg(std::vector<VectorT>(num_layers_),
+        lib::Aggregator<std::vector<VectorT>> biases_agg(zero_biases,
             [&](std::vector<VectorT>& a, const std::vector<VectorT>& b) {
                 for (int i = 1; i < num_layers_; i++)
                     a[i] += b[i];
             },
-            [&](std::vector<VectorT>& v) { v.resize(num_layers_); });
-        lib::Aggregator<std::vector<MatrixT>> weights_agg(std::vector<MatrixT>(num_layers_),
+            [&](std::vector<VectorT>& v) {
+                v.resize(num_layers_);
+                for (int i = 1; i < num_layers_; i++) {
+                    int layer_out = layer_sizes_[i];
+                    v[i] = Eigen::VectorXd::Zero(layer_out);
+                }
+            });
+        lib::Aggregator<std::vector<MatrixT>> weights_agg(zero_weights,
             [&](std::vector<MatrixT>& a, const std::vector<MatrixT>& b) {
                 for (int i = 1; i < num_layers_; i++)
                     a[i] += b[i];
             },
-            [&](std::vector<MatrixT>& v) { v.resize(num_layers_); });
+            [&](std::vector<MatrixT>& v) {
+                v.resize(num_layers_);
+                for (int i = 1; i < num_layers_; i++) {
+                    int layer_in = layer_sizes_[i - 1];
+                    int layer_out = layer_sizes_[i];
+                    v[i] = Eigen::MatrixXd::Zero(layer_out, layer_in);
+                }
+            });
         lib::Aggregator<int> test_samples_agg(0, [](int& a, const int& b) { a += b; });
         lib::Aggregator<int> errors_agg(0, [](int& a, const int& b) { a += b; });
         biases_agg.to_reset_each_iter();
@@ -180,7 +197,7 @@ class Network {
             });
             update_mini_batch(sample, learning_rate);
 
-            // Averaging the model will decrease the accuracy.
+            // Averaging the model may not be correct.
             for (int i = 1; i < num_layers_; i++) {
                 biases_[i] *= (double) data.get_size() / (double) num_samples;
                 weights_[i] *= (double) data.get_size() / (double) num_samples;
