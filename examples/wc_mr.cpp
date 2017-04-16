@@ -19,6 +19,7 @@
 
 #include "core/engine.hpp"
 #include "io/input/inputformat_store.hpp"
+#include "lib/aggregator_factory.hpp"
 
 class Word {
    public:
@@ -31,6 +32,10 @@ class Word {
     KeyT word;
     int count = 0;
 };
+
+bool operator<(const std::pair<int, std::string>& a, const std::pair<int, std::string>& b) {
+    return a.first == b.first ? a.second < b.second : a.first < b.first;
+}
 
 void wc() {
     auto& infmt = husky::io::InputFormatStore::create_line_inputformat();
@@ -48,20 +53,44 @@ void wc() {
         }
     };
 
-    // Just a showcase of two types of list_execute
-    enum class ListExecuteStyle { simple, precise };
-    ListExecuteStyle style = ListExecuteStyle::simple;
-    if (style == ListExecuteStyle::simple) {
-        // This_list execute style is simple and direct
-        husky::load(infmt, parse_wc);
-        husky::list_execute(
-            word_list, [&ch](Word& word) { husky::LOG_I << word.word << ": " << ch.get(word); });
-    } else if (style == ListExecuteStyle::precise) {
-        // This_list execute is precise. Need to decide which channels to be used as in/out channels
-        husky::load(infmt, {&ch}, parse_wc);
-        husky::list_execute(word_list, {&ch}, {}, [&ch](Word& word) {
-            husky::LOG_I << word.word << ": " << ch.get(word);
+    husky::load(infmt, parse_wc);
+
+    // Show topk words.
+    const int kMaxNum = 10;
+    typedef std::set<std::pair<int, std::string>> TopKPairs;
+    auto add_to_topk = [](TopKPairs& pairs, const std::pair<int, std::string>& p) {
+        if (pairs.size() == kMaxNum && *pairs.begin() < p)
+            pairs.erase(pairs.begin());
+        if (pairs.size() < kMaxNum)
+            pairs.insert(p);
+    };
+    husky::lib::Aggregator<TopKPairs> unique_topk(
+        TopKPairs(),
+        [add_to_topk](TopKPairs& a, const TopKPairs& b) {
+            for (auto& i : b)
+                add_to_topk(a, i);
+        },
+        [](TopKPairs& a) { a.clear(); },
+        [add_to_topk](husky::base::BinStream& in, TopKPairs& pairs) {
+            pairs.clear();
+            for (size_t n = husky::base::deser<size_t>(in); n--;)
+                add_to_topk(pairs, husky::base::deser<std::pair<int, std::string>>(in));
+        },
+        [](husky::base::BinStream& out, const TopKPairs& pairs) {
+            out << pairs.size();
+            for (auto& p : pairs)
+                out << p;
         });
+
+    husky::list_execute(word_list, [&ch, &unique_topk, add_to_topk](Word& word) {
+        unique_topk.update(add_to_topk, std::make_pair(ch.get(word), word.id()));
+    });
+
+    husky::lib::AggregatorFactory::sync();
+
+    if (husky::Context::get_global_tid() == 0) {
+        for (auto& i : unique_topk.get_value())
+            husky::LOG_I << i.second << " " << i.first;
     }
 }
 

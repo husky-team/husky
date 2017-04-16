@@ -66,7 +66,7 @@ void wc() {
     husky::load(infmt, parse_wc);
 
     // Show topk words.
-    const int kMaxNum = 100;
+    const int kMaxNum = 10;
     typedef std::set<std::pair<int, std::string>> TopKPairs;
     auto add_to_topk = [](TopKPairs& pairs, const std::pair<int, std::string>& p) {
         if (pairs.size() == kMaxNum && *pairs.begin() < p)
@@ -77,9 +77,8 @@ void wc() {
     husky::lib::Aggregator<TopKPairs> unique_topk(
         TopKPairs(),
         [add_to_topk](TopKPairs& a, const TopKPairs& b) {
-            for (auto& i : b) {
+            for (auto& i : b)
                 add_to_topk(a, i);
-            }
         },
         [](TopKPairs& a) { a.clear(); },
         [add_to_topk](husky::base::BinStream& in, TopKPairs& pairs) {
