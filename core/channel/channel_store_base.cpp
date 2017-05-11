@@ -21,7 +21,8 @@
 
 namespace husky {
 
-thread_local ChannelMap* ChannelStoreBase::s_channel_map = nullptr;
+thread_local ChannelIdMap* ChannelStoreBase::s_channel_id_map = nullptr;
+thread_local ChannelNameMap* ChannelStoreBase::s_channel_name_map = nullptr;
 
 // set finalize_all_channels priority to Level2, the higher the level, the higher the priority
 static thread_local base::RegSessionThreadFinalizer finalize_all_channels(base::SessionLocalPriority::Level2, []() {
@@ -30,12 +31,17 @@ static thread_local base::RegSessionThreadFinalizer finalize_all_channels(base::
 });
 
 bool ChannelStoreBase::has_channel(const size_t id) {
-    ChannelMap& channel_map = get_channel_map();
+    ChannelIdMap& channel_map = get_channel_id_map();
     return channel_map.find(id) != channel_map.end();
 }
 
+bool ChannelStoreBase::has_channel(const std::string& channel_name) {
+    ChannelNameMap& channel_map = get_channel_name_map();
+    return channel_map.find(channel_name) != channel_map.end();
+}
+
 void ChannelStoreBase::drop_channel(const size_t id) {
-    ChannelMap& channel_map = get_channel_map();
+    ChannelIdMap& channel_map = get_channel_id_map();
     if (channel_map.find(id) == channel_map.end())
         throw base::HuskyException("ChannelStoreBase::drop_channel: Channel id doesn't exist");
 
@@ -43,29 +49,53 @@ void ChannelStoreBase::drop_channel(const size_t id) {
     channel_map.erase(id);
 }
 
+void ChannelStoreBase::drop_channel(const std::string& channel_name) {
+    ChannelNameMap& channel_map = get_channel_name_map();
+    if (channel_map.find(channel_name) == channel_map.end())
+        throw base::HuskyException("ChannelStoreBase::drop_channel: Channel name "+channel_name+" doesn't exist");
+
+    drop_channel(channel_map.at(channel_name)->get_channel_id());
+    channel_map.erase(channel_name);
+}
+
 void ChannelStoreBase::drop_all_channels() {
-    if (s_channel_map == nullptr)
+    if (s_channel_id_map == nullptr)
         return;
 
-    for (auto& channel_pair : (*s_channel_map))
+    for (auto& channel_pair : (*s_channel_id_map))
         delete channel_pair.second;
 
-    s_channel_map->clear();
+    s_channel_id_map->clear();
+    s_channel_name_map->clear();
 }
 
 void ChannelStoreBase::init_channel_map() {
-    if (s_channel_map == nullptr)
-        s_channel_map = new ChannelMap();
+    if (s_channel_id_map == nullptr)
+        s_channel_id_map = new ChannelIdMap();
+    if (s_channel_name_map == nullptr)
+        s_channel_name_map = new ChannelNameMap();
 }
 
 void ChannelStoreBase::free_channel_map() {
-    delete s_channel_map;
-    s_channel_map = nullptr;
+    delete s_channel_id_map;
+    s_channel_id_map = nullptr;
+
+    delete s_channel_name_map;
+    s_channel_name_map = nullptr;
 }
 
-ChannelMap& ChannelStoreBase::get_channel_map() {
+ChannelIdMap& ChannelStoreBase::get_channel_map() {
+    return get_channel_id_map();
+}
+
+ChannelIdMap& ChannelStoreBase::get_channel_id_map() {
     init_channel_map();
-    return *s_channel_map;
+    return *s_channel_id_map;
+}
+
+ChannelNameMap& ChannelStoreBase::get_channel_name_map() {
+    init_channel_map();
+    return *s_channel_name_map;
 }
 
 }  // namespace husky

@@ -31,10 +31,27 @@ class ChannelStore : public ChannelStoreBase {
         return ch;
     }
 
+    template <typename MsgT, typename DstObjT>
+    static PushChannel<MsgT, DstObjT>& create_push_channel(ChannelSource& src_list, ObjList<DstObjT>& dst_list,
+                                                           const std::string& channel_name) {
+        auto& ch = ChannelStoreBase::create_push_channel<MsgT>(src_list, dst_list, channel_name);
+        setup(ch);
+        return ch;
+    }
+
     template <typename MsgT, typename CombineT, typename DstObjT>
     static PushCombinedChannel<MsgT, DstObjT, CombineT>& create_push_combined_channel(ChannelSource& src_list,
                                                                                       ObjList<DstObjT>& dst_list) {
         auto& ch = ChannelStoreBase::create_push_combined_channel<MsgT, CombineT>(src_list, dst_list);
+        setup(ch);
+        return ch;
+    }
+
+    template <typename MsgT, typename CombineT, typename DstObjT>
+    static PushCombinedChannel<MsgT, DstObjT, CombineT>& create_push_combined_channel(ChannelSource& src_list,
+                                                                                      ObjList<DstObjT>& dst_list,
+                                                                                      const std::string& channel_name) {
+        auto& ch = ChannelStoreBase::create_push_combined_channel<MsgT, CombineT>(src_list, dst_list, channel_name);
         setup(ch);
         return ch;
     }

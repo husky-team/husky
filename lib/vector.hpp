@@ -80,7 +80,7 @@ struct LabeledPoint {
 
 namespace base {
 
-BinStream& operator<<(BinStream& stream, const lib::VectorXd& vec) {
+inline BinStream& operator<<(BinStream& stream, const lib::VectorXd& vec) {
     stream << (size_t) vec.rows();
     for (lib::VectorXd::InnerIterator it(vec, 0); it; ++it) {
         stream << it.value();
@@ -89,7 +89,7 @@ BinStream& operator<<(BinStream& stream, const lib::VectorXd& vec) {
     return stream;
 }
 
-BinStream& operator>>(BinStream& stream, lib::VectorXd& vec) {
+inline BinStream& operator>>(BinStream& stream, lib::VectorXd& vec) {
     size_t rows;
     stream >> rows;
     vec.resize(rows, 1);
@@ -100,7 +100,7 @@ BinStream& operator>>(BinStream& stream, lib::VectorXd& vec) {
     return stream;
 }
 
-BinStream& operator<<(BinStream& stream, const lib::SparseVectorXd& vec) {
+inline BinStream& operator<<(BinStream& stream, const lib::SparseVectorXd& vec) {
     stream << (size_t) vec.rows() << (size_t) vec.nonZeros();
     for (lib::SparseVectorXd::InnerIterator it(vec, 0); it; ++it) {
         stream << (size_t) it.index();
@@ -110,7 +110,7 @@ BinStream& operator<<(BinStream& stream, const lib::SparseVectorXd& vec) {
     return stream;
 }
 
-BinStream& operator>>(BinStream& stream, lib::SparseVectorXd& vec) {
+inline BinStream& operator>>(BinStream& stream, lib::SparseVectorXd& vec) {
     size_t rows, non_zeros;
     stream >> rows >> non_zeros;
     vec.resize(rows, 1);
