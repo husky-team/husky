@@ -16,6 +16,7 @@
 
 #include <vector>
 
+#include "base/generation_lock.hpp"
 #include "base/serialization.hpp"
 #include "base/thread_support.hpp"
 #include "core/accessor.hpp"
@@ -28,6 +29,7 @@ namespace lib {
 
 using base::BinStream;
 using base::KBarrier;
+using base::CallOnceEachTime;
 
 class AggregatorFactory : public AggregatorFactoryBase {
    public:
@@ -52,6 +54,7 @@ class AggregatorFactory : public AggregatorFactoryBase {
        public:
         virtual void initialize(AggregatorFactoryBase* factory);
         KBarrier barrier;
+        CallOnceEachTime call_once_each_time;
         std::vector<Accessor<std::vector<AggregatorState*>>> all_local_agg_accessor;
     } * shared_{nullptr};
 

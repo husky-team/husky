@@ -18,6 +18,7 @@
 #include <cassert>
 #include <functional>
 #include <memory>
+#include <mutex>
 #include <vector>
 
 #include "base/assert.hpp"
@@ -78,11 +79,11 @@ class AggregatorFactoryBase {
 
    protected:
     static AggregatorFactoryBase& get_factory() {
-        if (factory_ == nullptr) {
-            factory_ = std::shared_ptr<AggregatorFactoryBase>(create_factory());
-            factory_->init_factory();
+        if (s_factory == nullptr) {
+            s_factory = std::shared_ptr<AggregatorFactoryBase>(create_factory());
+            s_factory->init_factory();
         }
-        return *factory_;
+        return *s_factory;
     }
 
     void sync_aggregator_cache();
@@ -174,7 +175,8 @@ class AggregatorFactoryBase {
     std::vector<AggregatorState*> local_aggs_;
     InnerSharedData* shared_data_{nullptr};
 
-    static thread_local std::shared_ptr<AggregatorFactoryBase> factory_;
+    static thread_local std::shared_ptr<AggregatorFactoryBase> s_factory;
+    static std::mutex s_shard_mutex;
 };
 
 // Note for using aggregator:

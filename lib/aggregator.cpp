@@ -28,7 +28,8 @@
 namespace husky {
 namespace lib {
 
-thread_local std::shared_ptr<AggregatorFactoryBase> AggregatorFactoryBase::factory_ = nullptr;
+std::mutex AggregatorFactoryBase::s_shard_mutex;
+thread_local std::shared_ptr<AggregatorFactoryBase> AggregatorFactoryBase::s_factory = nullptr;
 
 AggregatorInfo::~AggregatorInfo() {
     if (value != nullptr)
@@ -38,21 +39,24 @@ AggregatorInfo::~AggregatorInfo() {
 AggregatorFactoryBase* AggregatorFactoryBase::create_factory() {
     // use registered factory constructor to create a factory
     auto& ctor = get_factory_constructor();
-    static std::mutex mutex;
-    mutex.lock();
+    s_shard_mutex.lock();
     if (ctor == nullptr) {
         ctor = []() { return new AggregatorFactory(); };
     }
-    mutex.unlock();
+    s_shard_mutex.unlock();
     return ctor();
 }
 
 void AggregatorFactoryBase::init_factory() {
-    call_once([&] {
-        set_factory_leader(this);
-        shared_data_ = create_shared_data();
-        shared_data_->initialize(this);
-    });
+    if (get_factory_leader() == nullptr) {
+        s_shard_mutex.lock();
+        if (get_factory_leader() == nullptr) {
+            shared_data_ = create_shared_data();
+            shared_data_->initialize(this);
+            set_factory_leader(this);
+        }
+        s_shard_mutex.unlock();
+    }
     shared_data_ = get_factory_leader()->shared_data_;
     local_factory_idx_ =
         std::find(shared_data_->local_centers.begin(), shared_data_->local_centers.end(), get_factory_id()) -
