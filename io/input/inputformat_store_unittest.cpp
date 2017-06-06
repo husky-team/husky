@@ -82,6 +82,14 @@ TEST_F(TestInputFormatStore, MongoDBInputFormat) {
 }
 #endif
 
+TEST_F(TestInputFormatStore, ElasticsearchInputFormat) {
+    auto& infmt1 = InputFormatStore::create_elasticsearch_inputformat();
+    EXPECT_EQ(InputFormatStore::size(), 1);
+    auto& infmt2 = InputFormatStore::create_elasticsearch_inputformat();
+    EXPECT_EQ(InputFormatStore::size(), 2);
+    InputFormatStore::drop_all_inputformats();
+}
+
 }  // namespace
 }  // namespace io
 }  // namespace husky

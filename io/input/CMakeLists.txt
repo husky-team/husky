@@ -26,8 +26,10 @@ file(GLOB io-input-src-files
     nfs_binary_inputformat.cpp
     binary_inputformat_impl.cpp
     binary_inputformat.cpp
-    inputformat_store.cpp)
-
+    inputformat_store.cpp
+    elasticsearch_inputformat.cpp
+    elasticsearch_connector/http.cpp)
+	
 if(LIBHDFS3_FOUND)
     file(GLOB io-input-hdfs-src-files hdfs_file_splitter.cpp hdfs_binary_inputformat.cpp)
     list(APPEND io-input-src-files ${io-input-hdfs-src-files})

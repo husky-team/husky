@@ -88,5 +88,6 @@ const uint32_t TYPE_EXIT = 0x47d79fd5;
 const uint32_t TYPE_GET_HASH_RING = 0x48d693d5;
 const uint32_t TYPE_NFS_FILE_REQ = 0x4E465251;
 const uint32_t TYPE_HDFS_FILE_REQ = 0x48465251;
+const uint32_t TYPE_ELASTICSEARCH_REQ = 0xfa081098;
 
 }  // namespace husky

@@ -111,6 +111,15 @@ MongoDBInputFormat& InputFormatStore::create_mongodb_inputformat() {
 }
 #endif
 
+ElasticsearchInputFormat& InputFormatStore::create_elasticsearch_inputformat() {
+    InputFormatMap& inputformat_map = get_inputformat_map();
+    int id = g_gen_inputformat_id++;
+    ASSERT_MSG(inputformat_map.find(id) == inputformat_map.end(), "Should not be reached");
+    auto* elasticsearch_input_format = new ElasticsearchInputFormat();
+    inputformat_map.insert({id, elasticsearch_input_format});
+    return *elasticsearch_input_format;
+}
+
 void InputFormatStore::drop_all_inputformats() {
     if (s_inputformat_map == nullptr)
         return;

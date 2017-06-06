@@ -49,6 +49,12 @@ target_link_libraries(WordCountMR ${husky})
 target_link_libraries(WordCountMR ${HUSKY_EXTERNAL_LIB})
 husky_default_properties(WordCountMR)
 
+# WordCountES
+add_executable(WordCountES wc_mr_elasticsearch.cpp)
+target_link_libraries(WordCountES ${husky})
+target_link_libraries(WordCountES ${HUSKY_EXTERNAL_LIB})
+husky_default_properties(WordCountES)
+
 # WordCountMongo
 add_executable(WordCountMongo wc_mr_mongo.cpp)
 target_link_libraries(WordCountMongo ${husky})

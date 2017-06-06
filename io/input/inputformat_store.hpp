@@ -26,6 +26,7 @@
 #ifdef WITH_MONGODB
 #include "io/input/mongodb_inputformat.hpp"
 #endif
+#include "io/input/elasticsearch_inputformat.hpp"
 #include "io/input/separator_inputformat.hpp"
 #include "io/input/xml_inputformat.hpp"
 #ifdef WITH_ORC
@@ -53,6 +54,7 @@ class InputFormatStore {
 #ifdef WITH_MONGODB
     static MongoDBInputFormat& create_mongodb_inputformat();
 #endif
+    static ElasticsearchInputFormat& create_elasticsearch_inputformat();
 
     static void drop_all_inputformats();
     static void init_inputformat_map();

@@ -15,7 +15,7 @@
 
 include_directories(${PROJECT_SOURCE_DIR} ${EXTERNAL_INCLUDE})
 
-file(GLOB io-output-src-file outputformat_base.cpp)
+file(GLOB io-output-src-file outputformat_base.cpp elasticsearch_outputformat.cpp)
 
 if(MONGOCLIENT_FOUND)
     file(GLOB io-output-mongo-src-file mongodb_outputformat.cpp)
