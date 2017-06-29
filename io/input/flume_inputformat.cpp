@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "io/input/flume_inputformat.hpp"
+
 #include <unistd.h>
 #include <cstring>
 #include <iostream>
@@ -30,12 +32,11 @@
 #include "base/log.hpp"
 #include "boost/utility/string_ref.hpp"
 #include "core/context.hpp"
-#include "io/input/flume_inputformat.hpp"
 
-using namespace ::apache::thrift;
-using namespace ::apache::thrift::protocol;
-using namespace ::apache::thrift::transport;
-using namespace ::apache::thrift::server;
+using namespace ::apache::thrift;             // NOLINT(build/namespaces)
+using namespace ::apache::thrift::protocol;   // NOLINT(build/namespaces)
+using namespace ::apache::thrift::transport;  // NOLINT(build/namespaces)
+using namespace ::apache::thrift::server;     // NOLINT(build/namespaces)
 
 using boost::shared_ptr;
 

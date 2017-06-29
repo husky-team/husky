@@ -41,7 +41,7 @@ class ObjListStore {
     static ObjList<ObjT>& create_objlist(const std::string& list_name) {
         ObjListNameMap& objlist_name_map = get_objlist_name_map();
         if (has_objlist(list_name)) {
-            throw base::HuskyException("A ObjList named "+list_name+" already exists.");
+            throw base::HuskyException("A ObjList named " + list_name + " already exists.");
         }
         auto& objlist = create_objlist<ObjT>();
         objlist_name_map.insert({list_name, &objlist});

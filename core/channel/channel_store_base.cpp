@@ -52,7 +52,7 @@ void ChannelStoreBase::drop_channel(const size_t id) {
 void ChannelStoreBase::drop_channel(const std::string& channel_name) {
     ChannelNameMap& channel_map = get_channel_name_map();
     if (channel_map.find(channel_name) == channel_map.end())
-        throw base::HuskyException("ChannelStoreBase::drop_channel: Channel name "+channel_name+" doesn't exist");
+        throw base::HuskyException("ChannelStoreBase::drop_channel: Channel name " + channel_name + " doesn't exist");
 
     drop_channel(channel_map.at(channel_name)->get_channel_id());
     channel_map.erase(channel_name);
@@ -84,9 +84,7 @@ void ChannelStoreBase::free_channel_map() {
     s_channel_name_map = nullptr;
 }
 
-ChannelIdMap& ChannelStoreBase::get_channel_map() {
-    return get_channel_id_map();
-}
+ChannelIdMap& ChannelStoreBase::get_channel_map() { return get_channel_id_map(); }
 
 ChannelIdMap& ChannelStoreBase::get_channel_id_map() {
     init_channel_map();

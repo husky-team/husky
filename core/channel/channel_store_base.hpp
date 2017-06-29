@@ -42,9 +42,10 @@ class ChannelStoreBase {
     }
 
     template <typename MsgT, typename DstObjT>
-    static PushChannel<MsgT, DstObjT>& create_push_channel(ChannelSource& src_list, ObjList<DstObjT>& dst_list, const std::string& channel_name) {
+    static PushChannel<MsgT, DstObjT>& create_push_channel(ChannelSource& src_list, ObjList<DstObjT>& dst_list,
+                                                           const std::string& channel_name) {
         if (has_channel(channel_name)) {
-            throw base::HuskyException("A Channel named "+channel_name+" already exists.");
+            throw base::HuskyException("A Channel named " + channel_name + " already exists.");
         }
         auto& channel = create_push_channel<MsgT, DstObjT>(src_list, dst_list);
         get_channel_name_map().insert({channel_name, &channel});
@@ -70,7 +71,7 @@ class ChannelStoreBase {
                                                                                       ObjList<DstObjT>& dst_list,
                                                                                       const std::string& channel_name) {
         if (has_channel(channel_name)) {
-            throw base::HuskyException("A Channel named "+channel_name+" already exists.");
+            throw base::HuskyException("A Channel named " + channel_name + " already exists.");
         }
         auto& channel = create_push_combined_channel<MsgT, CombineT, DstObjT>(src_list, dst_list);
         get_channel_name_map().insert({channel_name, &channel});

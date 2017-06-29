@@ -28,10 +28,10 @@
 #include "boost/utility/string_ref.hpp"
 #include "io/input/inputformat_base.hpp"
 
-using namespace ::apache::thrift;
-using namespace ::apache::thrift::protocol;
-using namespace ::apache::thrift::transport;
-using namespace ::apache::thrift::server;
+using namespace ::apache::thrift;             // NOLINT(build/namespaces)
+using namespace ::apache::thrift::protocol;   // NOLINT(build/namespaces)
+using namespace ::apache::thrift::transport;  // NOLINT(build/namespaces)
+using namespace ::apache::thrift::server;     // NOLINT(build/namespaces)
 
 using boost::shared_ptr;
 

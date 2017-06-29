@@ -86,9 +86,7 @@ void ObjListStore::free_objlist_map() {
     s_objlist_name_map = nullptr;
 }
 
-ObjListIdMap& ObjListStore::get_objlist_map() {
-    return get_objlist_id_map();
-}
+ObjListIdMap& ObjListStore::get_objlist_map() { return get_objlist_id_map(); }
 
 ObjListIdMap& ObjListStore::get_objlist_id_map() {
     init_objlist_map();

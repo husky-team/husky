@@ -96,9 +96,7 @@ AggregatorFactory::InnerSharedData* AggregatorFactory::create_shared_data() { re
 
 void AggregatorFactory::wait_for_others() { shared_->barrier.wait(get_num_local_factory()); }
 
-void AggregatorFactory::call_once(const std::function<void()>& lambda) {
-    shared_->call_once_each_time(lambda);
-}
+void AggregatorFactory::call_once(const std::function<void()>& lambda) { shared_->call_once_each_time(lambda); }
 
 void AggregatorFactory::init_factory() {
     AggregatorFactoryBase::init_factory();
