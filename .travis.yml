@@ -1,6 +1,6 @@
 sudo: required
-
 dist: trusty
+group: edge
 
 language: python  # workaround for not setting CC/CXX with default value
 
@@ -8,7 +8,7 @@ addons:
   apt:
     sources:
       - ubuntu-toolchain-r-test
-      - llvm-toolchain-precise
+      - llvm-toolchain-precise-3.9
     packages:
       - build-essential
       - cmake
@@ -16,13 +16,13 @@ addons:
       - g++-4.9
       - gcc-6
       - g++-6
-      - clang-format-3.8
+      - clang-format-3.9
 
 before_install:
   - sudo add-apt-repository -y ppa:kojoley/boost
   - sudo apt-get -q update
   - sudo apt-get install -qq software-properties-common
-  - sudo apt-get install -qq build-essential libgoogle-perftools-dev libzmq3-dev mercurial git
+  - sudo apt-get install -qq libgoogle-perftools-dev libzmq3-dev mercurial git
   - sudo apt-get -y install libboost-{chrono,program-options,date-time,thread,system,filesystem,regex,serialization}1.58{-dev,.0}
 
 install:
@@ -37,7 +37,7 @@ install:
 
 before_script:
   - export HUSKY_ROOT=.
-  - export CLANG_FORMAT=clang-format-3.8
+  - export CLANG_FORMAT=clang-format-3.9
   - ./scripts/lint.py
   - ./scripts/clang-format.py -o check
 
