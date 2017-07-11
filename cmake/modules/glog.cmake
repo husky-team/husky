@@ -15,6 +15,8 @@
 
 ### GLOG ###
 
+include (GNUInstallDirs)
+
 if(GLOG_SEARCH_PATH)
     # Note: if using GLOG_SEARCH_PATH, the customized format is not activated.
     find_path(GLOG_INCLUDE_DIR NAMES glog/logging.h PATHS ${GLOG_SEARCH_PATH} NO_SYSTEM_ENVIRONMENT_PATH)
@@ -40,9 +42,9 @@ else(GLOG_SEARCH_PATH)
     list(APPEND external_project_dependencies glog)
     set(GLOG_INCLUDE_DIR "${PROJECT_BINARY_DIR}/include")
     if(WIN32)
-        set(GLOG_LIBRARY "${PROJECT_BINARY_DIR}/lib/libglog.lib")
+        set(GLOG_LIBRARY "${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}/libglog.lib")
     else(WIN32)
-        set(GLOG_LIBRARY "${PROJECT_BINARY_DIR}/lib/libglog.a")
+        set(GLOG_LIBRARY "${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}/libglog.a")
     endif(WIN32)
     message(STATUS "GLog will be built as a third party")
     message(STATUS "  (Headers should be)       ${GLOG_INCLUDE_DIR}")
