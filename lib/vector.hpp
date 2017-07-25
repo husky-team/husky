@@ -80,45 +80,51 @@ struct LabeledPoint {
 
 namespace base {
 
-inline BinStream& operator<<(BinStream& stream, const lib::VectorXd& vec) {
-    stream << (size_t) vec.rows();
-    for (lib::VectorXd::InnerIterator it(vec, 0); it; ++it) {
-        stream << it.value();
-    }
+template <typename Scalar, int RowsAtCompileTime>
+inline BinStream& operator<<(BinStream& stream, const Eigen::Matrix<Scalar, RowsAtCompileTime, 1>& vec) {
+    stream << (size_t)vec.rows();
+
+    stream.push_back_bytes((const char*)vec.data(), vec.rows() * sizeof(Scalar));
 
     return stream;
 }
 
-inline BinStream& operator>>(BinStream& stream, lib::VectorXd& vec) {
+template <typename Scalar, int RowsAtCompileTime>
+inline BinStream& operator>>(BinStream& stream, Eigen::Matrix<Scalar, RowsAtCompileTime, 1>& vec) {
     size_t rows;
     stream >> rows;
-    vec.resize(rows, 1);
-    for (int i = 0; i < rows; ++i) {
-        stream >> vec.coeffRef(i, 0);
-    }
+
+    vec.resize(rows);
+
+    Scalar* data = (Scalar*)stream.pop_front_bytes(rows * sizeof(Scalar));
+    std::copy(data, data + rows, vec.data());
 
     return stream;
 }
 
-inline BinStream& operator<<(BinStream& stream, const lib::SparseVectorXd& vec) {
-    stream << (size_t) vec.rows() << (size_t) vec.nonZeros();
-    for (lib::SparseVectorXd::InnerIterator it(vec, 0); it; ++it) {
-        stream << (size_t) it.index();
-        stream << it.value();
-    }
+template <typename _Scalar, int _Flags, typename _StorageIndex>
+inline BinStream& operator<<(BinStream& stream, const Eigen::SparseVector<_Scalar, _Flags, _StorageIndex>& vec) {
+    stream << (size_t)vec.rows() << (size_t)vec.nonZeros();
+
+    stream.push_back_bytes((const char*)vec.innerIndexPtr(), vec.nonZeros() * sizeof(_StorageIndex));
+    stream.push_back_bytes((const char*)vec.valuePtr(), vec.nonZeros() * sizeof(_Scalar));
 
     return stream;
 }
 
-inline BinStream& operator>>(BinStream& stream, lib::SparseVectorXd& vec) {
+template <typename _Scalar, int _Flags, typename _StorageIndex>
+inline BinStream& operator>>(BinStream& stream, Eigen::SparseVector<_Scalar, _Flags, _StorageIndex>& vec) {
     size_t rows, non_zeros;
     stream >> rows >> non_zeros;
-    vec.resize(rows, 1);
-    for (int i = 0; i < non_zeros; ++i) {
-        size_t idx;
-        stream >> idx;
-        stream >> vec.coeffRef(idx, 0);
-    }
+
+    vec.resize(rows);
+    vec.reserve(non_zeros);
+    vec.resizeNonZeros(non_zeros);
+
+    _Scalar* idxs = (_Scalar*)stream.pop_front_bytes(non_zeros * sizeof(_Scalar));
+    _Scalar* vals = (_Scalar*)stream.pop_front_bytes(non_zeros * sizeof(_Scalar));
+    std::copy(idxs, idxs + non_zeros, vec.innerIndexPtr());
+    std::copy(vals, vals + non_zeros, vec.valuePtr());
 
     return stream;
 }
