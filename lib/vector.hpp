@@ -121,7 +121,7 @@ inline BinStream& operator>>(BinStream& stream, Eigen::SparseVector<_Scalar, _Fl
     vec.reserve(non_zeros);
     vec.resizeNonZeros(non_zeros);
 
-    _Scalar* idxs = (_Scalar*)stream.pop_front_bytes(non_zeros * sizeof(_Scalar));
+    _StorageIndex* idxs = (_StorageIndex*)stream.pop_front_bytes(non_zeros * sizeof(_StorageIndex));
     _Scalar* vals = (_Scalar*)stream.pop_front_bytes(non_zeros * sizeof(_Scalar));
     std::copy(idxs, idxs + non_zeros, vec.innerIndexPtr());
     std::copy(vals, vals + non_zeros, vec.valuePtr());
