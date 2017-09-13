@@ -30,11 +30,12 @@ if(ZMQ_FOUND)
 else(ZMQ_FOUND)
     message (STATUS "ZeroMQ will be included as a third party:")
     include(ExternalProject)
-    set(THIRDPARTY_DIR ${PROJECT_SOURCE_DIR}/third_party)
+    set(THIRDPARTY_DIR ${PROJECT_BINARY_DIR}/third_party)
     if(NOT ZMQ_INCLUDE_DIR)
         ExternalProject_Add(
             cppzmq
             GIT_REPOSITORY "https://github.com/zeromq/cppzmq"
+            GIT_TAG "v4.2.2"
             PREFIX ${THIRDPARTY_DIR}
             UPDATE_COMMAND ""
             CONFIGURE_COMMAND ""
@@ -48,7 +49,7 @@ else(ZMQ_FOUND)
         ExternalProject_Add(
             libzmq
             GIT_REPOSITORY "https://github.com/zeromq/libzmq"
-            GIT_TAG "v4.2.1"
+            GIT_TAG "v4.2.2"
             PREFIX ${THIRDPARTY_DIR}
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:PATH=${PROJECT_BINARY_DIR}

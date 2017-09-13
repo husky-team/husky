@@ -29,10 +29,11 @@ else(GTEST_SEARCH_PATH)
     find_package(Threads REQUIRED)
     include(ExternalProject)
 
-    set(THIRDPARTY_DIR ${PROJECT_SOURCE_DIR}/third_party)
+    set(THIRDPARTY_DIR ${PROJECT_BINARY_DIR}/third_party)
     ExternalProject_Add(
         gtest
         GIT_REPOSITORY https://github.com/google/googletest.git
+        GIT_TAG "release-1.8.0"
         PREFIX ${THIRDPARTY_DIR}
         CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:PATH=${PROJECT_BINARY_DIR}
         CMAKE_ARGS -Dgtest_disable_pthreads=ON
