@@ -17,7 +17,7 @@ Dependencies
 
 Husky has the following minimal dependencies:
 
-* CMake (Version >= 3.0.2)
+* CMake (Version >= 3.0.2, if >= 3.6.0, it should set `CMAKE_PREFIX_PATH` first when occurring errors to find the following dependencies)
 * ZeroMQ (including both [libzmq](https://github.com/zeromq/libzmq) and [cppzmq](https://github.com/zeromq/cppzmq))
 * Boost (Version >= 1.58)
 * A working C++ compiler (clang/gcc Version >= 4.9/icc/MSVC)
