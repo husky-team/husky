@@ -80,24 +80,68 @@ struct LabeledPoint {
 
 namespace base {
 
-template <typename Scalar, int RowsAtCompileTime>
-inline BinStream& operator<<(BinStream& stream, const Eigen::Matrix<Scalar, RowsAtCompileTime, 1>& vec) {
-    stream << (size_t)vec.rows();
+template <typename Scalar, int RowsAtCompileTime, int Options>
+inline BinStream& operator<<(BinStream& stream, const Eigen::Matrix<Scalar, RowsAtCompileTime, Eigen::Dynamic, Options>& mat) {
+    stream << (size_t)mat.cols();
 
-    stream.push_back_bytes((const char*)vec.data(), vec.rows() * sizeof(Scalar));
+    stream.push_back_bytes((const char*)mat.data(), mat.size() * sizeof(Scalar));
 
     return stream;
 }
 
-template <typename Scalar, int RowsAtCompileTime>
-inline BinStream& operator>>(BinStream& stream, Eigen::Matrix<Scalar, RowsAtCompileTime, 1>& vec) {
+template <typename Scalar, int RowsAtCompileTime, int Options>
+inline BinStream& operator>>(BinStream& stream, Eigen::Matrix<Scalar, RowsAtCompileTime, Eigen::Dynamic, Options>& mat) {
+    size_t cols;
+    stream >> cols;
+
+    mat.resize(RowsAtCompileTime, cols);
+
+    Scalar* data = (Scalar*)stream.pop_front_bytes(mat.size() * sizeof(Scalar));
+    std::copy(data, data + mat.size(), mat.data());
+
+    return stream;
+}
+
+template <typename Scalar, int ColsAtCompileTime, int Options>
+inline BinStream& operator<<(BinStream& stream, const Eigen::Matrix<Scalar, Eigen::Dynamic, ColsAtCompileTime, Options>& mat) {
+    stream << (size_t)mat.rows();
+
+    stream.push_back_bytes((const char*)mat.data(), mat.size() * sizeof(Scalar));
+
+    return stream;
+}
+
+template <typename Scalar, int ColsAtCompileTime, int Options>
+inline BinStream& operator>>(BinStream& stream, Eigen::Matrix<Scalar, Eigen::Dynamic, ColsAtCompileTime, Options>& mat) {
     size_t rows;
     stream >> rows;
 
-    vec.resize(rows);
+    mat.resize(rows, ColsAtCompileTime);
 
-    Scalar* data = (Scalar*)stream.pop_front_bytes(rows * sizeof(Scalar));
-    std::copy(data, data + rows, vec.data());
+    Scalar* data = (Scalar*)stream.pop_front_bytes(mat.size() * sizeof(Scalar));
+    std::copy(data, data + mat.size(), mat.data());
+
+    return stream;
+}
+
+template <typename Scalar, int Options>
+inline BinStream& operator<<(BinStream& stream, const Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic, Options>& mat) {
+    stream << (size_t)mat.rows() << (size_t)mat.cols();
+
+    stream.push_back_bytes((const char*)mat.data(), mat.size() * sizeof(Scalar));
+
+    return stream;
+}
+
+template <typename Scalar, int Options>
+inline BinStream& operator>>(BinStream& stream, Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic, Options>& mat) {
+    size_t rows, cols;
+    stream >> rows >> cols;
+
+    mat.resize(rows, cols);
+
+    Scalar* data = (Scalar*)stream.pop_front_bytes(mat.size() * sizeof(Scalar));
+    std::copy(data, data + mat.size(), mat.data());
 
     return stream;
 }
