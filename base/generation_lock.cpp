@@ -15,6 +15,7 @@
 #include "base/generation_lock.hpp"
 
 #include <condition_variable>
+#include <functional>
 #include <mutex>
 #include <unordered_map>
 #include <utility>

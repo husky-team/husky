@@ -24,7 +24,7 @@ if(CMAKE_COMPILER_IS_GNUCXX)
     set(CMAKE_CXX_FLAGS_DEBUG "-g -DHUSKY_DEBUG_MODE")
     set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O2 -g -DHUSKY_DEBUG_MODE")
     set(CMAKE_CXX_FLAGS_RELEASE "-O3 -w")
-    set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-Wno-deprecated-declarations")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated-declarations")
 endif()
 
 option(BUILD_SHARED_LIBRARY "Build shared library" OFF)
