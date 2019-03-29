@@ -53,11 +53,12 @@ void pagerank() {
     auto parse_wc = [&vertex_list](boost::string_ref& chunk) {
         if (chunk.size() == 0)
             return;
-        boost::char_separator<char> sep(" \t");
+        // Possible graph file formats like: source : num_neighbors neighbor_1 neighbor_2 ... neighbor_n
+        boost::char_separator<char> sep(" \t,:;-");
         boost::tokenizer<boost::char_separator<char>> tok(chunk, sep);
         boost::tokenizer<boost::char_separator<char>>::iterator it = tok.begin();
         int id = stoi(*it++);
-        it++;
+        it++; // Skip num_neighbors, otherwise comment out
         Vertex v(id);
         while (it != tok.end()) {
             v.adj.push_back(stoi(*it++));
